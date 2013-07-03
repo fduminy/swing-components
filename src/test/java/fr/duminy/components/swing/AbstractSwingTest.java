@@ -49,6 +49,8 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
 //		frame = new JFrame();
         window = new FrameFixture(robot(), frame);
         window.show();
+
+        robot().settings().delayBetweenEvents(0);
     }
 
     protected JFrame getFrame() {
