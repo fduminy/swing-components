@@ -24,6 +24,9 @@ import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.DesktopSwingComponentMessages_fr;
 import fr.duminy.components.swing.i18n.I18nAble;
+import org.fest.swing.edt.GuiActionRunner;
+import org.fest.swing.edt.GuiQuery;
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -105,6 +108,45 @@ public class ListPanelTest extends AbstractSwingTest {
     public final void testExtendsI18nAble(PanelFactory factory) throws Exception {
         ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
         assertTrue("component extends I18nAble", I18nAble.class.isAssignableFrom(component.getClass()));
+    }
+
+
+    @Test
+    public void testInit_JList() throws Exception {
+        final JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
+            @Override
+            protected JList<String> executeInEDT() throws Throwable {
+                return new JList<>(new DefaultListModel<String>());
+            }
+        });
+        ListPanel<JList<String>, String> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<JList<String>, String>>() {
+            @Override
+            protected ListPanel<JList<String>, String> executeInEDT() throws Throwable {
+                return new ListPanel<>(list, null);
+            }
+        });
+
+        assertThat(panel.getListComponent()).isEqualTo(list);
+    }
+
+    @Test
+    public void testInit_ListComponent() throws Exception {
+        JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
+            @Override
+            protected JList<String> executeInEDT() throws Throwable {
+                return new JList<>(new DefaultListModel<String>());
+            }
+        });
+        final JListComponentWrapper<String> wrapper = new JListComponentWrapper<>(list, null);
+        ListPanel<JList<String>, String> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<JList<String>, String>>() {
+            @Override
+            protected ListPanel<JList<String>, String> executeInEDT() throws Throwable {
+                return new ListPanel<>(wrapper);
+            }
+        });
+
+
+        assertThat(panel.getListComponent()).isEqualTo(list);
     }
 
     @Theory

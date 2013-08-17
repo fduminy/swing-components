@@ -62,6 +62,10 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
         updateButtons();
     }
 
+    public TC getListComponent() {
+        return list.getComponent();
+    }
+
     @Override
     public void addItem() {
         list.addItem();
