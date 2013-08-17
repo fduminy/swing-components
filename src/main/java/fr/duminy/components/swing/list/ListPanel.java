@@ -32,15 +32,16 @@ import java.util.Arrays;
 import static fr.duminy.components.swing.list.ButtonsPanel.*;
 
 @SuppressWarnings("serial")
-public class ListPanel<T> extends JPanel implements ListActions, I18nAble {
-    private final ListComponent<?, T> list;
+public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions, I18nAble {
+    private final ListComponent<TC, T> list;
     private final ButtonsPanel buttons;
 
-    public ListPanel(JList list, Supplier<T> factory) {
-        this(new JListComponentWrapper<T>(list, factory));
+    @SuppressWarnings("unchecked")
+    public ListPanel(JList<T> list, Supplier<T> factory) {
+        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, factory));
     }
 
-    public ListPanel(final ListComponent<?, T> list) {
+    public ListPanel(final ListComponent<TC, T> list) {
         setLayout(new BorderLayout());
 
         this.list = list;

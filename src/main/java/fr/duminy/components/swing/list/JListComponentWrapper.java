@@ -25,19 +25,19 @@ import com.google.common.base.Supplier;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 
-class JListComponentWrapper<T> implements ListComponent<JList, T> {
-    private final JList list;
-    private final DefaultListModel model;
+class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
+    private final JList<T> list;
+    private final DefaultListModel<T> model;
     private final Supplier<T> factory;
 
-    JListComponentWrapper(JList list, Supplier<T> factory) {
+    JListComponentWrapper(JList<T> list, Supplier<T> factory) {
         this.list = list;
-        model = (DefaultListModel) list.getModel();
+        model = (DefaultListModel<T>) list.getModel();
         this.factory = factory;
     }
 
     @Override
-    public JList getComponent() {
+    public JList<T> getComponent() {
         return list;
     }
 
@@ -56,7 +56,7 @@ class JListComponentWrapper<T> implements ListComponent<JList, T> {
     @Override
     public void moveUpItem(int i) {
         if (isValidIndex(i, false, true)) {
-            Object item = model.remove(i);
+            T item = model.remove(i);
             model.add(i - 1, item);
         }
     }
@@ -64,7 +64,7 @@ class JListComponentWrapper<T> implements ListComponent<JList, T> {
     @Override
     public void moveDownItem(int i) {
         if (isValidIndex(i, true, false)) {
-            Object item = model.remove(i);
+            T item = model.remove(i);
             model.add(i + 1, item);
         }
     }

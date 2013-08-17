@@ -88,8 +88,8 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final PanelFactory JLIST = new PanelFactory() {
         @Override
-        public ListPanel<String> create(int nbItems) {
-            return new ListPanel<String>(new JList(createItems(nbItems)), new Supplier<String>() {
+        public ListPanel<JList<String>, String> create(int nbItems) {
+            return new ListPanel<JList<String>, String>(new JList<String>(createItems(nbItems)), new Supplier<String>() {
                 public String get() {
                     return NEW_ITEM;
                 }
@@ -103,13 +103,13 @@ public class ListPanelTest extends AbstractSwingTest {
 
     @Theory
     public final void testExtendsI18nAble(PanelFactory factory) throws Exception {
-        ListPanel<String> component = buildAndShowWindow(factory, 1);
+        ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
         assertTrue("component extends I18nAble", I18nAble.class.isAssignableFrom(component.getClass()));
     }
 
     @Theory
     public final void testI18nMessages(PanelFactory factory, Locale locale) throws Exception {
-        ListPanel<String> component = buildAndShowWindow(factory, 1);
+        ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
         Locale.setDefault(locale);
         component.updateMessages();
 
@@ -122,7 +122,7 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testAddItem(final PanelFactory factory, TestData data) throws Exception {
         LOG.info("testAddItem: factory={} data={}", factory, data);
-        List<Object> expectedList = createItemList(data.nbItems);
+        List<String> expectedList = createItemList(data.nbItems);
         expectedList.add(NEW_ITEM);
 
         buildAndShowWindow(factory, data.nbItems);
@@ -137,7 +137,7 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testRemoveItem(PanelFactory factory, TestData data) throws Exception {
         LOG.info("testRemoveItem: factory={} data={}", factory, data);
-        List<Object> expectedList = createItemList(data.nbItems);
+        List<String> expectedList = createItemList(data.nbItems);
         boolean valid = (data.selectedIndices.length > 0);
         if (valid) {
             for (int i = data.selectedIndices.length - 1; i >= 0; i--) {
@@ -161,11 +161,11 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testMoveUpItem(PanelFactory factory, TestData data) throws Exception {
         LOG.info("testMoveUpItem: factory={} data={}", factory, data);
-        List<Object> expectedList = createItemList(data.nbItems);
+        List<String> expectedList = createItemList(data.nbItems);
         boolean valid = false;
         for (int selection : data.selectedIndices) {
             if (selection > 0) {
-                Object item = expectedList.remove(selection);
+                String item = expectedList.remove(selection);
                 expectedList.add(selection - 1, item);
                 valid = true;
             }
@@ -193,12 +193,12 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testMoveDownItem(PanelFactory factory, TestData data) throws Exception {
         LOG.info("testMoveDownItem: factory={} data={}", factory, data);
-        List<Object> expectedList = createItemList(data.nbItems);
+        List<String> expectedList = createItemList(data.nbItems);
         boolean valid = false;
         for (int i = data.selectedIndices.length - 1; i >= 0; i--) {
             int selection = data.selectedIndices[i];
             if (selection < (data.nbItems - 1)) {
-                Object item = expectedList.remove(selection);
+                String item = expectedList.remove(selection);
                 expectedList.add(selection + 1, item);
                 valid = true;
             }
@@ -231,22 +231,22 @@ public class ListPanelTest extends AbstractSwingTest {
         }
     }
 
-    private ListPanel<String> buildAndShowWindow(final PanelFactory factory, final int nbItems)
+    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems)
             throws Exception {
-        return buildAndShowWindow(new Supplier<ListPanel<String>>() {
+        return buildAndShowWindow(new Supplier<ListPanel<JList<String>, String>>() {
             @Override
-            public ListPanel<String> get() {
+            public ListPanel<JList<String>, String> get() {
                 return factory.create(nbItems);
             }
         });
     }
 
     static interface PanelFactory {
-        ListPanel<String> create(int nbItems);
+        ListPanel<JList<String>, String> create(int nbItems);
     }
 
-    static List<Object> createItemList(int nbItems) {
-        List<Object> items = new ArrayList<Object>();
+    static List<String> createItemList(int nbItems) {
+        List<String> items = new ArrayList<>();
 
         for (int i = 0; i < nbItems; i++) {
             items.add(String.valueOf((char) ('A' + i)));
@@ -255,10 +255,10 @@ public class ListPanelTest extends AbstractSwingTest {
         return items;
     }
 
-    static DefaultListModel createItems(int nbItems) {
-        DefaultListModel items = new DefaultListModel();
+    static DefaultListModel<String> createItems(int nbItems) {
+        DefaultListModel<String> items = new DefaultListModel<>();
 
-        for (Object item : createItemList(nbItems)) {
+        for (String item : createItemList(nbItems)) {
             items.addElement(item);
         }
 
