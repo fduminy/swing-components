@@ -21,10 +21,12 @@
 package fr.duminy.components.swing;
 
 import com.google.common.base.Supplier;
+import org.fest.swing.edt.FailOnThreadViolationRepaintManager;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.junit.testcase.FestSwingJUnitTestCase;
+import org.junit.BeforeClass;
 
 import javax.swing.*;
 
@@ -34,10 +36,10 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
     protected FrameFixture window;
     private JFrame frame;
 
-//	@BeforeClass
-//	public static void setUpOnce() {
-//		FailOnThreadViolationRepaintManager.install();
-//	}
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        FailOnThreadViolationRepaintManager.install();
+    }
 
     @Override
     protected void onSetUp() {
