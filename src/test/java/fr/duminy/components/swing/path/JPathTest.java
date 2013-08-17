@@ -203,7 +203,7 @@ public class JPathTest extends AbstractSwingTest {
                 jbf.requireEnabled();
 
                 executeInEDT(new GuiQuery<Object>() {
-                    protected Object executeInEDT() throws Exception {
+                    protected Object executeInEDT() {
                         jbf.targetCastedTo(JButton.class).doClick();
                         return null;
                     }
