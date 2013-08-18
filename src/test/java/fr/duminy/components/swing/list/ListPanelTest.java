@@ -52,6 +52,11 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final Locale ENGLISH = Locale.ENGLISH;
 
+    @DataPoint
+    public static final boolean ADD_ITEM = false;
+    @DataPoint
+    public static final boolean CANCEL_ADD_ITEM = true;
+
     private static final Logger LOG = LoggerFactory.getLogger(ListPanelTest.class);
 
     private static final String NEW_ITEM = "Z";
@@ -91,10 +96,10 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final PanelFactory JLIST = new PanelFactory() {
         @Override
-        public ListPanel<JList<String>, String> create(int nbItems) {
+        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemFactoryReturnsNull) {
             return new ListPanel<JList<String>, String>(new JList<String>(createItems(nbItems)), new Supplier<String>() {
                 public String get() {
-                    return NEW_ITEM;
+                    return itemFactoryReturnsNull ? null : NEW_ITEM;
                 }
             });
         }
@@ -162,12 +167,14 @@ public class ListPanelTest extends AbstractSwingTest {
     }
 
     @Theory
-    public void testAddItem(final PanelFactory factory, TestData data) throws Exception {
+    public void testAddItem(final PanelFactory factory, TestData data, boolean cancelAddItem) throws Exception {
         LOG.info("testAddItem: factory={} data={}", factory, data);
         List<String> expectedList = createItemList(data.nbItems);
-        expectedList.add(NEW_ITEM);
+        if (!cancelAddItem) {
+            expectedList.add(NEW_ITEM);
+        }
 
-        buildAndShowWindow(factory, data.nbItems);
+        buildAndShowWindow(factory, data.nbItems, cancelAddItem);
         selectItem(data.selectedIndices);
         window.button(ADD_BUTTON_NAME).click();
 
@@ -273,18 +280,22 @@ public class ListPanelTest extends AbstractSwingTest {
         }
     }
 
-    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems)
+    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems) throws Exception {
+        return buildAndShowWindow(factory, nbItems, false);
+    }
+
+    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull)
             throws Exception {
         return buildAndShowWindow(new Supplier<ListPanel<JList<String>, String>>() {
             @Override
             public ListPanel<JList<String>, String> get() {
-                return factory.create(nbItems);
+                return factory.create(nbItems, itemFactoryReturnsNull);
             }
         });
     }
 
     static interface PanelFactory {
-        ListPanel<JList<String>, String> create(int nbItems);
+        ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull);
     }
 
     static List<String> createItemList(int nbItems) {

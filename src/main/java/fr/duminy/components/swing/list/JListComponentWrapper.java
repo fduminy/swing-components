@@ -25,15 +25,24 @@ import com.google.common.base.Supplier;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 
+/**
+ * This class is an implementation of {@link ListComponent} that wraps a {@link JList} component.
+ *
+ * @param <T> The type of items contained in the list.
+ */
 class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     private final JList<T> list;
     private final DefaultListModel<T> model;
-    private final Supplier<T> factory;
+    private final Supplier<T> itemFactory;
 
-    JListComponentWrapper(JList<T> list, Supplier<T> factory) {
+    /**
+     * @param list        The list component to wrap.
+     * @param itemFactory This itemFactory is used to add a new item to the list. When it returns null, the user has cancelled the operation.
+     */
+    JListComponentWrapper(JList<T> list, Supplier<T> itemFactory) {
         this.list = list;
         model = (DefaultListModel<T>) list.getModel();
-        this.factory = factory;
+        this.itemFactory = itemFactory;
     }
 
     @Override
@@ -43,7 +52,11 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
 
     @Override
     public void addItem() {
-        model.addElement(factory.get());
+        T item = itemFactory.get();
+        // if item is null, then the user has cancelled the operation
+        if (item != null) {
+            model.addElement(item);
+        }
     }
 
     @Override

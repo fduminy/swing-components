@@ -31,16 +31,36 @@ import java.util.Arrays;
 
 import static fr.duminy.components.swing.list.ButtonsPanel.*;
 
+/**
+ * This component encapsulates a list component (provided by an implementation of {@link ListComponent})
+ * associated with buttons allowing the user to <br/>
+ * <ul>
+ * <li>add an item</li>
+ * <li>remove an item</li>
+ * <li>move an item up</li>
+ * <li>move an item down</li>
+ * </ul>.
+ *
+ * @param <TC> The type of wrapped list component (example : a JList).
+ * @param <T>  The type of item.
+ */
 @SuppressWarnings("serial")
 public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions, I18nAble {
     private final ListComponent<TC, T> list;
     private final ButtonsPanel buttons;
 
+    /**
+     * @param list        The list component to wrap.
+     * @param itemFactory This factory is used to add a new item to the list. When it returns null, the user has cancelled the operation.
+     */
     @SuppressWarnings("unchecked")
-    public ListPanel(JList<T> list, Supplier<T> factory) {
-        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, factory));
+    public ListPanel(JList<T> list, Supplier<T> itemFactory) {
+        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, itemFactory));
     }
 
+    /**
+     * @param list The list component to wrap.
+     */
     public ListPanel(final ListComponent<TC, T> list) {
         setLayout(new BorderLayout());
 
