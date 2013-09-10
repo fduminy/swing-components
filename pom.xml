@@ -14,6 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.email>fabien [dot] duminy [at] webmails [dot] com</project.email>
         <project.root>${basedir}</project.root>
+
+        <findbugs.dir>${project.build.directory}/findbugs</findbugs.dir>
     </properties>
 
     <licenses>
@@ -187,6 +189,71 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- findbugs plugins -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>findbugs</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <findbugsXmlOutputDirectory>
+                        ${findbugs.dir}
+                    </findbugsXmlOutputDirectory>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <transformationSets>
+                        <transformationSet>
+                            <dir>${findbugs.dir}</dir>
+                            <outputDir>${findbugs.dir}</outputDir>
+                            <includes>
+                                <include>*.xml</include>
+                            </includes>
+                            <stylesheet>fancy-hist.xsl</stylesheet>
+                            <!--stylesheet>default.xsl</stylesheet-->
+                            <!--<stylesheet>plain.xsl</stylesheet>-->
+                            <!--<stylesheet>fancy.xsl</stylesheet>-->
+                            <!--<stylesheet>summary.xsl</stylesheet>-->
+                            <fileMappers>
+                                <fileMapper
+                                        implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                    <targetExtension>.html</targetExtension>
+                                </fileMapper>
+                            </fileMappers>
+                        </transformationSet>
+                    </transformationSets>
+                </configuration>
+                <dependencies>
+                    <!-- needed to find the xsl file -->
+                    <dependency>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>findbugs</artifactId>
+                        <version>2.0.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
