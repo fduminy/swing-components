@@ -24,6 +24,8 @@ import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.DesktopSwingComponentMessages_fr;
 import fr.duminy.components.swing.i18n.I18nAble;
+import fr.duminy.components.swing.list.DefaultMutableListModel;
+import fr.duminy.components.swing.list.MutableListModel;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.junit.Test;
@@ -121,7 +123,7 @@ public class ListPanelTest extends AbstractSwingTest {
         final JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
             @Override
             protected JList<String> executeInEDT() throws Throwable {
-                return new JList<>(new DefaultListModel<String>());
+                return new JList<>(new DefaultMutableListModel<String>());
             }
         });
         ListPanel<JList<String>, String> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<JList<String>, String>>() {
@@ -139,7 +141,7 @@ public class ListPanelTest extends AbstractSwingTest {
         JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
             @Override
             protected JList<String> executeInEDT() throws Throwable {
-                return new JList<>(new DefaultListModel<String>());
+                return new JList<>(new DefaultMutableListModel<String>());
             }
         });
         final JListComponentWrapper<String> wrapper = new JListComponentWrapper<>(list, null);
@@ -308,11 +310,11 @@ public class ListPanelTest extends AbstractSwingTest {
         return items;
     }
 
-    static DefaultListModel<String> createItems(int nbItems) {
-        DefaultListModel<String> items = new DefaultListModel<>();
+    static MutableListModel<String> createItems(int nbItems) {
+        MutableListModel<String> items = new DefaultMutableListModel<>();
 
         for (String item : createItemList(nbItems)) {
-            items.addElement(item);
+            items.add(item);
         }
 
         return items;
