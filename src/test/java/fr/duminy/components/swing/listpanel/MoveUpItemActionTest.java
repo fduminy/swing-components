@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.SwingComponentMessages;
 
 import java.awt.event.KeyEvent;
 
 /**
- * Test for {@link fr.duminy.components.swing.list.MoveUpItemAction} class.
+ * Test for {@link fr.duminy.components.swing.listpanel.MoveUpItemAction} class.
  */
 public class MoveUpItemActionTest extends AbstractItemActionTest<MoveUpItemAction> {
     public MoveUpItemActionTest() {

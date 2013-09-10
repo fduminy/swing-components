@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.i18n.I18nAction;
 

@@ -20,7 +20,7 @@
  */
 package fr.duminy.components.swing.i18n;
 
-import fr.duminy.components.swing.list.AbstractItemActionTest;
+import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;

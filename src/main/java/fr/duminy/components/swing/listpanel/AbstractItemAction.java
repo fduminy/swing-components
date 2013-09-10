@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.AbstractI18nAction;
@@ -33,7 +33,7 @@ abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessa
     private final ListActions listener;
 
     /**
-     * @param listener       The interface for interactions with the associated list component.
+     * @param listener       The interface for interactions with the associated listpanel component.
      * @param acceleratorKey The accelerator key for the action.
      * @param iconResource   The icon resource for the action.
      */
@@ -53,7 +53,7 @@ abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessa
     }
 
     /**
-     * @param listener The interface for interactions with the associated list component.
+     * @param listener The interface for interactions with the associated listpanel component.
      */
     abstract protected void doAction(ListActions listener);
 }

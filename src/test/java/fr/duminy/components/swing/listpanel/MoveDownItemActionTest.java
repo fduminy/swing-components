@@ -18,28 +18,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.SwingComponentMessages;
 
 import java.awt.event.KeyEvent;
 
 /**
- * Test for {@link AddItemAction} class.
+ * Test for {@link fr.duminy.components.swing.listpanel.MoveDownItemAction} class.
  */
-public class AddItemActionTest extends AbstractItemActionTest<AddItemAction> {
-
-    public AddItemActionTest() {
-        super(SwingComponentMessages.ADD_MESSAGE, KeyEvent.VK_INSERT);
+public class MoveDownItemActionTest extends AbstractItemActionTest<MoveDownItemAction> {
+    public MoveDownItemActionTest() {
+        super(SwingComponentMessages.MOVE_DOWN_MESSAGE, KeyEvent.VK_DOWN);
     }
 
     @Override
-    protected AddItemAction createAction(ListActions listActions) {
-        return new AddItemAction(listActions);
+    protected MoveDownItemAction createAction(ListActions listActions) {
+        return new MoveDownItemAction(listActions);
     }
 
     @Override
     protected void callAction(ListActions actions) {
-        actions.addItem();
+        actions.moveDownItem();
     }
 }

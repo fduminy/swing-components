@@ -18,25 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.SwingComponentMessages;
 
 import java.awt.event.KeyEvent;
 
-@SuppressWarnings("serial")
-class RemoveItemAction extends AbstractItemAction {
-    RemoveItemAction(ListActions listener) {
-        super(listener, KeyEvent.VK_DELETE, "remove.png");
+/**
+ * Test for {@link AddItemAction} class.
+ */
+public class AddItemActionTest extends AbstractItemActionTest<AddItemAction> {
+
+    public AddItemActionTest() {
+        super(SwingComponentMessages.ADD_MESSAGE, KeyEvent.VK_INSERT);
     }
 
     @Override
-    protected void doAction(ListActions listener) {
-        listener.removeItem();
+    protected AddItemAction createAction(ListActions listActions) {
+        return new AddItemAction(listActions);
     }
 
     @Override
-    protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.removeItem();
+    protected void callAction(ListActions actions) {
+        actions.addItem();
     }
 }

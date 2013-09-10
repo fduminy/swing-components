@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.*;
-import static fr.duminy.components.swing.list.ButtonsPanel.*;
+import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 

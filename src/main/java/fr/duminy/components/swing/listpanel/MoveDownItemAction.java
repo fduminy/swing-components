@@ -18,28 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
+import fr.duminy.components.swing.SwingComponentMessages;
 
+import java.awt.event.KeyEvent;
 
-interface ListComponent<TC extends JComponent, T> {
-    TC getComponent();
+@SuppressWarnings("serial")
+class MoveDownItemAction extends AbstractItemAction {
+    MoveDownItemAction(ListActions listener) {
+        super(listener, KeyEvent.VK_DOWN, "down.png");
+    }
 
-    void addItem();
+    @Override
+    protected void doAction(ListActions listener) {
+        listener.moveDownItem();
+    }
 
-    void removeItem(int i);
-
-    void moveUpItem(int i);
-
-    void moveDownItem(int i);
-
-    int getSize();
-
-    void addSelectionListener(ListSelectionListener listener);
-
-    int[] getSelectedIndices();
-
-    void setSelectedIndices(int... indices);
+    @Override
+    protected String getShortDescription(SwingComponentMessages bundle) {
+        return bundle.moveDownItem();
+    }
 }

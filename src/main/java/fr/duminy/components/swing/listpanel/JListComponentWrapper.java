@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.list;
+package fr.duminy.components.swing.listpanel;
 
 import com.google.common.base.Supplier;
 
@@ -28,7 +28,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * This class is an implementation of {@link ListComponent} that wraps a {@link JList} component.
  *
- * @param <T> The type of items contained in the list.
+ * @param <T> The type of items contained in the listpanel.
  */
 class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     private final JList<T> list;
@@ -36,8 +36,8 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     private final Supplier<T> itemFactory;
 
     /**
-     * @param list        The list component to wrap.
-     * @param itemFactory This itemFactory is used to add a new item to the list. When it returns null, the user has cancelled the operation.
+     * @param list        The listpanel component to wrap.
+     * @param itemFactory This itemFactory is used to add a new item to the listpanel. When it returns null, the user has cancelled the operation.
      */
     JListComponentWrapper(JList<T> list, Supplier<T> itemFactory) {
         this.list = list;
