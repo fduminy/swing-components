@@ -39,4 +39,9 @@ class AddItemAction extends AbstractItemAction {
     protected String getShortDescription(SwingComponentMessages bundle) {
         return bundle.addItem();
     }
+
+    @Override
+    public void updateState(int[] selectedItems, int listSize) {
+        // always enabled
+    }
 }

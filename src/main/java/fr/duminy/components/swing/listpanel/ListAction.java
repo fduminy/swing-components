@@ -20,36 +20,17 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import fr.duminy.components.swing.SwingComponentMessages;
+import fr.duminy.components.swing.i18n.I18nAction;
 
-import java.awt.event.KeyEvent;
-
-@SuppressWarnings("serial")
-class MoveDownItemAction extends AbstractItemAction {
-    MoveDownItemAction(ListActions listener) {
-        super(listener, KeyEvent.VK_DOWN, "down.png");
-    }
-
-    @Override
-    protected void doAction(ListActions listener) {
-        listener.moveDownItem();
-    }
-
-    @Override
-    protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.moveDownItem();
-    }
-
-    @Override
-    public void updateState(int[] selectedItems, int listSize) {
-        setEnabled(false);
-
-        int lastLine = (listSize - 1);
-        for (int selectedItem : selectedItems) {
-            if (selectedItem < lastLine) {
-                setEnabled(true);
-                break;
-            }
-        }
-    }
+/**
+ * The interface that a {@link ListPanel} action must implement.
+ */
+interface ListAction extends I18nAction {
+    /**
+     * Update the state of this action by taking into account the selected items.
+     *
+     * @param selectedItems The indices of selected items.
+     * @param listSize      The size of the list.
+     */
+    void updateState(int[] selectedItems, int listSize);
 }

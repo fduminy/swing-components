@@ -39,4 +39,16 @@ class MoveUpItemAction extends AbstractItemAction {
     protected String getShortDescription(SwingComponentMessages bundle) {
         return bundle.moveUpItem();
     }
+
+    @Override
+    public void updateState(int[] selectedItems, int listSize) {
+        setEnabled(false);
+
+        for (int selectedItem : selectedItems) {
+            if (selectedItem > 0) {
+                setEnabled(true);
+                break;
+            }
+        }
+    }
 }

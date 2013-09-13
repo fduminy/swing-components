@@ -20,10 +20,11 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import fr.duminy.components.swing.i18n.I18nAction;
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @SuppressWarnings("serial")
 class ButtonsPanel extends JPanel {
@@ -34,55 +35,32 @@ class ButtonsPanel extends JPanel {
     static final String UP_BUTTON_NAME = "upButton";
     static final String DOWN_BUTTON_NAME = "downButton";
 
-    private final JButton addButton;
-    private final JButton removeButton;
-    private final JButton upButton;
-    private final JButton downButton;
+    private final List<ListAction> actions = new ArrayList<>();
 
-    final I18nAction[] actions;
+    private Dimension buttonSize;
 
     ButtonsPanel(ListActions listener) {
         super(new GridLayout(4, 1));
 
-        I18nAction addAction = new AddItemAction(listener);
-        addButton = new JButton(addAction);
-        Dimension d = new Dimension(addButton.getIcon().getIconWidth() + PADDING, addButton.getIcon().getIconHeight() + PADDING);
-        addButton.setPreferredSize(d);
-        addButton.setName(ADD_BUTTON_NAME);
-        add(addButton);
-
-        I18nAction removeAction = new RemoveItemAction(listener);
-        removeButton = new JButton(removeAction);
-        removeButton.setPreferredSize(d);
-        removeButton.setName(REMOVE_BUTTON_NAME);
-        add(removeButton);
-
-        I18nAction moveUpAction = new MoveUpItemAction(listener);
-        upButton = new JButton(moveUpAction);
-        upButton.setPreferredSize(d);
-        upButton.setName(UP_BUTTON_NAME);
-        add(upButton);
-
-        I18nAction moveDownAction = new MoveDownItemAction(listener);
-        downButton = new JButton(moveDownAction);
-        downButton.setPreferredSize(d);
-        downButton.setName(DOWN_BUTTON_NAME);
-        add(downButton);
-
-        actions = new I18nAction[]{addAction, removeAction, moveUpAction, moveDownAction};
+        addButton(ADD_BUTTON_NAME, new AddItemAction(listener));
+        addButton(REMOVE_BUTTON_NAME, new RemoveItemAction(listener));
+        addButton(UP_BUTTON_NAME, new MoveUpItemAction(listener));
+        addButton(DOWN_BUTTON_NAME, new MoveDownItemAction(listener));
     }
 
-    void setEnabled(boolean enabled, String... buttonNames) {
-        for (String buttonName : buttonNames) {
-            if (ADD_BUTTON_NAME.equals(buttonName)) {
-                addButton.setEnabled(enabled);
-            } else if (REMOVE_BUTTON_NAME.equals(buttonName)) {
-                removeButton.setEnabled(enabled);
-            } else if (UP_BUTTON_NAME.equals(buttonName)) {
-                upButton.setEnabled(enabled);
-            } else if (DOWN_BUTTON_NAME.equals(buttonName)) {
-                downButton.setEnabled(enabled);
-            }
+    private void addButton(String buttonName, ListAction action) {
+        actions.add(action);
+        JButton button = new JButton(action);
+        if (buttonSize == null) {
+            buttonSize = new Dimension(button.getIcon().getIconWidth() + PADDING, button.getIcon().getIconHeight() + PADDING);
         }
+
+        button.setPreferredSize(buttonSize);
+        button.setName(buttonName);
+        add(button);
+    }
+
+    public Collection<ListAction> getActions() {
+        return actions;
     }
 }

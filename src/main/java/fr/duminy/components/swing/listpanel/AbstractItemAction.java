@@ -29,7 +29,7 @@ import java.awt.event.ActionEvent;
 /**
  * Abstract class for an action on a {@link ListActions}.
  */
-abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessages> {
+abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessages> implements ListAction {
     private final ListActions listener;
 
     /**

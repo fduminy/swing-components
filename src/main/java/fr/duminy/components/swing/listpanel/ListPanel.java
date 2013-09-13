@@ -22,14 +22,14 @@ package fr.duminy.components.swing.listpanel;
 
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.i18n.I18nAble;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.Arrays;
-
-import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 
 /**
  * This component encapsulates a listpanel component (provided by an implementation of {@link ListComponent})
@@ -46,12 +46,14 @@ import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
  */
 @SuppressWarnings("serial")
 public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions, I18nAble {
+    private static Logger LOG = LoggerFactory.getLogger(ButtonsPanel.class);
+
     private final ListComponent<TC, T> list;
     private final ButtonsPanel buttons;
 
     /**
-     * @param list        The listpanel component to wrap.
-     * @param itemFactory This factory is used to add a new item to the listpanel. When it returns null, the user has cancelled the operation.
+     * @param list        The list component to wrap.
+     * @param itemFactory This factory is used to add a new item to the list. When it returns null, the user has cancelled the operation.
      */
     @SuppressWarnings("unchecked")
     public ListPanel(JList<T> list, Supplier<T> itemFactory) {
@@ -163,32 +165,15 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
     }
 
     private void updateButtons() {
-        buttons.setEnabled(true, ADD_BUTTON_NAME);
-        buttons.setEnabled(false, REMOVE_BUTTON_NAME, UP_BUTTON_NAME, DOWN_BUTTON_NAME);
-
         int[] selectedItems = getSortedSelectedIndices();
-        if (selectedItems.length > 0) {
-            buttons.setEnabled(true, REMOVE_BUTTON_NAME);
-
-            boolean upIsOk = false;
-            boolean downIsOk = false;
-            for (int selectedItem : selectedItems) {
-                if (selectedItem > 0) {
-                    upIsOk = true;
-                }
-                if (selectedItem < (list.getSize() - 1)) {
-                    downIsOk = true;
-                }
-            }
-
-            buttons.setEnabled(upIsOk, UP_BUTTON_NAME);
-            buttons.setEnabled(downIsOk, DOWN_BUTTON_NAME);
+        for (ListAction action : buttons.getActions()) {
+            action.updateState(selectedItems, list.getSize());
         }
     }
 
     @Override
     public void updateMessages() {
-        for (I18nAble action : buttons.actions) {
+        for (I18nAble action : buttons.getActions()) {
             action.updateMessages();
         }
     }
