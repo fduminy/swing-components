@@ -38,7 +38,11 @@ public abstract class AbstractI18nAction<T> extends AbstractAction implements I1
 
     @Override
     public final void updateMessages() {
-        putValue(Action.SHORT_DESCRIPTION, getShortDescription(getBundle(messagesClass)));
+        putValue(Action.SHORT_DESCRIPTION, getShortDescription(getBundle()));
+    }
+
+    protected final T getBundle() {
+        return getBundle(messagesClass);
     }
 
     T getBundle(Class<T> messagesClass) {
