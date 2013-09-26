@@ -35,6 +35,8 @@ import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +49,8 @@ import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.*;
 import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(Theories.class)
 public class ListPanelTest extends AbstractSwingTest {
@@ -276,6 +280,38 @@ public class ListPanelTest extends AbstractSwingTest {
 
         window.list().requireItemCount(expectedList.size());
         assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Theory
+    public void testAddUserButton(PanelFactory factory) throws Exception {
+        int nbItems = 2;
+        final ListPanel<JList<String>, String> component = buildAndShowWindow(factory, nbItems);
+        int selectedIndex = 1;
+        String item = component.getListComponent().getModel().getElementAt(selectedIndex);
+        final AbstractUserItemAction<String, ?> action = mock(AbstractUserItemAction.class);
+        when(action.isEnabled()).thenReturn(true);
+        doCallRealMethod().when(action).setListener(any(ListActions.class));
+        action.setListener(component);
+        final String buttonName = "myButton";
+
+        GuiActionRunner.execute(new GuiQuery<Object>() {
+            @Override
+            protected Object executeInEDT() throws Throwable {
+                component.addUserButton(buttonName, action);
+                window.component().pack();
+                window.component().invalidate();
+                return null;
+            }
+        });
+
+        window.list().selectItem(selectedIndex);
+        window.button(buttonName).requireVisible().requireEnabled().click();
+
+        InOrder inOrder = Mockito.inOrder(action);
+        inOrder.verify(action, times(1)).updateState(eq(new int[]{selectedIndex}), eq(nbItems));
+        inOrder.verify(action, times(1)).executeAction(eq(item));
+        inOrder.verifyNoMoreInteractions();
     }
 
     private void selectItem(int[] selection) {

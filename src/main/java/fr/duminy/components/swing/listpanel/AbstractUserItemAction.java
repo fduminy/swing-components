@@ -21,16 +21,24 @@
 package fr.duminy.components.swing.listpanel;
 
 /**
+ * Abstract implementation of {@link UserListAction}.
+ *
  * @param <T> The class of items in the list.
+ * @param <M> The class of message bundle.
  */
-interface ListActions<T> {
-    void addItem();
+abstract public class AbstractUserItemAction<T, M> extends AbstractItemAction<T, M> implements UserListAction<T> {
+    /**
+     * @param listener       The interface for interactions with the associated listpanel component.
+     * @param acceleratorKey The accelerator key for the action.
+     * @param iconResource   The icon resource for the action.
+     * @param messagesClass  The class of messages for this action.
+     */
+    public AbstractUserItemAction(int acceleratorKey, String iconResource, Class<M> messagesClass) {
+        super(null, acceleratorKey, iconResource, messagesClass);
+    }
 
-    void removeItem();
-
-    void moveUpItem();
-
-    void moveDownItem();
-
-    void executeUserAction(UserListAction<T> action);
+    @Override
+    protected final void doAction(ListActions<T> listener) {
+        listener.executeUserAction(this);
+    }
 }

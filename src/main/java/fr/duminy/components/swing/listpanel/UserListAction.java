@@ -21,16 +21,10 @@
 package fr.duminy.components.swing.listpanel;
 
 /**
+ * The interface that a user action must implement.
+ *
  * @param <T> The class of items in the list.
  */
-interface ListActions<T> {
-    void addItem();
-
-    void removeItem();
-
-    void moveUpItem();
-
-    void moveDownItem();
-
-    void executeUserAction(UserListAction<T> action);
+public interface UserListAction<T> extends ListAction {
+    void executeAction(T item);
 }

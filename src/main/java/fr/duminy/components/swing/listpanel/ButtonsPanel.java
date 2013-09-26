@@ -26,8 +26,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @param <T> The class of items in the list.
+ */
 @SuppressWarnings("serial")
-class ButtonsPanel extends JPanel {
+class ButtonsPanel<T> extends JPanel {
     private static final int PADDING = 2;
 
     static final String ADD_BUTTON_NAME = "addButton";
@@ -39,16 +42,16 @@ class ButtonsPanel extends JPanel {
 
     private Dimension buttonSize;
 
-    ButtonsPanel(ListActions listener) {
-        super(new GridLayout(4, 1));
+    ButtonsPanel(ListActions<T> listener) {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        addButton(ADD_BUTTON_NAME, new AddItemAction(listener));
-        addButton(REMOVE_BUTTON_NAME, new RemoveItemAction(listener));
-        addButton(UP_BUTTON_NAME, new MoveUpItemAction(listener));
-        addButton(DOWN_BUTTON_NAME, new MoveDownItemAction(listener));
+        addButton(ADD_BUTTON_NAME, new AddItemAction<T>(listener));
+        addButton(REMOVE_BUTTON_NAME, new RemoveItemAction<T>(listener));
+        addButton(UP_BUTTON_NAME, new MoveUpItemAction<T>(listener));
+        addButton(DOWN_BUTTON_NAME, new MoveDownItemAction<T>(listener));
     }
 
-    private void addButton(String buttonName, ListAction action) {
+    void addButton(String buttonName, ListAction action) {
         actions.add(action);
         JButton button = new JButton(action);
         if (buttonSize == null) {

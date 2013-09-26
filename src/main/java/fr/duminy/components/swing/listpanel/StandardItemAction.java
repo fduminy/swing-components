@@ -20,17 +20,15 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import fr.duminy.components.swing.SwingComponentMessages;
+
 /**
+ * The abstract class for standard actions on an item.
+ *
  * @param <T> The class of items in the list.
  */
-interface ListActions<T> {
-    void addItem();
-
-    void removeItem();
-
-    void moveUpItem();
-
-    void moveDownItem();
-
-    void executeUserAction(UserListAction<T> action);
+abstract class StandardItemAction<T> extends AbstractItemAction<T, SwingComponentMessages> {
+    protected StandardItemAction(ListActions<T> listener, int acceleratorKey, String iconResource) {
+        super(listener, acceleratorKey, iconResource, SwingComponentMessages.class);
+    }
 }

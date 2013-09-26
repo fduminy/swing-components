@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.AbstractI18nAction;
 
 import javax.swing.*;
@@ -28,22 +27,30 @@ import java.awt.event.ActionEvent;
 
 /**
  * Abstract class for an action on a {@link ListActions}.
+ *
+ * @param <T> The class of items in the list.
+ * @param <M> The class of message bundle.
  */
-abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessages> implements ListAction {
-    private final ListActions listener;
+abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements ListAction {
+    private ListActions<T> listener;
 
     /**
      * @param listener       The interface for interactions with the associated listpanel component.
      * @param acceleratorKey The accelerator key for the action.
      * @param iconResource   The icon resource for the action.
+     * @param messagesClass  The class of messages containing the action label.
      */
-    AbstractItemAction(ListActions listener, int acceleratorKey, String iconResource) {
-        super(SwingComponentMessages.class);
+    AbstractItemAction(ListActions<T> listener, int acceleratorKey, String iconResource, Class<M> messagesClass) {
+        super(messagesClass);
         this.listener = listener;
 
         putValue(ACCELERATOR_KEY, acceleratorKey);
         putValue(LARGE_ICON_KEY, new ImageIcon(getClass().getResource(iconResource)));
         updateMessages();
+    }
+
+    void setListener(ListActions<T> listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -55,5 +62,5 @@ abstract class AbstractItemAction extends AbstractI18nAction<SwingComponentMessa
     /**
      * @param listener The interface for interactions with the associated listpanel component.
      */
-    abstract protected void doAction(ListActions listener);
+    abstract protected void doAction(ListActions<T> listener);
 }

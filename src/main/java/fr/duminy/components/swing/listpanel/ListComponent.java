@@ -23,7 +23,10 @@ package fr.duminy.components.swing.listpanel;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 
-
+/**
+ * @param <TC> The class of list component.
+ * @param <T>  The class of items in the list.
+ */
 interface ListComponent<TC extends JComponent, T> {
     TC getComponent();
 
@@ -42,4 +45,6 @@ interface ListComponent<TC extends JComponent, T> {
     int[] getSelectedIndices();
 
     void setSelectedIndices(int... indices);
+
+    T getItem(int i);
 }

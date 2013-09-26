@@ -29,7 +29,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * This class is an implementation of {@link ListComponent} that wraps a {@link JList} component.
  *
- * @param <T> The type of items contained in the listpanel.
+ * @param <T> The class of items in the list.
  */
 class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     private final JList<T> list;
@@ -107,5 +107,10 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     @Override
     public void setSelectedIndices(int... indices) {
         list.setSelectedIndices(indices);
+    }
+
+    @Override
+    public T getItem(int i) {
+        return model.getElementAt(i);
     }
 }

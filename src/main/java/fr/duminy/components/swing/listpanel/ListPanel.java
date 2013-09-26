@@ -41,15 +41,15 @@ import java.util.Arrays;
  * <li>move an item down</li>
  * </ul>.
  *
- * @param <TC> The type of wrapped listpanel component (example : a JList).
- * @param <T>  The type of item.
+ * @param <TC> The class of list component (example : a JList).
+ * @param <T>  The class of items in the list.
  */
 @SuppressWarnings("serial")
-public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions, I18nAble {
+public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions<T>, I18nAble {
     private static Logger LOG = LoggerFactory.getLogger(ButtonsPanel.class);
 
     private final ListComponent<TC, T> list;
-    private final ButtonsPanel buttons;
+    private final ButtonsPanel<T> buttons;
 
     /**
      * @param list        The list component to wrap.
@@ -69,7 +69,7 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
         this.list = list;
         add(new JScrollPane(list.getComponent(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
-        buttons = new ButtonsPanel(this);
+        buttons = new ButtonsPanel<>(this);
         add(buttons, BorderLayout.EAST);
 
         list.addSelectionListener(new ListSelectionListener() {
@@ -86,6 +86,25 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
 
     public TC getListComponent() {
         return list.getComponent();
+    }
+
+    /**
+     * Add a user action.
+     *
+     * @param buttonName The name of the button (used for tests).
+     * @param action     The action to add.
+     */
+    public void addUserButton(String buttonName, AbstractUserItemAction<T, ?> action) {
+        action.setListener(this);
+        buttons.addButton(buttonName, action);
+    }
+
+    @Override
+    public void executeUserAction(UserListAction<T> action) {
+        for (int selectedIndice : getSortedSelectedIndices()) {
+            T item = list.getItem(selectedIndice);
+            action.executeAction(item);
+        }
     }
 
     @Override
