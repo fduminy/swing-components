@@ -103,10 +103,11 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final PanelFactory JLIST = new PanelFactory() {
         @Override
-        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemFactoryReturnsNull) {
-            return new ListPanel<JList<String>, String>(new JList<String>(createItems(nbItems)), new Supplier<String>() {
-                public String get() {
-                    return itemFactoryReturnsNull ? null : NEW_ITEM;
+        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemManagerReturnsNull) {
+            return new ListPanel<>(new JList<>(createItems(nbItems)), new ItemManager<String>() {
+                @Override
+                public String createItem() {
+                    return itemManagerReturnsNull ? null : NEW_ITEM;
                 }
             });
         }

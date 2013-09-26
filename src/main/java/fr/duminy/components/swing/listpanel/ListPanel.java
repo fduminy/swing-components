@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.i18n.I18nAble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ import java.awt.*;
 import java.util.Arrays;
 
 /**
- * This component encapsulates a listpanel component (provided by an implementation of {@link ListComponent})
+ * This component encapsulates a list component (provided by an implementation of {@link ListComponent})
  * associated with buttons allowing the user to <br/>
  * <ul>
  * <li>add an item</li>
@@ -53,11 +52,11 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
 
     /**
      * @param list        The list component to wrap.
-     * @param itemFactory This factory is used to add a new item to the list. When it returns null, the user has cancelled the operation.
+     * @param itemManager The manager of items to use.
      */
     @SuppressWarnings("unchecked")
-    public ListPanel(JList<T> list, Supplier<T> itemFactory) {
-        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, itemFactory));
+    public ListPanel(JList<T> list, ItemManager<T> itemManager) {
+        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, itemManager));
     }
 
     /**

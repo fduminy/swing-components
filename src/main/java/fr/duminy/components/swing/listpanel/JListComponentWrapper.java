@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.list.MutableListModel;
 
 import javax.swing.*;
@@ -34,16 +33,16 @@ import javax.swing.event.ListSelectionListener;
 class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     private final JList<T> list;
     private final MutableListModel<T> model;
-    private final Supplier<T> itemFactory;
+    private final ItemManager<T> itemManager;
 
     /**
-     * @param list        The listpanel component to wrap.
-     * @param itemFactory This itemFactory is used to add a new item to the listpanel. When it returns null, the user has cancelled the operation.
+     * @param list        The list component to wrap.
+     * @param itemManager This manager of items.
      */
-    JListComponentWrapper(JList<T> list, Supplier<T> itemFactory) {
+    JListComponentWrapper(JList<T> list, ItemManager<T> itemManager) {
         this.list = list;
         model = (MutableListModel<T>) list.getModel();
-        this.itemFactory = itemFactory;
+        this.itemManager = itemManager;
     }
 
     @Override
@@ -53,7 +52,7 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
 
     @Override
     public void addItem() {
-        T item = itemFactory.get();
+        T item = itemManager.createItem();
         // if item is null, then the user has cancelled the operation
         if (item != null) {
             model.add(item);
