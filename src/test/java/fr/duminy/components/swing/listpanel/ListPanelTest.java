@@ -23,6 +23,7 @@ package fr.duminy.components.swing.listpanel;
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.DesktopSwingComponentMessages_fr;
+import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.I18nAble;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.list.MutableListModel;
@@ -180,7 +181,7 @@ public class ListPanelTest extends AbstractSwingTest {
         selectItem(data.selectedIndices);
         window.button(ADD_BUTTON_NAME).click();
 
-        window.button(ADD_BUTTON_NAME).requireEnabled();
+        window.button(ADD_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.ADD_MESSAGE);
         window.list().requireItemCount(expectedList.size());
         assertThat(window.list().contents()).containsOnly(expectedList.toArray());
     }
@@ -198,6 +199,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
+        window.button(REMOVE_BUTTON_NAME).requireToolTip(SwingComponentMessages.REMOVE_MESSAGE);
         if (valid) {
             window.button(REMOVE_BUTTON_NAME).requireEnabled();
             window.button(REMOVE_BUTTON_NAME).click();
@@ -224,6 +226,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
+        window.button(UP_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_UP_MESSAGE);
         if (valid) {
             window.button(UP_BUTTON_NAME).requireEnabled();
             window.button(UP_BUTTON_NAME).click();
@@ -257,6 +260,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
+        window.button(DOWN_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_DOWN_MESSAGE);
         if (valid) {
             window.button(DOWN_BUTTON_NAME).requireEnabled();
             window.button(DOWN_BUTTON_NAME).click();
