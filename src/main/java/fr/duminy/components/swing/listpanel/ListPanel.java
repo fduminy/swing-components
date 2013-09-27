@@ -112,6 +112,14 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
     }
 
     @Override
+    public void updateItem() {
+        int[] selectedItems = getSortedSelectedIndices();
+        if (selectedItems.length > 0) {
+            list.updateItem(selectedItems[0]);
+        }
+    }
+
+    @Override
     public void removeItem() {
         int[] selectedItems = getSortedSelectedIndices();
         for (int i = selectedItems.length - 1; i >= 0; i--) {

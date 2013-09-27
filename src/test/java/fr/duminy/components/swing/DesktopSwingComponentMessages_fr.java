@@ -20,6 +20,8 @@
  */
 package fr.duminy.components.swing;
 
+import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
+
 import java.util.ListResourceBundle;
 import java.util.Locale;
 
@@ -33,12 +35,14 @@ public class DesktopSwingComponentMessages_fr extends ListResourceBundle {
     public static final String REMOVE_KEY = "removeItem";
     public static final String UP_KEY = "moveUpItem";
     public static final String DOWN_KEY = "moveDownItem";
+    public static final String UPDATE_KEY = "updateItem";
 
     private static final Object[][] CONTENTS = new Object[][]{
             {UP_KEY, "Monter article", MOVE_UP_MESSAGE},
             {REMOVE_KEY, "Supprimer article", REMOVE_MESSAGE},
             {DOWN_KEY, "Descendre article", MOVE_DOWN_MESSAGE},
-            {ADD_KEY, "Ajouter un nouvel article", ADD_MESSAGE}
+            {ADD_KEY, "Ajouter un nouvel article", ADD_MESSAGE},
+            {UPDATE_KEY, "Modifier article", UPDATE_MESSAGE}
     };
 
     public Object[][] getContents() {
@@ -46,7 +50,7 @@ public class DesktopSwingComponentMessages_fr extends ListResourceBundle {
     }
 
     public static String getMessage(String key) {
-        int localeIndex = Locale.ENGLISH.equals(Locale.getDefault()) ? 2 : 1;
+        int localeIndex = AbstractItemActionTest.DEFAULT_LOCALE.equals(Locale.getDefault()) ? 2 : 1;
         for (Object[] message : CONTENTS) {
             if (message[0].equals(key)) {
                 return String.valueOf(message[localeIndex]);

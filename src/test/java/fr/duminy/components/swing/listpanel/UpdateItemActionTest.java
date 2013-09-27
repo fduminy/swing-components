@@ -20,19 +20,26 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import fr.duminy.components.swing.SwingComponentMessages;
+
+import java.awt.event.KeyEvent;
+
 /**
- * @param <T> The class of items in the list.
+ * Test for {@link fr.duminy.components.swing.listpanel.UpdateItemAction} class.
  */
-interface ListActions<T> {
-    void addItem();
+public class UpdateItemActionTest extends AbstractItemActionTest<UpdateItemAction> {
 
-    void updateItem();
+    public UpdateItemActionTest() {
+        super(SwingComponentMessages.UPDATE_MESSAGE, KeyEvent.VK_ENTER);
+    }
 
-    void removeItem();
+    @Override
+    protected UpdateItemAction createAction(ListActions listActions) {
+        return new UpdateItemAction(listActions);
+    }
 
-    void moveUpItem();
-
-    void moveDownItem();
-
-    void executeUserAction(UserListAction<T> action);
+    @Override
+    protected void callAction(ListActions actions) {
+        actions.updateItem();
+    }
 }

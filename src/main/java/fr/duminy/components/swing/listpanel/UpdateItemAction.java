@@ -20,19 +20,31 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import fr.duminy.components.swing.SwingComponentMessages;
+
+import java.awt.event.KeyEvent;
+
 /**
  * @param <T> The class of items in the list.
  */
-interface ListActions<T> {
-    void addItem();
+@SuppressWarnings("serial")
+class UpdateItemAction<T> extends StandardItemAction<T> {
+    UpdateItemAction(ListActions<T> listener) {
+        super(listener, KeyEvent.VK_ENTER, "update.png");
+    }
 
-    void updateItem();
+    @Override
+    protected void doAction(ListActions<T> listener) {
+        listener.updateItem();
+    }
 
-    void removeItem();
+    @Override
+    protected String getShortDescription(SwingComponentMessages bundle) {
+        return bundle.updateItem();
+    }
 
-    void moveUpItem();
-
-    void moveDownItem();
-
-    void executeUserAction(UserListAction<T> action);
+    @Override
+    public void updateState(int[] selectedItems, int listSize) {
+        setEnabled(selectedItems.length == 1);
+    }
 }

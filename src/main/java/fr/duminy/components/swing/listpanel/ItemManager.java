@@ -23,11 +23,19 @@ package fr.duminy.components.swing.listpanel;
 /**
  * @param <T> The class of items managed by this manager.
  */
-public interface ItemManager<T> {
+interface ItemManager<T> {
     /**
      * Creates a new item.
      *
      * @return The newly created item or null if the user has cancelled the operation.
      */
     T createItem();
+    
+    /**
+     * Update an existing item.
+     *
+     * @param item The item to update.
+     * @return The updated item or null if the user has cancelled the operation.
+     */
+    T updateItem(T item);
 }

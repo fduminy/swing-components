@@ -60,6 +60,24 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     }
 
     @Override
+    public void updateItem(int i) {
+        if (isValidIndex(i, true, true)) {
+            T oldItem = model.getElementAt(i);        
+            T newItem = itemManager.updateItem(oldItem);
+            
+            // if item is null, then the user has cancelled the operation
+            if (newItem != null) {
+                if (oldItem == newItem) {
+                    throw new IllegalStateException("The element returned by " + itemManager.getClass().getName() + 
+                            ".updateItem(oldItem) must not be the same instance as oldItem");
+                }
+                
+                model.set(i, newItem);
+            }
+        }
+    }
+
+    @Override
     public void removeItem(int i) {
         if (isValidIndex(i, true, true)) {
             model.remove(i);

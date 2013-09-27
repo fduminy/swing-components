@@ -29,6 +29,7 @@ import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.list.MutableListModel;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.DataPoints;
@@ -37,6 +38,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,16 +60,17 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final Locale FRENCH = Locale.FRENCH;
     @DataPoint
-    public static final Locale ENGLISH = Locale.ENGLISH;
+    public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
 
     @DataPoint
-    public static final boolean ADD_ITEM = false;
+    public static final boolean DO_OPERATION = false;
     @DataPoint
-    public static final boolean CANCEL_ADD_ITEM = true;
+    public static final boolean CANCEL_OPERATION = true;
 
     private static final Logger LOG = LoggerFactory.getLogger(ListPanelTest.class);
 
     private static final String NEW_ITEM = "Z";
+    private static final String UPDATED_ITEM = "Z_UPDATED";
 
     private static int[] NB_ITEMS = new int[]{0, 1, 2, 3};
 
@@ -100,22 +104,67 @@ public class ListPanelTest extends AbstractSwingTest {
         DATA = result.toArray(new TestData[result.size()]);
     }
 
+    public static class MyListPanel<TC extends JComponent, T> extends ListPanel<TC, T> {
+        private Exception updateItemException;
+        private int nbCallsToUpdateItem;
+
+        public MyListPanel(JList<T> list, ItemManager<T> itemManager) {
+            super(list, itemManager);
+        }
+
+        @Override
+        public void updateItem() {
+            try {
+                nbCallsToUpdateItem++;
+                super.updateItem();
+            } catch (Exception e) {
+                updateItemException = e;
+            }
+        }
+
+        public int getNbCallsToUpdateItem() {
+            return nbCallsToUpdateItem;
+        }
+
+        public Exception getUpdateItemException() {
+            return updateItemException;
+        }
+    }
+
     @DataPoint
     public static final PanelFactory JLIST = new PanelFactory() {
         @Override
-        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemManagerReturnsNull) {
-            return new ListPanel<>(new JList<>(createItems(nbItems)), new ItemManager<String>() {
-                @Override
-                public String createItem() {
-                    return itemManagerReturnsNull ? null : NEW_ITEM;
-                }
-            });
+        public ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull) {
+            return create(nbItems, itemFactoryReturnsNull, null);
+        }
+
+        @Override
+        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemManagerReturnsNull, ItemManager<String> itemManager) {
+            if (itemManager == null) {
+                itemManager = new ItemManager<String>() {
+                    @Override
+                    public String createItem() {
+                        return itemManagerReturnsNull ? null : NEW_ITEM;
+                    }
+
+                    @Override
+                    public String updateItem(String item) {
+                        return itemManagerReturnsNull ? null : UPDATED_ITEM;
+                    }
+                };
+            }
+            return new MyListPanel<>(new JList<>(createItems(nbItems)), itemManager);
         }
 
         public String toString() {
             return "PanelFactory<JList>";
         }
     };
+
+    @Before
+    public void setUpBeforeTest() {
+        AbstractItemActionTest.setDefaultLocale();
+    }
 
     @Theory
     public final void testExtendsI18nAble(PanelFactory factory) throws Exception {
@@ -172,6 +221,7 @@ public class ListPanelTest extends AbstractSwingTest {
         window.button(REMOVE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(REMOVE_KEY));
         window.button(UP_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(UP_KEY));
         window.button(DOWN_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(DOWN_KEY));
+        window.button(UPDATE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(UPDATE_KEY));
     }
 
     @Theory
@@ -182,11 +232,67 @@ public class ListPanelTest extends AbstractSwingTest {
             expectedList.add(NEW_ITEM);
         }
 
-        buildAndShowWindow(factory, data.nbItems, cancelAddItem);
+        buildAndShowWindow(factory, data.nbItems, cancelAddItem, null);
         selectItem(data.selectedIndices);
         window.button(ADD_BUTTON_NAME).click();
 
         window.button(ADD_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.ADD_MESSAGE);
+        window.list().requireItemCount(expectedList.size());
+        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Theory
+    public void testUpdateItem_wrongItemManager(final PanelFactory factory) throws Exception {
+        ItemManager itemManager = Mockito.mock(ItemManager.class);
+        when(itemManager.updateItem(any(String.class))).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                return invocation.getArguments()[0];
+            }
+        });
+
+        MyListPanel<JList<String>, String> panel = (MyListPanel<JList<String>, String>) buildAndShowWindow(factory, 1, false, (ItemManager<String>) itemManager);
+
+        window.list().selectItems(0);
+
+        window.button(UPDATE_BUTTON_NAME).click();
+
+        assertThat(panel.getNbCallsToUpdateItem()).as("nbCallsToUpdateItem").isEqualTo(1);
+        assertThat(panel.getUpdateItemException()).isExactlyInstanceOf(IllegalStateException.class).hasMessage("The element returned by " + itemManager.getClass().getName() +
+                ".updateItem(oldItem) must not be the same instance as oldItem");
+    }
+
+    @Theory
+    public void testUpdateItem(final PanelFactory factory, TestData data, boolean cancelUpdateItem) throws Exception {
+        LOG.info("testUpdateItem: factory={} data={}", factory, data);
+        List<String> expectedList = createItemList(data.nbItems);
+
+        if (expectedList.isEmpty() || (data.selectedIndices.length > 1) || (data.selectedIndices.length == 0)) {
+            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null);
+            selectItem(data.selectedIndices);
+
+            window.button(UPDATE_BUTTON_NAME).requireDisabled().requireToolTip(SwingComponentMessages.UPDATE_MESSAGE);
+        } else {
+            int itemToUpdate = data.selectedIndices[0];
+            String initialItem = expectedList.get(itemToUpdate);
+            if (!cancelUpdateItem) {
+                expectedList.set(itemToUpdate, UPDATED_ITEM);
+            }
+
+            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null);
+            selectItem(data.selectedIndices);
+            window.button(UPDATE_BUTTON_NAME).click();
+
+            window.button(UPDATE_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.UPDATE_MESSAGE);
+            String item = window.list().contents()[itemToUpdate];
+            if (cancelUpdateItem) {
+                assertThat(item).isSameAs(initialItem);
+            } else {
+                assertThat(item).isNotSameAs(initialItem);
+            }
+        }
+
         window.list().requireItemCount(expectedList.size());
         assertThat(window.list().contents()).containsOnly(expectedList.toArray());
     }
@@ -324,28 +430,37 @@ public class ListPanelTest extends AbstractSwingTest {
     }
 
     private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems) throws Exception {
-        return buildAndShowWindow(factory, nbItems, false);
+        return buildAndShowWindow(factory, nbItems, false, null);
     }
 
-    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull)
+    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager)
             throws Exception {
         return buildAndShowWindow(new Supplier<ListPanel<JList<String>, String>>() {
             @Override
             public ListPanel<JList<String>, String> get() {
-                return factory.create(nbItems, itemFactoryReturnsNull);
+                ListPanel<JList<String>, String> result;
+                if (itemManager != null) {
+                    result = factory.create(nbItems, itemFactoryReturnsNull, itemManager);
+                } else {
+                    result = factory.create(nbItems, itemFactoryReturnsNull);
+                }
+                return result;
             }
         });
     }
 
     static interface PanelFactory {
         ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull);
+
+        ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull, ItemManager<String> manager);
     }
 
     static List<String> createItemList(int nbItems) {
         List<String> items = new ArrayList<>();
 
         for (int i = 0; i < nbItems; i++) {
-            items.add(String.valueOf((char) ('A' + i)));
+            // Attention : some tests depends on the call to String.intern() (comparison of references) 
+            items.add(String.valueOf((char) ('A' + i)).intern());
         }
 
         return items;

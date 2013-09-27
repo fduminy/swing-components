@@ -37,6 +37,7 @@ class ButtonsPanel<T> extends JPanel {
     static final String REMOVE_BUTTON_NAME = "removeButton";
     static final String UP_BUTTON_NAME = "upButton";
     static final String DOWN_BUTTON_NAME = "downButton";
+    static final String UPDATE_BUTTON_NAME = "updateButton";
 
     private final List<ListAction> actions = new ArrayList<>();
 
@@ -45,10 +46,11 @@ class ButtonsPanel<T> extends JPanel {
     ButtonsPanel(ListActions<T> listener) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        addButton(ADD_BUTTON_NAME, new AddItemAction<T>(listener));
-        addButton(REMOVE_BUTTON_NAME, new RemoveItemAction<T>(listener));
-        addButton(UP_BUTTON_NAME, new MoveUpItemAction<T>(listener));
-        addButton(DOWN_BUTTON_NAME, new MoveDownItemAction<T>(listener));
+        addButton(ADD_BUTTON_NAME, new AddItemAction<>(listener));
+        addButton(REMOVE_BUTTON_NAME, new RemoveItemAction<>(listener));
+        addButton(UP_BUTTON_NAME, new MoveUpItemAction<>(listener));
+        addButton(DOWN_BUTTON_NAME, new MoveDownItemAction<>(listener));
+        addButton(UPDATE_BUTTON_NAME, new UpdateItemAction<>(listener));
     }
 
     void addButton(String buttonName, ListAction action) {

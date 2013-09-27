@@ -32,6 +32,7 @@ public interface SwingComponentMessages {
     static final String REMOVE_MESSAGE = "Remove item(s)";
     static final String MOVE_DOWN_MESSAGE = "Move down item(s)";
     static final String ADD_MESSAGE = "Add a new item";
+    static final String UPDATE_MESSAGE = "Update the item";
 
     @Message(value = MOVE_UP_MESSAGE)
     String moveUpItem();
@@ -44,4 +45,7 @@ public interface SwingComponentMessages {
 
     @Message(value = ADD_MESSAGE)
     String addItem();
+
+    @Message(value = UPDATE_MESSAGE)
+    String updateItem();
 }

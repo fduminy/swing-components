@@ -34,6 +34,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
 
 abstract public class AbstractItemActionTest<T extends Action> {
+    public static Locale DEFAULT_LOCALE = Locale.ENGLISH;
+
+    public static void setDefaultLocale() {
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
     private final String shortDescription;
     private final int acceleratorKey;
 
@@ -47,7 +53,7 @@ abstract public class AbstractItemActionTest<T extends Action> {
 
     @Before
     public final void setUp() throws Exception {
-        Locale.setDefault(Locale.ENGLISH);
+        setDefaultLocale();
         listActions = mock(ListActions.class);
         action = createAction(listActions);
     }

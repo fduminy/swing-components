@@ -32,6 +32,8 @@ interface ListComponent<TC extends JComponent, T> {
 
     void addItem();
 
+    void updateItem(int i);
+
     void removeItem(int i);
 
     void moveUpItem(int i);

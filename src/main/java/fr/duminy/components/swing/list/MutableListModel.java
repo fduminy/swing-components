@@ -33,4 +33,6 @@ public interface MutableListModel<E> extends ListModel<E> {
     void add(E item);
 
     void add(int i, E item);
+    
+    E set(int i, E item);
 }

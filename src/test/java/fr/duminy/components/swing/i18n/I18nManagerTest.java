@@ -41,7 +41,7 @@ public class I18nManagerTest {
     @DataPoint
     public static final Locale FRENCH = Locale.FRENCH;
     @DataPoint
-    public static final Locale ENGLISH = Locale.ENGLISH;
+    public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
 
     private I18nManager manager;
 
