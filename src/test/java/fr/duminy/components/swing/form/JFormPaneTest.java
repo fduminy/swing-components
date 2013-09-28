@@ -22,7 +22,6 @@ package fr.duminy.components.swing.form;
 
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.AbstractSwingTest;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.JOptionPaneFixture;
@@ -45,8 +44,8 @@ public class JFormPaneTest extends AbstractSwingTest {
     private static final String NAME = "Steve";
     private static final String NEW_NAME = "Georges";
 
-    private final MutableObject<Bean> bean = new MutableObject<>();
-    private final MutableObject<String> title = new MutableObject<>();
+    private Bean bean;
+    private String title;
 
     @Override
     public void onSetUp() {
@@ -58,10 +57,7 @@ public class JFormPaneTest extends AbstractSwingTest {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         final FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
-                        Bean b = bean.getValue();
-                        String t = title.getValue();
-                        b = JFormPane.showFormDialog(window.component(), builder, b, t);
-                        bean.setValue(b);
+                        bean = JFormPane.showFormDialog(window.component(), builder, bean, title);
                     }
                 });
             }
@@ -88,13 +84,13 @@ public class JFormPaneTest extends AbstractSwingTest {
     public void testShowFormDialog_init_notNullBean() throws Exception {
         testShowFormDialog_init(new Bean("Steve"));
 
-        window.optionPane().textBox("name").requireText(bean.getValue().getName());
+        window.optionPane().textBox("name").requireText(bean.getName());
     }
 
     private void testShowFormDialog_init(Bean b) throws Exception {
         initAndClick(b, "title");
 
-        window.optionPane().requireQuestionMessage().requireTitle(title.getValue());
+        window.optionPane().requireQuestionMessage().requireTitle(title);
     }
 
     @Test
@@ -104,8 +100,8 @@ public class JFormPaneTest extends AbstractSwingTest {
         window.optionPane().okButton().click();
 
         assertThat(bean.getName()).isEqualTo(NAME);
-        assertThat(this.bean.getValue()).isNotNull();
-        assertThat(this.bean.getValue().getName()).isEqualTo(NEW_NAME);
+        assertThat(this.bean).isNotNull();
+        assertThat(this.bean.getName()).isEqualTo(NEW_NAME);
     }
 
     @Test
@@ -114,7 +110,7 @@ public class JFormPaneTest extends AbstractSwingTest {
 
         window.optionPane().cancelButton().click();
 
-        assertThat(this.bean.getValue()).isNull();
+        assertThat(this.bean).isNull();
         assertThat(bean.getName()).isEqualTo(NAME);
     }
 
@@ -123,7 +119,7 @@ public class JFormPaneTest extends AbstractSwingTest {
         initAndClick(bean, "title");
 
         JOptionPaneFixture f = window.optionPane();
-        f.requireQuestionMessage().requireTitle(title.getValue());
+        f.requireQuestionMessage().requireTitle(title);
         f.textBox("name").requireText(NAME);
         f.textBox("name").setText(NEW_NAME);
 
@@ -131,8 +127,8 @@ public class JFormPaneTest extends AbstractSwingTest {
     }
 
     private void initAndClick(Bean b, String title) {
-        this.bean.setValue(b);
-        this.title.setValue(title);
+        this.bean = b;
+        this.title = title;
 
         window.button("button").click();
     }
