@@ -21,8 +21,6 @@
 package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.i18n.I18nAble;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -45,8 +43,6 @@ import java.util.Arrays;
  */
 @SuppressWarnings("serial")
 public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions<T>, I18nAble {
-    private static Logger LOG = LoggerFactory.getLogger(ButtonsPanel.class);
-
     private final ListComponent<TC, T> list;
     private final ButtonsPanel<T> buttons;
 

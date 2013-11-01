@@ -20,6 +20,7 @@
  */
 package fr.duminy.components.swing;
 
+import fr.duminy.components.swing.form.JFormPane;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 
 import java.util.ListResourceBundle;
@@ -31,25 +32,49 @@ import static fr.duminy.components.swing.SwingComponentMessages.*;
  * French bundle for {link SwingComponentMessages}.
  */
 public class DesktopSwingComponentMessages_fr extends ListResourceBundle {
-    public static final String ADD_KEY = "addItem";
-    public static final String REMOVE_KEY = "removeItem";
-    public static final String UP_KEY = "moveUpItem";
-    public static final String DOWN_KEY = "moveDownItem";
-    public static final String UPDATE_KEY = "updateItem";
+    public static final String ADD_KEY = "addItemTooltip";
+    public static final String REMOVE_KEY = "removeItemTooltip";
+    public static final String UP_KEY = "moveUpItemTooltip";
+    public static final String DOWN_KEY = "moveDownItemTooltip";
+    public static final String UPDATE_KEY = "updateItemTooltip";
+
+    public static final String CREATE_TEXT_KEY = "createText";
+    public static final String CREATE_TOOLTIP_KEY = "createTooltip";
+    public static final String UPDATE_TEXT_KEY = "updateText";
+    public static final String UPDATE_TOOLTIP_KEY = "updateTooltip";
+    public static final String CANCEL_TEXT_KEY = "cancelText";
 
     private static final Object[][] CONTENTS = new Object[][]{
-            {UP_KEY, "Monter article", MOVE_UP_MESSAGE},
-            {REMOVE_KEY, "Supprimer article", REMOVE_MESSAGE},
-            {DOWN_KEY, "Descendre article", MOVE_DOWN_MESSAGE},
-            {ADD_KEY, "Ajouter un nouvel article", ADD_MESSAGE},
-            {UPDATE_KEY, "Modifier article", UPDATE_MESSAGE}
+            {UP_KEY, "Monter article", MOVE_UP_ITEM_TOOLTIP},
+            {REMOVE_KEY, "Supprimer article", REMOVE_ITEM_TOOLTIP},
+            {DOWN_KEY, "Descendre article", MOVE_DOWN_ITEM_TOOLTIP},
+            {ADD_KEY, "Ajouter un nouvel article", ADD_ITEM_TOOLTIP},
+            {UPDATE_KEY, "Modifier article", UPDATE_ITEM_TOOLTIP},
+
+            {CREATE_TEXT_KEY, "Créer", CREATE_TEXT},
+            {CREATE_TOOLTIP_KEY, "Créer", CREATE_TEXT},
+            {UPDATE_TEXT_KEY, "Mettre à jour", UPDATE_TEXT},
+            {UPDATE_TOOLTIP_KEY, "Mettre à jour", UPDATE_TEXT},
+            {CANCEL_TEXT_KEY, "Annuler", CANCEL_TEXT}
     };
 
+    @Override
     public Object[][] getContents() {
         return CONTENTS;
     }
 
-    public static String getMessage(String key) {
+    public static String getExpectedMessage(JFormPane.Mode mode) {
+        switch (mode) {
+            case CREATE:
+                return getExpectedMessage(CREATE_TEXT_KEY);
+            case UPDATE:
+                return getExpectedMessage(UPDATE_TEXT_KEY);
+            default:
+                throw new IllegalArgumentException("unknown mode: " + mode);
+        }
+    }
+
+    public static String getExpectedMessage(String key) {
         int localeIndex = AbstractItemActionTest.DEFAULT_LOCALE.equals(Locale.getDefault()) ? 2 : 1;
         for (Object[] message : CONTENTS) {
             if (message[0].equals(key)) {

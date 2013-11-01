@@ -29,7 +29,7 @@ import java.awt.event.KeyEvent;
  */
 public class MoveDownItemActionTest extends AbstractItemActionTest<MoveDownItemAction> {
     public MoveDownItemActionTest() {
-        super(SwingComponentMessages.MOVE_DOWN_MESSAGE, KeyEvent.VK_DOWN);
+        super(SwingComponentMessages.MOVE_DOWN_ITEM_TOOLTIP, KeyEvent.VK_DOWN);
     }
 
     @Override

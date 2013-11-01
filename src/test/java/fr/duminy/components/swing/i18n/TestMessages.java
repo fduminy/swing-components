@@ -23,19 +23,26 @@ package fr.duminy.components.swing.i18n;
 import java.util.ListResourceBundle;
 
 abstract public class TestMessages extends ListResourceBundle {
-    private final String message;
+    private final String text;
+    private final String tooltip;
 
-    protected TestMessages(String message) {
-        this.message = message;
+    protected TestMessages(String text, String tooltip) {
+        this.text = text;
+        this.tooltip = tooltip;
     }
 
     public Object[][] getContents() {
         return new Object[][]{
-                {"hereIsAMessage", message},
+                {"text", text},
+                {"tooltip", tooltip},
         };
     }
 
-    public String hereIsAMessage() {
-        return message;
+    public String text() {
+        return text;
+    }
+
+    public String tooltip() {
+        return tooltip;
     }
 }

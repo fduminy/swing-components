@@ -30,7 +30,7 @@ import java.awt.event.KeyEvent;
 public class UpdateItemActionTest extends AbstractItemActionTest<UpdateItemAction> {
 
     public UpdateItemActionTest() {
-        super(SwingComponentMessages.UPDATE_MESSAGE, KeyEvent.VK_ENTER);
+        super(SwingComponentMessages.UPDATE_ITEM_TOOLTIP, KeyEvent.VK_ENTER);
     }
 
     @Override

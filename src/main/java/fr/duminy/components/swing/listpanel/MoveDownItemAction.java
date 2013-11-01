@@ -40,7 +40,7 @@ class MoveDownItemAction<T> extends StandardItemAction<T> {
 
     @Override
     protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.moveDownItem();
+        return bundle.moveDownItemTooltip();
     }
 
     @Override

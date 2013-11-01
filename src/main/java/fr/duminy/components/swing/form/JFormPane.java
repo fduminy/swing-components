@@ -20,6 +20,9 @@
  */
 package fr.duminy.components.swing.form;
 
+import fr.duminy.components.swing.SwingComponentMessages;
+import org.ez18n.runtime.BundleFactory;
+import org.ez18n.runtime.Desktop;
 import org.formbuilder.Form;
 import org.formbuilder.FormBuilder;
 
@@ -27,18 +30,28 @@ import javax.swing.*;
 import java.awt.*;
 
 import static fr.duminy.components.swing.form.TypeMappers.addTypeMappers;
+import static javax.swing.JOptionPane.OK_CANCEL_OPTION;
 import static javax.swing.JOptionPane.QUESTION_MESSAGE;
-import static javax.swing.JOptionPane.showInputDialog;
 
 /**
  * A simple wrapper class displaying a dialog with a form.
  */
 public class JFormPane<B> extends JPanel {
-    public static <B> B showFormDialog(Component parentComponent, FormBuilder<B> formBuilder, B bean, String title) {
+    public static <B> B showFormDialog(Component parentComponent, FormBuilder<B> formBuilder, B bean, String title, Mode mode) {
         addTypeMappers(formBuilder);
-        JFormPane<B> pane = new JFormPane<B>(formBuilder, bean);
-        boolean cancelled = (showInputDialog(parentComponent, pane, title, QUESTION_MESSAGE) == null);
-        return cancelled ? null : pane.getValue();
+
+        JFormPane<B> formPane = new JFormPane<B>(formBuilder, bean);
+
+        Object[] options = {mode.getText(), getBundle().cancelText()};
+        int result = JOptionPane.showOptionDialog(parentComponent,
+                formPane,
+                title,
+                OK_CANCEL_OPTION,
+                QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+        return (result == JOptionPane.OK_OPTION) ? formPane.getValue() : null;
     }
 
     private final Form<B> form;
@@ -52,5 +65,36 @@ public class JFormPane<B> extends JPanel {
 
     public final B getValue() {
         return form.getValue();
+    }
+
+    public static SwingComponentMessages getBundle() {
+        return BundleFactory.get(SwingComponentMessages.class, Desktop.class);
+    }
+
+    public static enum Mode {
+        CREATE {
+            @Override
+            public String getText() {
+                return getBundle().createText();
+            }
+
+            public String getTooltip() {
+                return getBundle().addItemTooltip();
+            }
+        },
+        UPDATE {
+            @Override
+            public String getText() {
+                return getBundle().updateText();
+            }
+
+            public String getTooltip() {
+                return getBundle().updateTooltip();
+            }
+        };
+
+        abstract public String getText();
+
+        abstract public String getTooltip();
     }
 }

@@ -43,11 +43,7 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
 
     @Override
     protected void onSetUp() {
-        frame = GuiActionRunner.execute(new GuiQuery<JFrame>() {
-            protected JFrame executeInEDT() {
-                return new JFrame();
-            }
-        });
+        createFrame();
         window = new FrameFixture(robot(), frame);
         window.show();
 
@@ -75,5 +71,14 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
                 return object;
             }
         });
+    }
+
+    protected JFrame createFrame() {
+        frame = GuiActionRunner.execute(new GuiQuery<JFrame>() {
+            protected JFrame executeInEDT() {
+                return new JFrame();
+            }
+        });
+        return frame;
     }
 }

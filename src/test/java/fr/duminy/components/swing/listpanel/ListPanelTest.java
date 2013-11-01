@@ -21,6 +21,8 @@
 package fr.duminy.components.swing.listpanel;
 
 import com.google.common.base.Supplier;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.DesktopSwingComponentMessages_fr;
 import fr.duminy.components.swing.SwingComponentMessages;
@@ -47,6 +49,10 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.*;
 import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
@@ -105,8 +111,8 @@ public class ListPanelTest extends AbstractSwingTest {
     }
 
     public static class MyListPanel<TC extends JComponent, T> extends ListPanel<TC, T> {
-        private Exception updateItemException;
-        private int nbCallsToUpdateItem;
+        private Throwable updateItemThrown;
+        private CountDownLatch countDownLatch = new CountDownLatch(1);
 
         public MyListPanel(JList<T> list, ItemManager<T> itemManager) {
             super(list, itemManager);
@@ -114,20 +120,49 @@ public class ListPanelTest extends AbstractSwingTest {
 
         @Override
         public void updateItem() {
+            Handler h = new Handler() {
+                @Override
+                public void publish(LogRecord record) {
+                    if (Level.SEVERE.equals(record.getLevel())) {
+                        if (record.getThrown() != null) {
+                            updateItemThrown = record.getThrown();
+                        }
+                    }
+                }
+
+                @Override
+                public void flush() {
+                }
+
+                @Override
+                public void close() throws SecurityException {
+                }
+            };
+
+            // creates the logger if it doesn't (yet) exist
+            java.util.logging.Logger l = java.util.logging.Logger.getLogger("com.google.common.util.concurrent.Futures$ImmediateFuture");
+
+            Level oldLevel = l.getLevel();
+            l.setLevel(Level.ALL);
+            l.addHandler(h);
+
             try {
-                nbCallsToUpdateItem++;
                 super.updateItem();
             } catch (Exception e) {
-                updateItemException = e;
+                updateItemThrown = e;
+            } finally {
+                countDownLatch.countDown();
+                l.removeHandler(h);
+                l.setLevel(oldLevel);
             }
         }
 
-        public int getNbCallsToUpdateItem() {
-            return nbCallsToUpdateItem;
+        public void waitCallToUpdateItem() throws InterruptedException {
+            countDownLatch.await();
         }
 
-        public Exception getUpdateItemException() {
-            return updateItemException;
+        public Throwable getUpdateItemThrown() {
+            return updateItemThrown;
         }
     }
 
@@ -143,13 +178,23 @@ public class ListPanelTest extends AbstractSwingTest {
             if (itemManager == null) {
                 itemManager = new ItemManager<String>() {
                     @Override
-                    public String createItem() {
-                        return itemManagerReturnsNull ? null : NEW_ITEM;
+                    public ListenableFuture<String> createItem() {
+                        return createFuture(NEW_ITEM);
                     }
 
                     @Override
-                    public String updateItem(String item) {
-                        return itemManagerReturnsNull ? null : UPDATED_ITEM;
+                    public ListenableFuture<String> updateItem(String item) {
+                        return createFuture(UPDATED_ITEM);
+                    }
+
+                    private ListenableFuture<String> createFuture(String resultIfNotCancelled) {
+                        ListenableFuture<String> result;
+                        if (itemManagerReturnsNull) {
+                            result = Futures.immediateCancelledFuture();
+                        } else {
+                            result = Futures.immediateFuture(resultIfNotCancelled);
+                        }
+                        return result;
                     }
                 };
             }
@@ -213,15 +258,22 @@ public class ListPanelTest extends AbstractSwingTest {
 
     @Theory
     public final void testI18nMessages(PanelFactory factory, Locale locale) throws Exception {
-        ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
+        final ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
         Locale.setDefault(locale);
-        component.updateMessages();
 
-        window.button(ADD_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(ADD_KEY));
-        window.button(REMOVE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(REMOVE_KEY));
-        window.button(UP_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(UP_KEY));
-        window.button(DOWN_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(DOWN_KEY));
-        window.button(UPDATE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getMessage(UPDATE_KEY));
+        GuiActionRunner.execute(new GuiQuery<Object>() {
+            @Override
+            protected Object executeInEDT() throws Throwable {
+                component.updateMessages();
+                return null;
+            }
+        });
+
+        window.button(ADD_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getExpectedMessage(ADD_KEY));
+        window.button(REMOVE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getExpectedMessage(REMOVE_KEY));
+        window.button(UP_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getExpectedMessage(UP_KEY));
+        window.button(DOWN_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getExpectedMessage(DOWN_KEY));
+        window.button(UPDATE_BUTTON_NAME).requireToolTip(DesktopSwingComponentMessages_fr.getExpectedMessage(UPDATE_KEY));
     }
 
     @Theory
@@ -235,8 +287,9 @@ public class ListPanelTest extends AbstractSwingTest {
         buildAndShowWindow(factory, data.nbItems, cancelAddItem, null);
         selectItem(data.selectedIndices);
         window.button(ADD_BUTTON_NAME).click();
+        robot().waitForIdle();
 
-        window.button(ADD_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.ADD_MESSAGE);
+        window.button(ADD_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.ADD_ITEM_TOOLTIP);
         window.list().requireItemCount(expectedList.size());
         assertThat(window.list().contents()).containsOnly(expectedList.toArray());
     }
@@ -248,7 +301,7 @@ public class ListPanelTest extends AbstractSwingTest {
         when(itemManager.updateItem(any(String.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                return invocation.getArguments()[0];
+                return Futures.immediateFuture(invocation.getArguments()[0]);
             }
         });
 
@@ -258,8 +311,8 @@ public class ListPanelTest extends AbstractSwingTest {
 
         window.button(UPDATE_BUTTON_NAME).click();
 
-        assertThat(panel.getNbCallsToUpdateItem()).as("nbCallsToUpdateItem").isEqualTo(1);
-        assertThat(panel.getUpdateItemException()).isExactlyInstanceOf(IllegalStateException.class).hasMessage("The element returned by " + itemManager.getClass().getName() +
+        panel.waitCallToUpdateItem();
+        assertThat(panel.getUpdateItemThrown()).isExactlyInstanceOf(IllegalStateException.class).hasMessage("The element returned by " + itemManager.getClass().getName() +
                 ".updateItem(oldItem) must not be the same instance as oldItem");
     }
 
@@ -272,7 +325,7 @@ public class ListPanelTest extends AbstractSwingTest {
             buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null);
             selectItem(data.selectedIndices);
 
-            window.button(UPDATE_BUTTON_NAME).requireDisabled().requireToolTip(SwingComponentMessages.UPDATE_MESSAGE);
+            window.button(UPDATE_BUTTON_NAME).requireDisabled().requireToolTip(SwingComponentMessages.UPDATE_ITEM_TOOLTIP);
         } else {
             int itemToUpdate = data.selectedIndices[0];
             String initialItem = expectedList.get(itemToUpdate);
@@ -284,7 +337,7 @@ public class ListPanelTest extends AbstractSwingTest {
             selectItem(data.selectedIndices);
             window.button(UPDATE_BUTTON_NAME).click();
 
-            window.button(UPDATE_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.UPDATE_MESSAGE);
+            window.button(UPDATE_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.UPDATE_ITEM_TOOLTIP);
             String item = window.list().contents()[itemToUpdate];
             if (cancelUpdateItem) {
                 assertThat(item).isSameAs(initialItem);
@@ -310,7 +363,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
-        window.button(REMOVE_BUTTON_NAME).requireToolTip(SwingComponentMessages.REMOVE_MESSAGE);
+        window.button(REMOVE_BUTTON_NAME).requireToolTip(SwingComponentMessages.REMOVE_ITEM_TOOLTIP);
         if (valid) {
             window.button(REMOVE_BUTTON_NAME).requireEnabled();
             window.button(REMOVE_BUTTON_NAME).click();
@@ -337,7 +390,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
-        window.button(UP_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_UP_MESSAGE);
+        window.button(UP_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_UP_ITEM_TOOLTIP);
         if (valid) {
             window.button(UP_BUTTON_NAME).requireEnabled();
             window.button(UP_BUTTON_NAME).click();
@@ -371,7 +424,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         buildAndShowWindow(factory, data.nbItems);
         selectItem(data.selectedIndices);
-        window.button(DOWN_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_DOWN_MESSAGE);
+        window.button(DOWN_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_DOWN_ITEM_TOOLTIP);
         if (valid) {
             window.button(DOWN_BUTTON_NAME).requireEnabled();
             window.button(DOWN_BUTTON_NAME).click();

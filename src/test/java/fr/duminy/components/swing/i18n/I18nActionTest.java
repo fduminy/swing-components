@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -43,20 +44,21 @@ public class I18nActionTest {
 
     @Test
     public void testUpdateMessages_fr() {
-        testUpdateMessages(Locale.FRENCH, TestMessages_fr.MESSAGE);
+        testUpdateMessages(Locale.FRENCH, TestMessages_fr.TEXT, TestMessages_fr.TOOLTIP);
     }
 
     @Test
     public void testUpdateMessages_en() {
-        testUpdateMessages(Locale.ENGLISH, TestMessages_en.MESSAGE);
+        testUpdateMessages(Locale.ENGLISH, TestMessages_en.MESSAGE, TestMessages_en.TOOLTIP);
     }
 
-    private void testUpdateMessages(Locale locale, String expectedMessage) {
+    private void testUpdateMessages(Locale locale, String expectedText, String expectedTooltip) {
         Locale.setDefault(locale);
 
         action.updateMessages();
 
-        assertThat(action.getValue(SHORT_DESCRIPTION)).isEqualTo(expectedMessage);
+        assertThat(action.getValue(SHORT_DESCRIPTION)).isEqualTo(expectedTooltip);
+        assertThat(action.getValue(NAME)).isEqualTo(expectedText);
     }
 
     private static class NoAction extends AbstractI18nAction<TestMessages> {
@@ -70,7 +72,12 @@ public class I18nActionTest {
 
         @Override
         protected String getShortDescription(TestMessages bundle) {
-            return bundle.hereIsAMessage();
+            return bundle.tooltip();
+        }
+
+        @Override
+        protected String getName(TestMessages bundle) {
+            return bundle.text();
         }
 
         @Override

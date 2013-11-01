@@ -20,10 +20,16 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import fr.duminy.components.swing.list.MutableListModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
+import java.util.concurrent.CancellationException;
 
 /**
  * This class is an implementation of {@link ListComponent} that wraps a {@link JList} component.
@@ -31,6 +37,8 @@ import javax.swing.event.ListSelectionListener;
  * @param <T> The class of items in the list.
  */
 class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
+    private static Logger LOG = LoggerFactory.getLogger(JListComponentWrapper.class);
+
     private final JList<T> list;
     private final MutableListModel<T> model;
     private final ItemManager<T> itemManager;
@@ -52,28 +60,54 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
 
     @Override
     public void addItem() {
-        T item = itemManager.createItem();
-        // if item is null, then the user has cancelled the operation
-        if (item != null) {
-            model.add(item);
-        }
+        ListenableFuture<T> futureItem = itemManager.createItem();
+
+        Futures.addCallback(futureItem, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(T result) {
+                model.add(result);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                if (t instanceof CancellationException) {
+                    LOG.info("the user has cancelled the addition of an item");
+                } else {
+                    //TODO give a user feedback
+                    LOG.error("Can't add an item", t);
+                }
+            }
+        });
     }
 
     @Override
-    public void updateItem(int i) {
+    public void updateItem(final int i) {
         if (isValidIndex(i, true, true)) {
-            T oldItem = model.getElementAt(i);        
-            T newItem = itemManager.updateItem(oldItem);
-            
-            // if item is null, then the user has cancelled the operation
-            if (newItem != null) {
-                if (oldItem == newItem) {
-                    throw new IllegalStateException("The element returned by " + itemManager.getClass().getName() + 
-                            ".updateItem(oldItem) must not be the same instance as oldItem");
+            final T oldItem = model.getElementAt(i);
+            final ListenableFuture<T> futureNewItem = itemManager.updateItem(oldItem);
+
+            Futures.addCallback(futureNewItem, new FutureCallback<T>() {
+                @Override
+                public void onSuccess(T newItem) {
+                    if (oldItem == newItem) {
+                        //TODO also give a user feedback
+                        throw new IllegalStateException("The element returned by " + itemManager.getClass().getName() +
+                                ".updateItem(oldItem) must not be the same instance as oldItem");
+                    }
+
+                    model.set(i, newItem);
                 }
-                
-                model.set(i, newItem);
-            }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    if (t instanceof CancellationException) {
+                        LOG.info("the user has cancelled the update of an item");
+                    } else {
+                        //TODO give a user feedback
+                        LOG.error("Can't update the item {} : {}", oldItem, t);
+                    }
+                }
+            });
         }
     }
 

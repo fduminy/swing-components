@@ -24,9 +24,10 @@ package fr.duminy.components.swing.i18n;
  * French bundle for {@link fr.duminy.components.swing.i18n.TestMessages}.
  */
 public class TestMessages_fr extends TestMessages {
-    static final String MESSAGE = "Voici un message";
+    static final String TEXT = "Voici un texte";
+    static final String TOOLTIP = "Voici une bulle d''aide";
 
     public TestMessages_fr() {
-        super(MESSAGE);
+        super(TEXT, TOOLTIP);
     }
 }

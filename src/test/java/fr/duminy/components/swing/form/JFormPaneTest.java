@@ -22,46 +22,124 @@ package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.AbstractFormTest;
 import org.formbuilder.FormBuilder;
-import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Locale;
 
+import static fr.duminy.components.swing.form.JFormPane.Mode;
+import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
+import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static org.formbuilder.FormBuilder.map;
 import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
 
 /**
  * Tests for class {@link JFormPane}.
  */
+@RunWith(Theories.class)
 public class JFormPaneTest extends AbstractFormTest {
+    private Action buttonAction;
+
     @Override
     protected void initContentPane() {
         addButton(OpenInDialog.INSTANCE, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
-                bean = JFormPane.showFormDialog(window.component(), builder, bean, title);
+                buttonAction.actionPerformed(e);
             }
         });
     }
 
-    @Test
-    public final void testShowFormDialog_init_nullBean() throws Exception {
-        showFormAndCheck_init_nullBean(OpenInDialog.INSTANCE);
+    @Theory
+    public final void testUpdateItem_init_nullBean(final Locale locale) throws Exception {
+        runInitNullBeanFormTest(locale, UPDATE);
     }
 
-    @Test
-    public final void testShowFormDialog_init_notNullBean() throws Exception {
-        showFormAndCheck_init_notNullBean(OpenInDialog.INSTANCE);
+    @Theory
+    public final void testUpdateItem_init_notNullBean(final Locale locale) throws Exception {
+        runInitNotNullBeanFormTest(locale, UPDATE);
     }
 
-    @Test
-    public final void testShowFormDialog_okButton() throws Exception {
-        showFormAndCheck_okButton(OpenInDialog.INSTANCE);
+    @Theory
+    public final void testUpdateItem_okButton(final Locale locale) throws Exception {
+        runOkButtonFormTest(locale, UPDATE);
     }
 
-    @Test
-    public final void testShowFormDialog_cancelButton() throws Exception {
-        showFormAndCheck_cancelButton(OpenInDialog.INSTANCE);
+    @Theory
+    public final void testUpdateItem_cancelButton(final Locale locale) throws Exception {
+        runCancelButtonFormTest(locale, UPDATE);
+    }
+
+    @Theory
+    public final void testCreateItem_init_nullBean(final Locale locale) throws Exception {
+        runInitNullBeanFormTest(locale, CREATE);
+    }
+
+    @Theory
+    public final void testCreateItem_init_notNullBean(final Locale locale) throws Exception {
+        runInitNotNullBeanFormTest(locale, CREATE);
+    }
+
+    @Theory
+    public final void testCreateItem_okButton(final Locale locale) throws Exception {
+        runOkButtonFormTest(locale, CREATE);
+    }
+
+    @Theory
+    public final void testCreateItem_cancelButton(final Locale locale) throws Exception {
+        runCancelButtonFormTest(locale, CREATE);
+    }
+
+    private void runInitNullBeanFormTest(Locale locale, final Mode mode) {
+        new InitNullBeanFormTest() {
+            @Override
+            protected void init() {
+                prepare(mode);
+                super.init();
+            }
+        }.run(OpenInDialog.INSTANCE, locale);
+    }
+
+    private void runInitNotNullBeanFormTest(Locale locale, final Mode mode) {
+        new InitNotNullBeanFormTest() {
+            @Override
+            protected void init() {
+                prepare(mode);
+                super.init();
+            }
+        }.run(OpenInDialog.INSTANCE, locale);
+    }
+
+    private void runOkButtonFormTest(Locale locale, final Mode mode) {
+        new OkButtonFormTest(mode) {
+            @Override
+            protected void init() {
+                prepare(mode);
+                super.init();
+            }
+        }.run(OpenInDialog.INSTANCE, locale);
+    }
+
+    private void runCancelButtonFormTest(Locale locale, final Mode mode) {
+        new CancelButtonFormTest(mode) {
+            @Override
+            protected void init() {
+                prepare(mode);
+                super.init();
+            }
+        }.run(OpenInDialog.INSTANCE, locale);
+    }
+
+    private void prepare(final Mode mode) {
+        buttonAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
+                setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode));
+            }
+        };
     }
 }

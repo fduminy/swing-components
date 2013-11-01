@@ -40,7 +40,7 @@ class UpdateItemAction<T> extends StandardItemAction<T> {
 
     @Override
     protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.updateItem();
+        return bundle.updateItemTooltip();
     }
 
     @Override

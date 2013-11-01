@@ -40,7 +40,7 @@ class RemoveItemAction<T> extends StandardItemAction<T> {
 
     @Override
     protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.removeItem();
+        return bundle.removeItemTooltip();
     }
 
     @Override

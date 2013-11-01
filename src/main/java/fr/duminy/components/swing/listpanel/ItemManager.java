@@ -20,22 +20,24 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 /**
  * @param <T> The class of items managed by this manager.
  */
-interface ItemManager<T> {
+public interface ItemManager<T> {
     /**
      * Creates a new item.
      *
-     * @return The newly created item or null if the user has cancelled the operation.
+     * @return The newly created item.
      */
-    T createItem();
-    
+    ListenableFuture<T> createItem();
+
     /**
      * Update an existing item.
      *
      * @param item The item to update.
-     * @return The updated item or null if the user has cancelled the operation.
+     * @return The updated item.
      */
-    T updateItem(T item);
+    ListenableFuture<T> updateItem(T item);
 }

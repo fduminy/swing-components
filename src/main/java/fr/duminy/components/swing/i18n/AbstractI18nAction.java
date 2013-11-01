@@ -28,6 +28,8 @@ import javax.swing.*;
 
 /**
  * Abstract implementation of {@link I18nAction}.
+ *
+ * @param <T> The interface type that provides I18n messages.
  */
 public abstract class AbstractI18nAction<T> extends AbstractAction implements I18nAction {
     private final Class<T> messagesClass;
@@ -38,6 +40,7 @@ public abstract class AbstractI18nAction<T> extends AbstractAction implements I1
 
     @Override
     public final void updateMessages() {
+        putValue(Action.NAME, getName(getBundle()));
         putValue(Action.SHORT_DESCRIPTION, getShortDescription(getBundle()));
     }
 
@@ -50,4 +53,8 @@ public abstract class AbstractI18nAction<T> extends AbstractAction implements I1
     }
 
     abstract protected String getShortDescription(T bundle);
+
+    protected String getName(T bundle) {
+        return null;
+    }
 }

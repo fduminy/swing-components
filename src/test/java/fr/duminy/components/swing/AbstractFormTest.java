@@ -21,39 +21,73 @@
 package fr.duminy.components.swing;
 
 import com.google.common.base.Suppliers;
+import fr.duminy.components.swing.form.JFormPane;
+import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
+import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.ContainerFixture;
 import org.fest.swing.fixture.FrameFixture;
+import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JOptionPaneFixture;
+import org.junit.experimental.theories.DataPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Locale;
 
+import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.CANCEL_TEXT_KEY;
+import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExpectedMessage;
+import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * And abstract test for class related to a form.
  */
 public abstract class AbstractFormTest extends AbstractSwingTest {
+    @DataPoint
+    public static final Locale FRENCH = Locale.FRENCH;
+    @DataPoint
+    public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractFormTest.class);
+
+    private static final String TITLE = "title";
     private static final String NAME = "Steve";
     private static final String NEW_NAME = "Georges";
 
+    public static final Bean ERROR_BEAN = new Bean("ErrorBean");
+
     private JPanel panel;
-    protected Bean bean;
+    private JPanel buttonsPanel;
+    private Bean bean;
     protected String title;
 
     @Override
     public final void onSetUp() {
         super.onSetUp();
 
-        bean = null;
+        setUpForm();
+    }
+
+    protected void setUpForm() {
+        setBean(null);
         title = null;
-        panel = GuiActionRunner.execute(new GuiQuery<JPanel>() {
+        buttonsPanel = GuiActionRunner.execute(new GuiQuery<JPanel>() {
             protected JPanel executeInEDT() {
                 return new JPanel(new FlowLayout());
+            }
+        });
+        panel = GuiActionRunner.execute(new GuiQuery<JPanel>() {
+            protected JPanel executeInEDT() {
+                JPanel result = new JPanel(new BorderLayout());
+                result.add(buttonsPanel, BorderLayout.NORTH);
+                result.setPreferredSize(new Dimension(300, 200));
+                return result;
             }
         });
         initContentPane();
@@ -67,101 +101,248 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
     abstract protected void initContentPane();
 
-    protected final void showFormAndCheck_init_nullBean(ContainerType type) throws Exception {
-        showFormAndCheck_init(null, type);
-
-        ContainerFixture f = type.getFormContainerFixture(window);
-        f.textBox("name").requireText("");
-        f.panel("file").textBox("pathField").requireText("");
-        f.panel("path").textBox("pathField").requireText("");
+    protected static final void sleep() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
-    protected final void showFormAndCheck_init_notNullBean(ContainerType type) throws Exception {
-        showFormAndCheck_init(new Bean("Steve"), type);
-
-        ContainerFixture f = type.getFormContainerFixture(window);
-        f.textBox("name").requireText(bean.getName());
-    }
-
-    private void showFormAndCheck_init(Bean b, ContainerType type) throws Exception {
-        initAndClick(b, "title", type);
-
-        type.checkStaticProperties(window, title);
-    }
-
-    protected final void showFormAndCheck_okButton(ContainerType type) throws Exception {
-        Bean bean = showFormAndCheck(type);
-
-        type.clickOkButton(window);
-
-        assertThat(bean.getName()).isEqualTo(NAME);
-        assertThat(this.bean).isNotNull();
-        assertThat(this.bean.getName()).isEqualTo(NEW_NAME);
-    }
-
-    protected final void showFormAndCheck_cancelButton(ContainerType type) throws Exception {
-        Bean bean = showFormAndCheck(type);
-
-        type.clickCancelButton(window);
-
-        assertThat(this.bean).isNull();
-        assertThat(bean.getName()).isEqualTo(NAME);
-    }
-
-    private Bean showFormAndCheck(ContainerType type) throws Exception {
-        Bean bean = new Bean(NAME);
-        initAndClick(bean, "title", type);
-
-        type.checkStaticProperties(window, title);
-        ContainerFixture f = type.getFormContainerFixture(window);
-        f.textBox("name").requireText(NAME);
-        f.textBox("name").setText(NEW_NAME);
-
+    public Bean getBean() {
         return bean;
     }
 
-    private void initAndClick(Bean b, String title, ContainerType type) {
-        this.bean = b;
-        this.title = title;
-
-        window.button(type.getButtonName()).click();
+    public void setBean(Bean bean) {
+        this.bean = bean;
+        LOG.debug("setBean({})", bean);
     }
 
-    protected final void addButton(ContainerType containerType, final Action action) {
+    protected abstract class FormTest {
+        protected ContainerFixture f;
+
+        public final void run(ContainerType type, Locale locale) {
+            Locale oldLocale = Locale.getDefault();
+
+            try {
+                Locale.setDefault(locale);
+                init();
+
+                sleep();
+                openDialog(type);
+
+                sleep();
+                f = type.checkStaticProperties(window, title);
+
+                sleep();
+                checkInitialFormState();
+
+                sleep();
+                fillForm(type);
+
+                sleep();
+                checkFinalFormState();
+            } finally {
+                Locale.setDefault(oldLocale);
+            }
+        }
+
+        protected void init() {
+        }
+
+        protected final void openDialog(ContainerType type) {
+            window.button(type.getButtonName()).click();
+        }
+
+        protected void checkInitialFormState() {
+        }
+
+        protected void fillForm(ContainerType type) {
+        }
+
+        protected void checkFinalFormState() {
+        }
+
+        protected final void init(Bean b, String title) {
+            AbstractFormTest.this.setBean(b);
+            AbstractFormTest.this.title = title;
+        }
+    }
+
+    public class InitNullBeanFormTest extends FormTest {
+        @Override
+        protected void init() {
+            init(null, TITLE);
+        }
+
+        @Override
+        protected void checkInitialFormState() {
+            f.textBox("name").requireText("");
+            f.panel("file").textBox("pathField").requireText("");
+            f.panel("path").textBox("pathField").requireText("");
+        }
+    }
+
+    public class InitNotNullBeanFormTest extends FormTest {
+        @Override
+        protected void init() {
+            init(new Bean(NAME), TITLE);
+        }
+
+        @Override
+        protected void checkInitialFormState() {
+            f.textBox("name").requireText(getBean().getName());
+        }
+    }
+
+    private abstract class AbstractButtonFormTest extends FormTest {
+        private final JFormPane.Mode mode;
+
+        protected Bean oldBean;
+
+        private AbstractButtonFormTest(JFormPane.Mode mode) {
+            this.mode = mode;
+        }
+
+        @Override
+        protected void init() {
+            if (UPDATE.equals(mode)) {
+                oldBean = new Bean(NAME);
+            }
+            init(oldBean, TITLE);
+        }
+
+        @Override
+        protected final void checkInitialFormState() {
+            f.textBox("name").requireText((oldBean == null) ? "" : NAME);
+        }
+
+        @Override
+        protected void fillForm(ContainerType type) {
+            f.textBox("name").setText(NEW_NAME);
+        }
+
+        @Override
+        protected void checkFinalFormState() {
+            if (oldBean != null) {
+                assertThat(oldBean.getName()).isEqualTo(NAME);
+            }
+        }
+
+        protected JFormPane.Mode getMode() {
+            return mode;
+        }
+    }
+
+    public class OkButtonFormTest extends AbstractButtonFormTest {
+        public OkButtonFormTest(JFormPane.Mode mode) {
+            super(mode);
+        }
+
+        @Override
+        protected void fillForm(ContainerType type) {
+            super.fillForm(type);
+            type.clickOkButton(window, getMode());
+        }
+
+        @Override
+        protected void checkFinalFormState() {
+            super.checkFinalFormState();
+            assertThat(getBean()).isNotNull();
+            assertThat(getBean().getName()).isEqualTo(NEW_NAME);
+        }
+    }
+
+    public class CancelButtonFormTest extends AbstractButtonFormTest {
+        public CancelButtonFormTest(JFormPane.Mode mode) {
+            super(mode);
+        }
+
+        @Override
+        protected void fillForm(ContainerType type) {
+            super.fillForm(type);
+            type.clickCancelButton(window);
+        }
+
+        @Override
+        protected void checkFinalFormState() {
+            super.checkFinalFormState();
+            assertThat(getBean()).isNull();
+        }
+    }
+
+    protected final void addButton(final ContainerType containerType, final Action action) {
         JButton b = GuiActionRunner.execute(new GuiQuery<JButton>() {
             protected JButton executeInEDT() {
-                return new JButton(action);
+                String buttonName = containerType.getButtonName();
+                JButton b = new JButton(action);
+                b.setText(buttonName);
+                b.setName(buttonName);
+                return b;
             }
         });
-        b.setName(containerType.getButtonName());
-        panel.add(b);
+
+        buttonsPanel.add(b);
+    }
+
+    protected final JPanel addPanel(String name) {
+        JPanel p = GuiActionRunner.execute(new GuiQuery<JPanel>() {
+            protected JPanel executeInEDT() {
+                JPanel result = new JPanel(new BorderLayout());
+                result.add(new JLabel("No form"), BorderLayout.CENTER);
+                return result;
+            }
+        });
+        p.setName(name);
+        panel.add(p, BorderLayout.CENTER);
+        return p;
     }
 
     public static abstract class ContainerType {
         private final String buttonName;
+        private final boolean checkTooltip;
 
-        protected ContainerType(String buttonName) {
+        protected ContainerType(String buttonName, boolean checkTooltip) {
             this.buttonName = buttonName;
+            this.checkTooltip = checkTooltip;
         }
 
         abstract public ContainerFixture getFormContainerFixture(FrameFixture window);
 
-        abstract public void checkStaticProperties(FrameFixture window, String title);
+        abstract public ContainerFixture checkStaticProperties(FrameFixture window, String title);
 
         public final String getButtonName() {
             return buttonName;
         }
 
-        public abstract void clickOkButton(FrameFixture window);
+        public final void clickOkButton(FrameFixture window, JFormPane.Mode mode) {
+            JButtonFixture f = getOkButtonFixture(window, mode);
+            if (checkTooltip) {
+                f.requireToolTip(mode.getTooltip());
+            }
+            f.click();
+        }
 
-        public abstract void clickCancelButton(FrameFixture window);
+        abstract protected JButtonFixture getOkButtonFixture(FrameFixture window, JFormPane.Mode mode);
+
+        public final void clickCancelButton(FrameFixture window) {
+            JButtonFixture f = getCancelButtonFixture(window);
+            if (checkTooltip) {
+                f.requireToolTip(getExpectedMessage(CANCEL_TEXT_KEY));
+            }
+            f.click();
+        }
+
+        abstract protected JButtonFixture getCancelButtonFixture(FrameFixture window);
+
+        abstract public SimpleItemManager.ContainerType getType();
     }
 
     public static final class OpenInDialog extends ContainerType {
         public static final OpenInDialog INSTANCE = new OpenInDialog();
 
         private OpenInDialog() {
-            super("openInDialog");
+            super("openInDialog", false);
         }
 
         @Override
@@ -170,18 +351,25 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         @Override
-        public void checkStaticProperties(FrameFixture window, String title) {
-            getFormContainerFixture(window).requireQuestionMessage().requireTitle(title);
+        public JOptionPaneFixture checkStaticProperties(FrameFixture window, String title) {
+            JOptionPaneFixture result = getFormContainerFixture(window);
+            result.requireQuestionMessage().requireTitle(title);
+            return result;
         }
 
         @Override
-        public void clickOkButton(FrameFixture window) {
-            getFormContainerFixture(window).okButton().click();
+        protected JButtonFixture getOkButtonFixture(FrameFixture window, JFormPane.Mode mode) {
+            return getFormContainerFixture(window).buttonWithText(getExpectedMessage(mode));
         }
 
         @Override
-        public void clickCancelButton(FrameFixture window) {
-            getFormContainerFixture(window).cancelButton().click();
+        protected JButtonFixture getCancelButtonFixture(FrameFixture window) {
+            return getFormContainerFixture(window).buttonWithText(getExpectedMessage(CANCEL_TEXT_KEY));
+        }
+
+        @Override
+        public SimpleItemManager.ContainerType getType() {
+            return SimpleItemManager.ContainerType.DIALOG;
         }
     }
 
@@ -220,6 +408,15 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         public void setPath(Path path) {
             this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return "Bean{" +
+                    "name='" + name + '\'' +
+                    ", file=" + file +
+                    ", path=" + path +
+                    '}';
         }
     }
 }

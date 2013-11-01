@@ -28,24 +28,49 @@ import org.ez18n.MessageBundle;
  */
 @MessageBundle
 public interface SwingComponentMessages {
-    static final String MOVE_UP_MESSAGE = "Move up item(s)";
-    static final String REMOVE_MESSAGE = "Remove item(s)";
-    static final String MOVE_DOWN_MESSAGE = "Move down item(s)";
-    static final String ADD_MESSAGE = "Add a new item";
-    static final String UPDATE_MESSAGE = "Update the item";
+    static final String MOVE_UP_ITEM_TOOLTIP = "Move up item(s)";
+    static final String REMOVE_ITEM_TOOLTIP = "Remove item(s)";
+    static final String MOVE_DOWN_ITEM_TOOLTIP = "Move down item(s)";
+    static final String ADD_ITEM_TOOLTIP = "Add a new item";
+    static final String UPDATE_ITEM_TOOLTIP = "Update the item";
 
-    @Message(value = MOVE_UP_MESSAGE)
-    String moveUpItem();
 
-    @Message(value = REMOVE_MESSAGE)
-    String removeItem();
+    static final String CREATE_TEXT = "Create";
+    static final String CREATE_TOOLTIP = "Confirm creation";
 
-    @Message(value = MOVE_DOWN_MESSAGE)
-    String moveDownItem();
+    static final String UPDATE_TEXT = "Update";
+    static final String UPDATE_TOOLTIP = "Confirm update";
 
-    @Message(value = ADD_MESSAGE)
-    String addItem();
+    static final String CANCEL_TEXT = "Cancel";
 
-    @Message(value = UPDATE_MESSAGE)
-    String updateItem();
+    @Message(value = MOVE_UP_ITEM_TOOLTIP)
+    String moveUpItemTooltip();
+
+    @Message(value = REMOVE_ITEM_TOOLTIP)
+    String removeItemTooltip();
+
+    @Message(value = MOVE_DOWN_ITEM_TOOLTIP)
+    String moveDownItemTooltip();
+
+    @Message(value = ADD_ITEM_TOOLTIP)
+    String addItemTooltip();
+
+    @Message(value = UPDATE_ITEM_TOOLTIP)
+    String updateItemTooltip();
+
+
+    @Message(value = CREATE_TEXT)
+    String createText();
+
+    @Message(value = CREATE_TOOLTIP)
+    String createTooltip();
+
+    @Message(value = UPDATE_TEXT)
+    String updateText();
+
+    @Message(value = UPDATE_TOOLTIP)
+    String updateTooltip();
+
+    @Message(value = CANCEL_TEXT)
+    String cancelText();
 }

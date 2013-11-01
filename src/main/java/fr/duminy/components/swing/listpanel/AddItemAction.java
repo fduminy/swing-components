@@ -40,7 +40,7 @@ class AddItemAction<T> extends StandardItemAction<T> {
 
     @Override
     protected String getShortDescription(SwingComponentMessages bundle) {
-        return bundle.addItem();
+        return bundle.addItemTooltip();
     }
 
     @Override

@@ -30,7 +30,7 @@ import java.awt.event.KeyEvent;
 public class RemoveItemActionTest extends AbstractItemActionTest<RemoveItemAction> {
 
     public RemoveItemActionTest() {
-        super(SwingComponentMessages.REMOVE_MESSAGE, KeyEvent.VK_DELETE);
+        super(SwingComponentMessages.REMOVE_ITEM_TOOLTIP, KeyEvent.VK_DELETE);
     }
 
     @Override
