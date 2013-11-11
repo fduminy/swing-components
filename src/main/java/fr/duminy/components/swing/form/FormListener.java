@@ -20,32 +20,23 @@
  */
 package fr.duminy.components.swing.form;
 
-import fr.duminy.components.swing.path.JPath;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
-import java.io.File;
-
 /**
- * An implementation of {@link org.formbuilder.TypeMapper} for {@link java.io.File}.
+ * An interface for listeners of events on a {@link Form}.
+ *
+ * @param <B> The type of beans associated with the forms.
  */
-@ThreadSafe
-final class FileTypeMapper extends AbstractFileTypeMapper<File> {
-    public static final FileTypeMapper INSTANCE = new FileTypeMapper();
+public interface FormListener<B> {
+    /**
+     * Method called when a form value has been validated.
+     *
+     * @param form
+     */
+    void formValidated(Form<B> form);
 
-    private FileTypeMapper() {
-        super(File.class);
-    }
-
-    @Nullable
-    @Override
-    public final File getValue(@Nonnull JPath jPath) {
-        return (jPath.getPath() == null) ? null : jPath.getPath().toFile();
-    }
-
-    @Override
-    public final void setValue(@Nonnull JPath jPath, @Nullable File value) {
-        jPath.setPath((value == null) ? null : value.toPath());
-    }
+    /**
+     * Method called when a form value has been cancelled.
+     *
+     * @param form
+     */
+    void formCancelled(Form<B> form);
 }

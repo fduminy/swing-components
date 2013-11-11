@@ -18,24 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.form;
+package fr.duminy.components.swing;
 
-import org.formbuilder.FormBuilder;
-import org.formbuilder.TypeMapper;
+import java.util.Locale;
 
 /**
- * A repository of additional {@link org.formbuilder.TypeMapper}s.
+ * Abstract class for {@link Locale} sensitive tests.
  */
-public class TypeMappers {
-    private static final TypeMapper<?, ?>[] TYPE_MAPPERS = new TypeMapper<?, ?>[]{
-            FileTypeMapper.INSTANCE,
-            PathTypeMapper.INSTANCE
-    };
+abstract public class AbstractLocaleTest {
+    public final void run(Locale locale) {
+        Locale oldLocale = Locale.getDefault();
 
-    private TypeMappers() {
+        try {
+            doRun();
+        } finally {
+            Locale.setDefault(oldLocale);
+        }
     }
 
-    public static <B> FormBuilder<B> addTypeMappers(FormBuilder<B> formBuilder) {
-        return formBuilder.use(TYPE_MAPPERS);
-    }
+    abstract void doRun();
 }

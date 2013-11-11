@@ -18,34 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.form;
+package fr.duminy.components.swing;
 
-import fr.duminy.components.swing.path.JPath;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
-import java.io.File;
+import org.ez18n.runtime.BundleFactory;
+import org.ez18n.runtime.Desktop;
 
 /**
- * An implementation of {@link org.formbuilder.TypeMapper} for {@link java.io.File}.
+ * Simple utility class to get our message bundle.
  */
-@ThreadSafe
-final class FileTypeMapper extends AbstractFileTypeMapper<File> {
-    public static final FileTypeMapper INSTANCE = new FileTypeMapper();
-
-    private FileTypeMapper() {
-        super(File.class);
+public class Bundle {
+    private Bundle() {
     }
 
-    @Nullable
-    @Override
-    public final File getValue(@Nonnull JPath jPath) {
-        return (jPath.getPath() == null) ? null : jPath.getPath().toFile();
+    /**
+     * Get our message bundle.
+     *
+     * @return
+     */
+    public static SwingComponentMessages getBundle() {
+        return getBundle(SwingComponentMessages.class);
     }
 
-    @Override
-    public final void setValue(@Nonnull JPath jPath, @Nullable File value) {
-        jPath.setPath((value == null) ? null : value.toPath());
+    /**
+     * Get a message bundle implementing the given class.
+     *
+     * @param messagesClass The interface that the bundle have to implement.
+     * @param <T>           The type of interface to implement.
+     * @return
+     */
+    public static <T> T getBundle(Class<T> messagesClass) {
+        return BundleFactory.get(messagesClass, Desktop.class);
     }
 }

@@ -22,20 +22,24 @@ package fr.duminy.components.swing;
 
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.form.JFormPane;
+import fr.duminy.components.swing.form.JFormPaneTest;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManager;
+import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
+import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.ContainerFixture;
-import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JOptionPaneFixture;
+import org.fest.swing.fixture.JPanelFixture;
 import org.junit.experimental.theories.DataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -43,6 +47,7 @@ import java.util.Locale;
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.CANCEL_TEXT_KEY;
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExpectedMessage;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
+import static javax.swing.SwingUtilities.getAncestorOfClass;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -50,9 +55,38 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public abstract class AbstractFormTest extends AbstractSwingTest {
     @DataPoint
+    public static final ContainerType OPEN_IN_DIALOG = OpenInDialog.INSTANCE;
+    @DataPoint
+    public static final ContainerType OPEN_IN_PANEL = SimpleItemManagerTest.OpenInPanel.INSTANCE;
+
+    @DataPoint
     public static final Locale FRENCH = Locale.FRENCH;
     @DataPoint
     public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
+
+    @DataPoint
+    public static final NameType DEFAULT_NAME = NameType.DEFAULT;
+    @DataPoint
+    public static final NameType CUSTOM_NAME = NameType.CUSTOM;
+
+    protected static final String PARENT_PANEL_NAME = "parentPanel";
+
+    public static enum NameType {
+        DEFAULT {
+            @Override
+            public final String getName() {
+                return Bean.class.getSimpleName();
+            }
+        },
+        CUSTOM {
+            @Override
+            public final String getName() {
+                return "formPanel";
+            }
+        };
+
+        abstract public String getName();
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFormTest.class);
 
@@ -61,6 +95,8 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     private static final String NEW_NAME = "Georges";
 
     public static final Bean ERROR_BEAN = new Bean("ErrorBean");
+    protected Action buttonAction;
+    protected JPanel formContainer;
 
     private JPanel panel;
     private JPanel buttonsPanel;
@@ -74,7 +110,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         setUpForm();
     }
 
-    protected void setUpForm() {
+    protected final void setUpForm() {
         setBean(null);
         title = null;
         buttonsPanel = GuiActionRunner.execute(new GuiQuery<JPanel>() {
@@ -99,7 +135,18 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
     }
 
-    abstract protected void initContentPane();
+    protected final void initContentPane() {
+        AbstractAction action = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LOG.debug("actionPerformed: buttonAction={}", buttonAction);
+                buttonAction.actionPerformed(e);
+            }
+        };
+        addButton(OpenInDialog.INSTANCE, action);
+        addButton(SimpleItemManagerTest.OpenInPanel.INSTANCE, action);
+        formContainer = addPanel(PARENT_PANEL_NAME);
+    }
 
     protected static final void sleep() {
         try {
@@ -109,52 +156,79 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
     }
 
-    public Bean getBean() {
+    public final Bean getBean() {
         return bean;
     }
 
-    public void setBean(Bean bean) {
+    public final void setBean(Bean bean) {
         this.bean = bean;
         LOG.debug("setBean({})", bean);
     }
 
     protected abstract class FormTest {
+        protected final Logger LOG = LoggerFactory.getLogger(getLoggerClass());
+
+        private Class getLoggerClass() {
+            Class result = getClass();
+            if (result.getName().contains("$")) {
+                result = result.getSuperclass();
+            }
+            return result;
+        }
+
+        protected final NameType nameType;
         protected ContainerFixture f;
 
-        public final void run(ContainerType type, Locale locale) {
-            Locale oldLocale = Locale.getDefault();
+        protected FormTest(NameType nameType) {
+            this.nameType = nameType;
+        }
 
-            try {
-                Locale.setDefault(locale);
-                init();
+        public final void run(final ContainerType type, final Locale locale) {
+            new AbstractLocaleTest() {
+                @Override
+                void doRun() {
+                    boolean error = true;
 
-                sleep();
-                openDialog(type);
+                    try {
+                        LOG.info("*** run.BEGIN ({}, {})", type.getType(), locale);
+                        LOG.info("*** run: before call to init()");
+                        init();
 
-                sleep();
-                f = type.checkStaticProperties(window, title);
+                        sleep();
+                        LOG.info("*** run: before call to openForm()");
+                        openForm(type);
 
-                sleep();
-                checkInitialFormState();
+                        sleep();
+                        LOG.info("*** run: before call to checkStaticProperties()");
+                        f = type.checkStaticProperties(robot(), nameType, title);
 
-                sleep();
-                fillForm(type);
+                        sleep();
+                        LOG.info("*** run: before call to checkInitialFormState()");
+                        checkInitialFormState();
 
-                sleep();
-                checkFinalFormState();
-            } finally {
-                Locale.setDefault(oldLocale);
-            }
+                        sleep();
+                        LOG.info("*** run: before call to fillForm()");
+                        fillForm(type);
+
+                        LOG.info("*** run: before call to checkFinalFormState()");
+                        checkFinalFormState();
+                        error = false;
+                    } finally {
+                        LOG.info("*** run.{} ({}, {})", new Object[]{error ? "ERROR" : "END", type.getType(), locale});
+                    }
+                }
+            }.run(locale);
         }
 
         protected void init() {
         }
 
-        protected final void openDialog(ContainerType type) {
+        protected final void openForm(ContainerType type) {
             window.button(type.getButtonName()).click();
         }
 
         protected void checkInitialFormState() {
+            window.panel(nameType.getName()); // checks panel's name
         }
 
         protected void fillForm(ContainerType type) {
@@ -170,6 +244,10 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     }
 
     public class InitNullBeanFormTest extends FormTest {
+        public InitNullBeanFormTest(NameType nameType) {
+            super(nameType);
+        }
+
         @Override
         protected void init() {
             init(null, TITLE);
@@ -177,6 +255,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         @Override
         protected void checkInitialFormState() {
+            super.checkInitialFormState();
             f.textBox("name").requireText("");
             f.panel("file").textBox("pathField").requireText("");
             f.panel("path").textBox("pathField").requireText("");
@@ -184,6 +263,10 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     }
 
     public class InitNotNullBeanFormTest extends FormTest {
+        public InitNotNullBeanFormTest(NameType nameType) {
+            super(nameType);
+        }
+
         @Override
         protected void init() {
             init(new Bean(NAME), TITLE);
@@ -191,17 +274,21 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         @Override
         protected void checkInitialFormState() {
+            super.checkInitialFormState();
             f.textBox("name").requireText(getBean().getName());
         }
     }
 
     private abstract class AbstractButtonFormTest extends FormTest {
         private final JFormPane.Mode mode;
+        private final boolean checkRemovedFromContainer;
 
         protected Bean oldBean;
 
-        private AbstractButtonFormTest(JFormPane.Mode mode) {
+        private AbstractButtonFormTest(JFormPane.Mode mode, boolean checkRemovedFromContainer, NameType nameType) {
+            super(nameType);
             this.mode = mode;
+            this.checkRemovedFromContainer = checkRemovedFromContainer;
         }
 
         @Override
@@ -214,6 +301,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         @Override
         protected final void checkInitialFormState() {
+            super.checkInitialFormState();
             f.textBox("name").requireText((oldBean == null) ? "" : NAME);
         }
 
@@ -227,6 +315,10 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
             if (oldBean != null) {
                 assertThat(oldBean.getName()).isEqualTo(NAME);
             }
+
+            if (checkRemovedFromContainer) {
+                assertThat(formContainer.getComponentCount()).isZero();
+            }
         }
 
         protected JFormPane.Mode getMode() {
@@ -235,14 +327,14 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     }
 
     public class OkButtonFormTest extends AbstractButtonFormTest {
-        public OkButtonFormTest(JFormPane.Mode mode) {
-            super(mode);
+        public OkButtonFormTest(JFormPane.Mode mode, boolean checkRemovedFromContainer, NameType nameType) {
+            super(mode, checkRemovedFromContainer, nameType);
         }
 
         @Override
         protected void fillForm(ContainerType type) {
             super.fillForm(type);
-            type.clickOkButton(window, getMode());
+            type.clickOkButton(LOG, robot(), nameType.getName(), getMode());
         }
 
         @Override
@@ -254,14 +346,14 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     }
 
     public class CancelButtonFormTest extends AbstractButtonFormTest {
-        public CancelButtonFormTest(JFormPane.Mode mode) {
-            super(mode);
+        public CancelButtonFormTest(JFormPane.Mode mode, boolean checkRemovedFromContainer, NameType nameType) {
+            super(mode, checkRemovedFromContainer, nameType);
         }
 
         @Override
         protected void fillForm(ContainerType type) {
             super.fillForm(type);
-            type.clickCancelButton(window);
+            type.clickCancelButton(LOG, robot(), nameType.getName());
         }
 
         @Override
@@ -288,14 +380,25 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     protected final JPanel addPanel(String name) {
         JPanel p = GuiActionRunner.execute(new GuiQuery<JPanel>() {
             protected JPanel executeInEDT() {
-                JPanel result = new JPanel(new BorderLayout());
-                result.add(new JLabel("No form"), BorderLayout.CENTER);
-                return result;
+                return new JPanel(new BorderLayout());
             }
         });
         p.setName(name);
         panel.add(p, BorderLayout.CENTER);
+
+        resetContentPane();
         return p;
+    }
+
+    protected final void resetContentPane() {
+        if (formContainer != null) {
+            GuiActionRunner.execute(new GuiQuery<Object>() {
+                protected Object executeInEDT() {
+                    formContainer.add(new JLabel("No form"), BorderLayout.CENTER);
+                    return null;
+                }
+            });
+        }
     }
 
     public static abstract class ContainerType {
@@ -307,33 +410,37 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
             this.checkTooltip = checkTooltip;
         }
 
-        abstract public ContainerFixture getFormContainerFixture(FrameFixture window);
+        public final JPanelFixture getFormPaneFixture(Robot robot, String panelName) {
+            return JFormPaneTest.formPane(robot, panelName);
+        }
 
-        abstract public ContainerFixture checkStaticProperties(FrameFixture window, String title);
+        abstract public ContainerFixture checkStaticProperties(Robot robot, NameType nameType, String title);
 
         public final String getButtonName() {
             return buttonName;
         }
 
-        public final void clickOkButton(FrameFixture window, JFormPane.Mode mode) {
-            JButtonFixture f = getOkButtonFixture(window, mode);
+        public final <T extends Container> void clickOkButton(Logger log, Robot robot, String panelName, JFormPane.Mode mode) {
+            JButtonFixture f = getOkButtonFixture(robot, panelName, mode);
             if (checkTooltip) {
                 f.requireToolTip(mode.getTooltip());
             }
             f.click();
+            log.info("OK button clicked : {}", f.component());
         }
 
-        abstract protected JButtonFixture getOkButtonFixture(FrameFixture window, JFormPane.Mode mode);
+        abstract protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode);
 
-        public final void clickCancelButton(FrameFixture window) {
-            JButtonFixture f = getCancelButtonFixture(window);
+        public final <T extends Container> void clickCancelButton(final Logger log, Robot robot, String panelName) {
+            JButtonFixture f = getCancelButtonFixture(robot, panelName);
             if (checkTooltip) {
                 f.requireToolTip(getExpectedMessage(CANCEL_TEXT_KEY));
             }
             f.click();
+            log.info("Cancel button clicked");
         }
 
-        abstract protected JButtonFixture getCancelButtonFixture(FrameFixture window);
+        abstract protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName);
 
         abstract public SimpleItemManager.ContainerType getType();
     }
@@ -346,25 +453,25 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         @Override
-        public JOptionPaneFixture getFormContainerFixture(FrameFixture window) {
-            return window.optionPane();
-        }
-
-        @Override
-        public JOptionPaneFixture checkStaticProperties(FrameFixture window, String title) {
-            JOptionPaneFixture result = getFormContainerFixture(window);
+        public JOptionPaneFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
+            JOptionPaneFixture result = getFormPaneFixture(robot, nameType.getName()).optionPane();
             result.requireQuestionMessage().requireTitle(title);
             return result;
         }
 
         @Override
-        protected JButtonFixture getOkButtonFixture(FrameFixture window, JFormPane.Mode mode) {
-            return getFormContainerFixture(window).buttonWithText(getExpectedMessage(mode));
+        protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode) {
+            return getOptionPaneFixture(robot, panelName).buttonWithText(getExpectedMessage(mode));
         }
 
         @Override
-        protected JButtonFixture getCancelButtonFixture(FrameFixture window) {
-            return getFormContainerFixture(window).buttonWithText(getExpectedMessage(CANCEL_TEXT_KEY));
+        protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName) {
+            return getOptionPaneFixture(robot, panelName).buttonWithText(getExpectedMessage(CANCEL_TEXT_KEY));
+        }
+
+        private JOptionPaneFixture getOptionPaneFixture(Robot robot, String panelName) {
+            JOptionPane p = (JOptionPane) getAncestorOfClass(JOptionPane.class, getFormPaneFixture(robot, panelName).component());
+            return new JOptionPaneFixture(robot, p);
         }
 
         @Override

@@ -31,7 +31,7 @@ import java.nio.file.Path;
  * An implementation of {@link org.formbuilder.TypeMapper} for {@link java.nio.file.Path}.
  */
 @ThreadSafe
-public final class PathTypeMapper extends AbstractFileTypeMapper<Path> {
+final class PathTypeMapper extends AbstractFileTypeMapper<Path> {
     public static final PathTypeMapper INSTANCE = new PathTypeMapper();
 
     private PathTypeMapper() {

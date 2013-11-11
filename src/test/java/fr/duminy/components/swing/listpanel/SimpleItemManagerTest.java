@@ -24,16 +24,16 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import fr.duminy.components.swing.AbstractFormTest;
+import fr.duminy.components.swing.form.DefaultFormBuilder;
+import fr.duminy.components.swing.form.FormBuilder;
 import fr.duminy.components.swing.form.JFormPane;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
-import org.formbuilder.FormBuilder;
 import org.junit.Test;
-import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -47,11 +47,10 @@ import java.awt.event.ActionEvent;
 import java.util.Locale;
 import java.util.concurrent.CancellationException;
 
+import static fr.duminy.components.swing.Bundle.getBundle;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.formbuilder.FormBuilder.map;
-import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -61,43 +60,15 @@ import static org.mockito.Mockito.mock;
 public class SimpleItemManagerTest extends AbstractFormTest {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleItemManager.class);
 
-    @DataPoint
-    public static final ContainerType OPEN_IN_DIALOG = OpenInDialog.INSTANCE;
-    @DataPoint
-    public static final ContainerType OPEN_IN_PANEL = OpenInPanel.INSTANCE;
-
-    @DataPoint
-    public static final SimpleItemManager.ContainerType PANEL = SimpleItemManager.ContainerType.PANEL;
-    @DataPoint
-    public static final SimpleItemManager.ContainerType DIALOG = SimpleItemManager.ContainerType.DIALOG;
-
-    private static final String PANEL_NAME = "parentPanel";
-
     private ItemManager<Bean> manager;
-    private Action buttonAction;
-    private JPanel formContainer;
-
-    @Override
-    protected void initContentPane() {
-        AbstractAction action = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                LOG.debug("actionPerformed: buttonAction={}", buttonAction);
-                buttonAction.actionPerformed(e);
-            }
-        };
-        addButton(OpenInDialog.INSTANCE, action);
-        addButton(OpenInPanel.INSTANCE, action);
-        formContainer = addPanel(PANEL_NAME);
-    }
 
     @Theory
-    public final void testCreateItem_init(final ContainerType containerType, Locale locale) throws Exception {
-        new InitNullBeanFormTest() {
+    public final void testCreateItem_init(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new InitNullBeanFormTest(nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndCreateItemAction(containerType);
+                manager = createItemManagerAndCreateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
@@ -105,7 +76,7 @@ public class SimpleItemManagerTest extends AbstractFormTest {
     @Test
     public void testCreateItemCallsInitItem() {
         final SimpleItemManager.FormDisplayer displayer = mock(SimpleItemManager.FormDisplayer.class);
-        final FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
+        final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
         final MutableBoolean called = new MutableBoolean(false);
 
         GuiActionRunner.execute(new GuiQuery<Object>() {
@@ -126,72 +97,72 @@ public class SimpleItemManagerTest extends AbstractFormTest {
     }
 
     @Theory
-    public final void testCreateItem_okButton(final ContainerType containerType, Locale locale) throws Exception {
-        new OkButtonFormTest(CREATE) {
+    public final void testCreateItem_okButton(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new OkButtonFormTest(CREATE, true, nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndCreateItemAction(containerType);
+                manager = createItemManagerAndCreateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
     @Theory
-    public final void testCreateItem_cancelButton(final ContainerType containerType, Locale locale) throws Exception {
-        new CancelButtonFormTest(CREATE) {
+    public final void testCreateItem_cancelButton(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new CancelButtonFormTest(CREATE, true, nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndCreateItemAction(containerType);
+                manager = createItemManagerAndCreateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
     @Theory
-    public final void testUpdateItem_init_nullBean(final ContainerType containerType, Locale locale) throws Exception {
-        new InitNullBeanFormTest() {
+    public final void testUpdateItem_init_nullBean(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new InitNullBeanFormTest(nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndUpdateItemAction(containerType);
+                manager = createItemManagerAndUpdateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
     @Theory
-    public final void testUpdateItem_init_notNullBean(final ContainerType containerType, Locale locale) throws Exception {
-        new InitNotNullBeanFormTest() {
+    public final void testUpdateItem_init_notNullBean(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new InitNotNullBeanFormTest(nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndUpdateItemAction(containerType);
+                manager = createItemManagerAndUpdateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
     @Theory
-    public final void testUpdateItem_okButton(final ContainerType containerType, Locale locale) throws Exception {
-        new OkButtonFormTest(UPDATE) {
+    public final void testUpdateItem_okButton(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new OkButtonFormTest(UPDATE, true, nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndUpdateItemAction(containerType);
+                manager = createItemManagerAndUpdateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
     @Theory
-    public final void testUpdateItem_cancelButton(final ContainerType containerType, Locale locale) throws Exception {
-        new CancelButtonFormTest(UPDATE) {
+    public final void testUpdateItem_cancelButton(final ContainerType containerType, Locale locale, final NameType nameType) throws Exception {
+        new CancelButtonFormTest(UPDATE, true, nameType) {
             @Override
             protected void init() {
                 super.init();
-                manager = createItemManagerAndUpdateItemAction(containerType);
+                manager = createItemManagerAndUpdateItemAction(containerType, nameType);
             }
         }.run(containerType, locale);
     }
 
-    private ItemManager<Bean> createItemManagerAndCreateItemAction(ContainerType containerType) {
+    private ItemManager<Bean> createItemManagerAndCreateItemAction(ContainerType containerType, NameType nameType) {
         return createItemManager(containerType, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -202,10 +173,10 @@ public class SimpleItemManagerTest extends AbstractFormTest {
             public String toString() {
                 return "AbstractAction('create')";
             }
-        });
+        }, nameType);
     }
 
-    private ItemManager<Bean> createItemManagerAndUpdateItemAction(ContainerType containerType) {
+    private ItemManager<Bean> createItemManagerAndUpdateItemAction(ContainerType containerType, NameType nameType) {
         return createItemManager(containerType, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -216,7 +187,7 @@ public class SimpleItemManagerTest extends AbstractFormTest {
             public String toString() {
                 return "AbstractAction('update')";
             }
-        });
+        }, nameType);
     }
 
     private void addCallback(ListenableFuture<Bean> futureBean, final String operation) {
@@ -240,24 +211,26 @@ public class SimpleItemManagerTest extends AbstractFormTest {
         });
     }
 
-    private ItemManager<Bean> createItemManager(ContainerType type, Action buttonAction) {
-        FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
+    private ItemManager<Bean> createItemManager(ContainerType type, Action buttonAction, NameType nameType) {
+        FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
         Container parent;
-        SimpleItemManager.ContainerType parentType;
+        final SimpleItemManager.ContainerType parentType = type.getType();
 
         if (OpenInDialog.class.equals(type.getClass())) {
             parent = window.component();
-            parentType = SimpleItemManager.ContainerType.DIALOG;
         } else if (OpenInPanel.class.equals(type.getClass())) {
             parent = formContainer;
-            parentType = PANEL;
         } else {
             throw new IllegalArgumentException("wrong class : " + type.getClass().getName());
         }
 
         this.buttonAction = buttonAction;
 
-        return new SimpleItemManager<>(Bean.class, builder, parent, title, parentType);
+        SimpleItemManager<Bean> manager = new SimpleItemManager<>(Bean.class, builder, parent, title, parentType);
+        if (nameType == NameType.CUSTOM) {
+            manager.setPanelName(NameType.CUSTOM.getName());
+        }
+        return manager;
     }
 
     public static final class OpenInPanel extends ContainerType {
@@ -268,28 +241,24 @@ public class SimpleItemManagerTest extends AbstractFormTest {
         }
 
         @Override
-        public JPanelFixture getFormContainerFixture(FrameFixture window) {
-            return window.panel(PANEL_NAME);
-        }
-
-        @Override
-        public JPanelFixture checkStaticProperties(FrameFixture window, String title) {
-            JPanelFixture result = getFormContainerFixture(window);
-            JPanel panel = result.component();
+        public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
+            JPanelFixture result = getFormPaneFixture(robot, nameType.getName());
+            JPanel formPane = result.component();
+            assertThat(formPane).isInstanceOf(JFormPane.class);
             sleep();
-            assertThat(panel.getBorder()).isInstanceOf(TitledBorder.class);
-            assertThat(((TitledBorder) panel.getBorder()).getTitle()).isEqualTo(title);
+            assertThat(formPane.getBorder()).isInstanceOf(TitledBorder.class);
+            assertThat(((TitledBorder) formPane.getBorder()).getTitle()).isEqualTo(title);
             return result;
         }
 
         @Override
-        protected JButtonFixture getOkButtonFixture(FrameFixture window, JFormPane.Mode mode) {
-            return getFormContainerFixture(window).button(SimpleItemManager.OK_BUTTON_NAME).requireText(mode.getText());
+        protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode) {
+            return getFormPaneFixture(robot, panelName).button(JFormPane.OK_BUTTON_NAME).requireText(mode.getText());
         }
 
         @Override
-        protected JButtonFixture getCancelButtonFixture(FrameFixture window) {
-            return getFormContainerFixture(window).button(SimpleItemManager.CANCEL_BUTTON_NAME).requireText(JFormPane.getBundle().cancelText());
+        protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName) {
+            return getFormPaneFixture(robot, panelName).button(JFormPane.CANCEL_BUTTON_NAME).requireText(getBundle().cancelText());
         }
 
         @Override
@@ -304,6 +273,6 @@ public class SimpleItemManagerTest extends AbstractFormTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         t.setUpForm();
         frame.setVisible(true);
-        t.manager = t.createItemManagerAndCreateItemAction(OPEN_IN_PANEL);
+        t.manager = t.createItemManagerAndCreateItemAction(SimpleItemManagerTest.OpenInPanel.INSTANCE, NameType.DEFAULT);
     }
 }

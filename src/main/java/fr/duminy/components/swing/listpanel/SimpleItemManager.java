@@ -23,33 +23,22 @@ package fr.duminy.components.swing.listpanel;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import fr.duminy.components.swing.SwingComponentMessages;
-import fr.duminy.components.swing.form.JFormPane;
-import fr.duminy.components.swing.form.TypeMappers;
-import fr.duminy.components.swing.i18n.AbstractI18nAction;
-import fr.duminy.components.swing.i18n.I18nAction;
-import org.formbuilder.Form;
-import org.formbuilder.FormBuilder;
+import fr.duminy.components.swing.form.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
-import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
 
 /**
  * An implementation of {@link ItemManager} interface that use {@link FormBuilder} to build a form to create/modify a bean.
  */
 public class SimpleItemManager<T> implements ItemManager<T> {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleItemManager.class);
-
-    static final String OK_BUTTON_NAME = "okButton";
-    static final String CANCEL_BUTTON_NAME = "cancelButton";
 
     static interface FormDisplayer {
         <T> ListenableFuture<T> displayForm(SimpleItemManager<T> manager, T item, Mode mode);
@@ -63,7 +52,14 @@ public class SimpleItemManager<T> implements ItemManager<T> {
             public <T> ListenableFuture<T> displayForm(SimpleItemManager<T> manager, T item, Mode mode) {
                 LOG.debug("displayForm(container=DIALOG, item={})", item);
                 SettableFuture<T> futureItem = SettableFuture.create();
-                T newItem = JFormPane.showFormDialog(manager.parentComponent, manager.formBuilder, item, manager.title, mode);
+
+                T newItem;
+                if (manager.panelName == null) {
+                    newItem = JFormPane.showFormDialog(manager.parentComponent, manager.formBuilder, item, manager.title, mode);
+                } else {
+                    newItem = JFormPane.showFormDialog(manager.parentComponent, manager.formBuilder, item, manager.title, mode, manager.panelName);
+                }
+
                 if (newItem == null) {
                     cancel(futureItem);
                 } else {
@@ -78,70 +74,29 @@ public class SimpleItemManager<T> implements ItemManager<T> {
         },
         PANEL {
             @Override
-            public <T> ListenableFuture<T> displayForm(SimpleItemManager<T> manager, T item, Mode mode) {
-                SettableFuture<T> futureItem = SettableFuture.create();
+            public <T> ListenableFuture<T> displayForm(final SimpleItemManager<T> manager, T item, Mode mode) {
+                final SettableFuture<T> futureItem = SettableFuture.create();
 
-                TypeMappers.addTypeMappers(manager.formBuilder);
-                Form<T> form = manager.formBuilder.buildForm();
-                form.setValue(item);
+                final JFormPane<T> formPane = new JFormPane<T>(manager.formBuilder, manager.title, mode);
+                formPane.setValue(item);
+                formPane.setName(JFormPane.getActualPanelName(manager.formBuilder, manager.panelName));
 
-                JPanel formPanel = new JPanel(new BorderLayout());
-                formPanel.add(form.asComponent(), BorderLayout.CENTER);
-                formPanel.add(buildButtonsPanel(form, futureItem, mode), BorderLayout.SOUTH);
-
-                checkParentComponent(manager.parentComponent).setBorder(BorderFactory.createTitledBorder(manager.title));
-                manager.parentComponent.removeAll();
-                manager.parentComponent.add(formPanel);
-
-                return futureItem;
-            }
-
-            private <T> JPanel buildButtonsPanel(final Form<T> form, final SettableFuture<T> futureItem, final Mode mode) {
-                JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));
-                I18nAction okAction = new AbstractI18nAction<SwingComponentMessages>(SwingComponentMessages.class) {
+                formPane.addTo(checkParentComponent(manager.parentComponent));
+                formPane.addFormListener(new FormListener<T>() {
                     @Override
-                    protected String getShortDescription(SwingComponentMessages bundle) {
-                        return mode.getTooltip();
-                    }
-
-                    @Override
-                    protected String getName(SwingComponentMessages bundle) {
-                        return mode.getText();
-                    }
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void formValidated(Form<T> form) {
+                        formPane.removeFrom(manager.parentComponent);
                         futureItem.set(form.getValue());
                     }
-                };
-                I18nAction cancelAction = new AbstractI18nAction<SwingComponentMessages>(SwingComponentMessages.class) {
-                    @Override
-                    protected String getShortDescription(SwingComponentMessages bundle) {
-                        return bundle.cancelText();
-                    }
 
                     @Override
-                    protected String getName(SwingComponentMessages bundle) {
-                        return bundle.cancelText();
-                    }
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void formCancelled(Form<T> form) {
+                        formPane.removeFrom(manager.parentComponent);
                         cancel(futureItem);
                     }
-                };
+                });
 
-                addButton(buttonsPanel, okAction, OK_BUTTON_NAME);
-                addButton(buttonsPanel, cancelAction, CANCEL_BUTTON_NAME);
-
-                return buttonsPanel;
-            }
-
-            private void addButton(JPanel buttonsPanel, final I18nAction action, final String buttonName) {
-                action.updateMessages();
-                JButton button = new JButton(action);
-                button.setName(buttonName);
-                buttonsPanel.add(button);
+                return futureItem;
             }
 
             public JComponent checkParentComponent(Container parentComponent) {
@@ -163,9 +118,10 @@ public class SimpleItemManager<T> implements ItemManager<T> {
     private final Container parentComponent;
     private final String title;
     private final FormDisplayer type;
+    private String panelName;
 
     public SimpleItemManager(Class<T> itemClass, Container parentComponent, String title, ContainerType type) {
-        this(itemClass, FormBuilder.map(itemClass).formsOf(REPLICATING), parentComponent, title, (FormDisplayer) type);
+        this(itemClass, new DefaultFormBuilder<>(itemClass), parentComponent, title, (FormDisplayer) type);
     }
 
     public SimpleItemManager(Class<T> itemClass, FormBuilder<T> formBuilder, Container parentComponent, String title, ContainerType type) {
@@ -209,5 +165,9 @@ public class SimpleItemManager<T> implements ItemManager<T> {
     @Override
     public final ListenableFuture<T> updateItem(T item) {
         return type.displayForm(this, item, UPDATE);
+    }
+
+    public final void setPanelName(String panelName) {
+        this.panelName = panelName;
     }
 }

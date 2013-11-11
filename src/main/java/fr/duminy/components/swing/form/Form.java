@@ -20,32 +20,33 @@
  */
 package fr.duminy.components.swing.form;
 
-import fr.duminy.components.swing.path.JPath;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
-import java.io.File;
+import javax.swing.*;
 
 /**
- * An implementation of {@link org.formbuilder.TypeMapper} for {@link java.io.File}.
+ * Interface representing a form for a given bean.
+ *
+ * @param <B> The type of bean displayed by this form.
  */
-@ThreadSafe
-final class FileTypeMapper extends AbstractFileTypeMapper<File> {
-    public static final FileTypeMapper INSTANCE = new FileTypeMapper();
+public interface Form<B> {
+    /**
+     * Set the value of this form.
+     *
+     * @param value
+     */
+    void setValue(B value);
 
-    private FileTypeMapper() {
-        super(File.class);
-    }
+    /**
+     * Get the value represented by this form.
+     *
+     * @return
+     */
+    B getValue();
 
-    @Nullable
-    @Override
-    public final File getValue(@Nonnull JPath jPath) {
-        return (jPath.getPath() == null) ? null : jPath.getPath().toFile();
-    }
-
-    @Override
-    public final void setValue(@Nonnull JPath jPath, @Nullable File value) {
-        jPath.setPath((value == null) ? null : value.toPath());
-    }
+    /**
+     * Return a new swing component representing this form.
+     *
+     * @return
+     */
+    JComponent asComponent();
 }

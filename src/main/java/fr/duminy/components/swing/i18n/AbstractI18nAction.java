@@ -21,8 +21,7 @@
 package fr.duminy.components.swing.i18n;
 
 
-import org.ez18n.runtime.BundleFactory;
-import org.ez18n.runtime.Desktop;
+import fr.duminy.components.swing.Bundle;
 
 import javax.swing.*;
 
@@ -49,7 +48,7 @@ public abstract class AbstractI18nAction<T> extends AbstractAction implements I1
     }
 
     T getBundle(Class<T> messagesClass) {
-        return BundleFactory.get(messagesClass, Desktop.class);
+        return Bundle.getBundle(messagesClass);
     }
 
     abstract protected String getShortDescription(T bundle);

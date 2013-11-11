@@ -21,125 +21,274 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.AbstractFormTest;
-import org.formbuilder.FormBuilder;
+import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
+import org.fest.swing.core.TypeMatcher;
+import org.fest.swing.fixture.JPanelFixture;
+import org.junit.Assert;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
-import static org.formbuilder.FormBuilder.map;
-import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for class {@link JFormPane}.
  */
 @RunWith(Theories.class)
 public class JFormPaneTest extends AbstractFormTest {
-    private Action buttonAction;
+    private FormListener<Bean> listener;
 
-    @Override
-    protected void initContentPane() {
-        addButton(OpenInDialog.INSTANCE, new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                buttonAction.actionPerformed(e);
-            }
-        });
+    private static enum MockListenerActions {
+        NO_MOCK_LISTENER(false, false),
+        ADD_MOCK_LISTENER(true, false),
+        ADD_AND_REMOVE_MOCK_LISTENER(true, true);
+
+        private final boolean add;
+        private final boolean remove;
+
+        private MockListenerActions(boolean add, boolean remove) {
+            this.add = add;
+            this.remove = remove;
+        }
+
+        public boolean addListener() {
+            return add;
+        }
+
+        public boolean removeListener() {
+            return remove;
+        }
+    }
+
+/*
+    //TODO manage I18N for JFormPane
+    @Test
+    public final void testExtendsI18nAble() throws Exception {
+        assertTrue("JFormPane extends I18nAble", I18nAble.class.isAssignableFrom(JFormPane.class));
+    }
+*/
+
+    @Theory
+    public void testAddFormListener_formValidated(NameType nameType) throws Exception {
+        runOkButtonFormTest(ENGLISH, Mode.CREATE, OPEN_IN_PANEL, MockListenerActions.ADD_MOCK_LISTENER, nameType);
+
+        verify(listener, Mockito.times(1)).formValidated(Matchers.<Form<Bean>>any());
+        verifyNoMoreInteractions(listener);
     }
 
     @Theory
-    public final void testUpdateItem_init_nullBean(final Locale locale) throws Exception {
-        runInitNullBeanFormTest(locale, UPDATE);
+    public void testAddFormListener_formCancelled(NameType nameType) throws Exception {
+        runCancelButtonFormTest(ENGLISH, Mode.CREATE, OPEN_IN_PANEL, MockListenerActions.ADD_MOCK_LISTENER, nameType);
+
+        verify(listener, Mockito.times(1)).formCancelled(Matchers.<Form<Bean>>any());
+        verifyNoMoreInteractions(listener);
     }
 
     @Theory
-    public final void testUpdateItem_init_notNullBean(final Locale locale) throws Exception {
-        runInitNotNullBeanFormTest(locale, UPDATE);
+    public void testRemoveFormListener_formValidated(NameType nameType) throws Exception {
+        runOkButtonFormTest(ENGLISH, Mode.CREATE, OPEN_IN_PANEL, MockListenerActions.ADD_AND_REMOVE_MOCK_LISTENER, nameType);
+
+        verifyNoMoreInteractions(listener);
     }
 
     @Theory
-    public final void testUpdateItem_okButton(final Locale locale) throws Exception {
-        runOkButtonFormTest(locale, UPDATE);
+    public void testRemoveFormListener_formCancelled(NameType nameType) throws Exception {
+        runCancelButtonFormTest(ENGLISH, Mode.CREATE, OPEN_IN_PANEL, MockListenerActions.ADD_AND_REMOVE_MOCK_LISTENER, nameType);
+
+        verifyNoMoreInteractions(listener);
     }
 
     @Theory
-    public final void testUpdateItem_cancelButton(final Locale locale) throws Exception {
-        runCancelButtonFormTest(locale, UPDATE);
+    public final void testUpdateItem_init_nullBean(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runInitNullBeanFormTest(locale, UPDATE, containerType, nameType);
     }
 
     @Theory
-    public final void testCreateItem_init_nullBean(final Locale locale) throws Exception {
-        runInitNullBeanFormTest(locale, CREATE);
+    public final void testUpdateItem_init_notNullBean(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runInitNotNullBeanFormTest(locale, UPDATE, containerType, nameType);
     }
 
     @Theory
-    public final void testCreateItem_init_notNullBean(final Locale locale) throws Exception {
-        runInitNotNullBeanFormTest(locale, CREATE);
+    public final void testUpdateItem_okButton(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runOkButtonFormTest(locale, UPDATE, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
     }
 
     @Theory
-    public final void testCreateItem_okButton(final Locale locale) throws Exception {
-        runOkButtonFormTest(locale, CREATE);
+    public final void testUpdateItem_cancelButton(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runCancelButtonFormTest(locale, UPDATE, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
     }
 
     @Theory
-    public final void testCreateItem_cancelButton(final Locale locale) throws Exception {
-        runCancelButtonFormTest(locale, CREATE);
+    public final void testCreateItem_init_nullBean(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runInitNullBeanFormTest(locale, CREATE, containerType, nameType);
     }
 
-    private void runInitNullBeanFormTest(Locale locale, final Mode mode) {
-        new InitNullBeanFormTest() {
+    @Theory
+    public final void testCreateItem_init_notNullBean(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runInitNotNullBeanFormTest(locale, CREATE, containerType, nameType);
+    }
+
+    @Theory
+    public final void testCreateItem_okButton(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runOkButtonFormTest(locale, CREATE, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
+    }
+
+    @Theory
+    public final void testCreateItem_cancelButton(final Locale locale, ContainerType containerType, NameType nameType) throws Exception {
+        runCancelButtonFormTest(locale, CREATE, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
+    }
+
+    private void runInitNullBeanFormTest(Locale locale, final Mode mode, final ContainerType containerType, final NameType nameType) {
+        new InitNullBeanFormTest(nameType) {
             @Override
             protected void init() {
-                prepare(mode);
+                prepare(mode, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
                 super.init();
             }
-        }.run(OpenInDialog.INSTANCE, locale);
+        }.run(containerType, locale);
     }
 
-    private void runInitNotNullBeanFormTest(Locale locale, final Mode mode) {
-        new InitNotNullBeanFormTest() {
+    private void runInitNotNullBeanFormTest(Locale locale, final Mode mode, final ContainerType containerType, final NameType nameType) {
+        new InitNotNullBeanFormTest(nameType) {
             @Override
             protected void init() {
-                prepare(mode);
+                prepare(mode, containerType, MockListenerActions.NO_MOCK_LISTENER, nameType);
                 super.init();
             }
-        }.run(OpenInDialog.INSTANCE, locale);
+        }.run(containerType, locale);
     }
 
-    private void runOkButtonFormTest(Locale locale, final Mode mode) {
-        new OkButtonFormTest(mode) {
+    private void runOkButtonFormTest(Locale locale, final Mode mode, final ContainerType containerType, final MockListenerActions mockListenerActions, final NameType nameType) {
+        new OkButtonFormTest(mode, false, nameType) {
             @Override
             protected void init() {
-                prepare(mode);
+                prepare(mode, containerType, mockListenerActions, nameType);
                 super.init();
             }
-        }.run(OpenInDialog.INSTANCE, locale);
+        }.run(containerType, locale);
     }
 
-    private void runCancelButtonFormTest(Locale locale, final Mode mode) {
-        new CancelButtonFormTest(mode) {
+    private void runCancelButtonFormTest(Locale locale, final Mode mode, final ContainerType containerType, final MockListenerActions mockListenerActions, final NameType nameType) {
+        new CancelButtonFormTest(mode, false, nameType) {
             @Override
             protected void init() {
-                prepare(mode);
+                prepare(mode, containerType, mockListenerActions, nameType);
                 super.init();
             }
-        }.run(OpenInDialog.INSTANCE, locale);
+        }.run(containerType, locale);
     }
 
-    private void prepare(final Mode mode) {
+    private void prepare(final Mode mode, final ContainerType containerType, final MockListenerActions mockListenerActions, final NameType nameType) {
         buttonAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FormBuilder<Bean> builder = map(Bean.class).formsOf(REPLICATING);
-                setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode));
+                FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
+
+                if (OpenInDialog.INSTANCE == containerType) {
+                    if (NameType.DEFAULT == nameType) {
+                        setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode));
+                    } else {
+                        setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode, nameType.getName()));
+                    }
+                } else if (SimpleItemManagerTest.OpenInPanel.INSTANCE == containerType) {
+                    final JFormPane<Bean> formPane = new JFormPane<>(builder, title, mode);
+                    formPane.setValue(getBean());
+                    formPane.setName(nameType.getName());
+                    formPane.addTo(formContainer);
+
+                    if (mockListenerActions.addListener()) {
+                        //noinspection unchecked
+                        listener = mock(FormListener.class);
+
+                        formPane.addFormListener(listener);
+                    }
+
+                    if (mockListenerActions.removeListener()) {
+                        formPane.removeFormListener(listener);
+                    }
+
+                    formPane.addFormListener(new FormListener<Bean>() {
+                        @Override
+                        public void formValidated(Form<Bean> form) {
+                            clearFormContainer();
+                            setBean(form.getValue());
+                        }
+
+                        @Override
+                        public void formCancelled(Form<Bean> form) {
+                            clearFormContainer();
+                            setBean(null);
+                        }
+
+                        private void clearFormContainer() {
+                            formPane.removeFrom(formContainer);
+                            resetContentPane();
+                        }
+                    });
+                } else {
+                    throw new UnsupportedOperationException("Unsupported class: " + containerType.getClass().getName());
+                }
             }
         };
+    }
+
+    public static JPanelFixture formPane(org.fest.swing.core.Robot robot, Class<?> beanClass) {
+        String name = JFormPane.getDefaultPanelName(beanClass);
+        return formPane(robot, name);
+    }
+
+    public static JPanelFixture formPane(org.fest.swing.core.Robot robot, String panelName) {
+        java.util.List<JFormPane> panels = new ArrayList<>();
+        for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
+            for (Component formPane : robot.finder().findAll((Window) window, new TypeMatcher(JFormPane.class))) {
+                if (formPane.getName().equals(panelName) && !panels.contains(formPane)) {
+                    panels.add((JFormPane) formPane);
+                }
+            }
+        }
+
+        if (panels.isEmpty()) {
+            fail(robot, panelName, "Unable to find a", "");
+        } else if (panels.size() > 1) {
+            StringBuilder middleMessage = new StringBuilder();
+            for (JFormPane f : panels) {
+                middleMessage.append('\t').append(f).append('\n');
+            }
+            fail(robot, panelName, "There are duplicates", middleMessage.toString());
+        }
+
+        return new JPanelFixture(robot, panels.get(0));
+    }
+
+    private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
+        Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
+    }
+
+    public static String dumpComponents(org.fest.swing.core.Robot robot) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        robot.printer().printComponents(new PrintStream(os));
+        return "\nComponent hierarchy:\n" + os.toString();
+    }
+
+    public static void main(String[] args) throws Exception {
+        JFormPaneTest t = new JFormPaneTest();
+        JFrame frame = t.createFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        t.prepare(UPDATE, OPEN_IN_PANEL, MockListenerActions.NO_MOCK_LISTENER, NameType.DEFAULT);
+        t.setUpForm();
+        frame.setVisible(true);
     }
 }
