@@ -265,6 +265,7 @@
                         <id>attach-sources</id>
                         <goals>
                             <goal>jar</goal>
+                            <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -360,6 +361,13 @@
             <groupId>net.java.openjdk.cacio</groupId>
             <artifactId>cacio-tta</artifactId>
             <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- slf4j bridges, only for tests (this leaves the choice to final applications) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.5</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
