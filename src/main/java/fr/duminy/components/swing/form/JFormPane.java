@@ -24,6 +24,7 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.AbstractI18nAction;
 import fr.duminy.components.swing.i18n.I18nAction;
 import org.apache.commons.lang3.event.EventListenerSupport;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +33,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 
 import static fr.duminy.components.swing.Bundle.getBundle;
-import static javax.swing.JOptionPane.OK_CANCEL_OPTION;
-import static javax.swing.JOptionPane.QUESTION_MESSAGE;
 
 /**
  * A simple panel displaying a form. It could be displayed as a classical swing component or inside a dialog
@@ -54,7 +53,7 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
     /**
      * The panel of buttons to validate or cancel the form, null when displayed in a dialog.
      */
-    private JPanel buttonsPanel;
+    private final JPanel buttonsPanel;
 
     private final EventListenerSupport<FormListener> listeners = EventListenerSupport.create(FormListener.class);
 
@@ -113,9 +112,13 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
         super(new BorderLayout());
         this.title = title;
         this.mode = mode;
+
         form = formBuilder.buildForm();
         add(form.asComponent(), BorderLayout.CENTER);
-        setDialogMode(false);
+
+        buttonsPanel = buildButtonsPanel();
+        add(buttonsPanel, BorderLayout.SOUTH);
+        setBorder(BorderFactory.createTitledBorder(title));
     }
 
     /**
@@ -133,36 +136,45 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void show() {
-        if (buttonsPanel == null) {
-            setDialogMode(false);
-        }
-        super.show();
-    }
-
-    /**
      * Display this form in a dialog.
      *
      * @param parentComponent The parent component of the dialog.
      * @return The final value entered by the user in the dialog, or null if it was cancelled.
      */
     public B showDialog(Component parentComponent) {
-        setDialogMode(true);
-        Object[] options = {mode.getText(), getBundle().cancelText()};
-        int result = JOptionPane.showOptionDialog(parentComponent,
-                this,
-                title,
-                OK_CANCEL_OPTION,
-                QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]);
+        Window parentWindow;
+        if (parentComponent instanceof Window) {
+            parentWindow = (Window) parentComponent;
+        } else {
+            parentWindow = SwingUtilities.getWindowAncestor(parentComponent);
+        }
+        final JDialog dialog = new JDialog(parentWindow, title, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setContentPane(this);
+        dialog.setResizable(false);
+        setBorder(null);
+        final MutableObject<Boolean> validated = new MutableObject<>(false);
+        FormListener<B> listener = new FormListener<B>() {
+            @Override
+            public void formValidated(Form<B> form) {
+                validated.setValue(true);
+                dialog.dispose();
+            }
 
-        return (result == JOptionPane.OK_OPTION) ? this.getValue() : null;
+            @Override
+            public void formCancelled(Form<B> form) {
+                dialog.dispose();
+            }
+        };
+
+        try {
+            addFormListener(listener);
+            dialog.pack();
+            dialog.setVisible(true);
+            return validated.getValue() ? getValue() : null;
+        } finally {
+            removeFormListener(listener);
+        }
     }
 
     /**
@@ -181,22 +193,6 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
      */
     public void removeFormListener(FormListener<B> listener) {
         listeners.removeListener(listener);
-    }
-
-    private void setDialogMode(boolean dialogMode) {
-        if (dialogMode) {
-            if (buttonsPanel != null) {
-                remove(buttonsPanel);
-            }
-            buttonsPanel = null;
-
-            setBorder(null);
-        } else {
-            buttonsPanel = buildButtonsPanel();
-            add(buttonsPanel, BorderLayout.SOUTH);
-
-            setBorder(BorderFactory.createTitledBorder(title));
-        }
     }
 
     private JPanel buildButtonsPanel() {

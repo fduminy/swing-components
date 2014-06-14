@@ -22,7 +22,9 @@ package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
+import org.fest.swing.core.BasicRobot;
 import org.fest.swing.core.TypeMatcher;
+import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JPanelFixture;
 import org.junit.Assert;
 import org.junit.experimental.theories.Theories;
@@ -286,8 +288,9 @@ public class JFormPaneTest extends AbstractFormTest {
     public static void main(String[] args) throws Exception {
         JFormPaneTest t = new JFormPaneTest();
         JFrame frame = t.createFrame();
+        t.window = new FrameFixture(BasicRobot.robotWithCurrentAwtHierarchy(), frame);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        t.prepare(UPDATE, OPEN_IN_PANEL, MockListenerActions.NO_MOCK_LISTENER, NameType.DEFAULT);
+        t.prepare(UPDATE, OPEN_IN_DIALOG, MockListenerActions.NO_MOCK_LISTENER, NameType.DEFAULT);
         t.setUpForm();
         frame.setVisible(true);
     }

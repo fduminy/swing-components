@@ -30,8 +30,8 @@ import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.ContainerFixture;
+import org.fest.swing.fixture.DialogFixture;
 import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JOptionPaneFixture;
 import org.fest.swing.fixture.JPanelFixture;
 import org.junit.experimental.theories.DataPoint;
 import org.slf4j.Logger;
@@ -49,6 +49,7 @@ import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExp
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static javax.swing.SwingUtilities.getAncestorOfClass;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.swing.core.matcher.JButtonMatcher.withText;
 
 /**
  * And abstract test for class related to a form.
@@ -340,8 +341,8 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         @Override
         protected void checkFinalFormState() {
             super.checkFinalFormState();
-            assertThat(getBean()).isNotNull();
-            assertThat(getBean().getName()).isEqualTo(NEW_NAME);
+            assertThat(getBean()).as("bean").isNotNull();
+            assertThat(getBean().getName()).as("bean name").isEqualTo(NEW_NAME);
         }
     }
 
@@ -453,25 +454,31 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         @Override
-        public JOptionPaneFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
-            JOptionPaneFixture result = getFormPaneFixture(robot, nameType.getName()).optionPane();
-            result.requireQuestionMessage().requireTitle(title);
-            return result;
+        public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
+            JPanel formPane = getFormPaneFixture(robot, nameType.getName()).component();
+            assertThat(formPane).isInstanceOf(JFormPane.class);
+
+            Window parentWindow = SwingUtilities.getWindowAncestor(formPane);
+
+            assertThat(parentWindow).isInstanceOf(Dialog.class);
+            assertThat(((Dialog) parentWindow).getTitle()).isEqualTo(title);
+
+            return new JPanelFixture(robot, formPane);
         }
 
         @Override
         protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode) {
-            return getOptionPaneFixture(robot, panelName).buttonWithText(getExpectedMessage(mode));
+            return getOptionPaneFixture(robot, panelName).button(withText(getExpectedMessage(mode)));
         }
 
         @Override
         protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName) {
-            return getOptionPaneFixture(robot, panelName).buttonWithText(getExpectedMessage(CANCEL_TEXT_KEY));
+            return getOptionPaneFixture(robot, panelName).button(withText(getExpectedMessage(CANCEL_TEXT_KEY)));
         }
 
-        private JOptionPaneFixture getOptionPaneFixture(Robot robot, String panelName) {
-            JOptionPane p = (JOptionPane) getAncestorOfClass(JOptionPane.class, getFormPaneFixture(robot, panelName).component());
-            return new JOptionPaneFixture(robot, p);
+        private DialogFixture getOptionPaneFixture(Robot robot, String panelName) {
+            JDialog p = (JDialog) getAncestorOfClass(JDialog.class, getFormPaneFixture(robot, panelName).component());
+            return new DialogFixture(robot, p);
         }
 
         @Override
