@@ -143,7 +143,9 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
      */
     public B showDialog(Component parentComponent) {
         Window parentWindow;
-        if (parentComponent instanceof Window) {
+        if (parentComponent == null) {
+            parentWindow = JOptionPane.getRootFrame();
+        } else if (parentComponent instanceof Window) {
             parentWindow = (Window) parentComponent;
         } else {
             parentWindow = SwingUtilities.getWindowAncestor(parentComponent);

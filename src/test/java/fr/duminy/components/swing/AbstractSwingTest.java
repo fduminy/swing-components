@@ -33,7 +33,7 @@ import javax.swing.*;
 
 abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
 
-    protected FrameFixture window;
+    public FrameFixture window;
     private JFrame frame;
 
     @BeforeClass
@@ -59,7 +59,7 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
         window.cleanUp();
     }
 
-    protected <T extends JComponent> T buildAndShowWindow(final Supplier<T> factory)
+    public <T extends JComponent> T buildAndShowWindow(final Supplier<T> factory)
             throws Exception {
 
         return GuiActionRunner.execute(new GuiQuery<T>() {
