@@ -36,11 +36,10 @@ import org.mockito.Mockito;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static fr.duminy.components.swing.TestUtilities.dumpComponents;
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
@@ -277,12 +276,6 @@ public class JFormPaneTest extends AbstractFormTest {
 
     private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
         Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
-    }
-
-    public static String dumpComponents(org.fest.swing.core.Robot robot) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        robot.printer().printComponents(new PrintStream(os));
-        return "\nComponent hierarchy:\n" + os.toString();
     }
 
     public static void main(String[] args) throws Exception {

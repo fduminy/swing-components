@@ -27,20 +27,14 @@ import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
+
+import static fr.duminy.components.swing.TestUtilities.dumpComponents;
 
 /**
  * A fixture to help testing a {@link fr.duminy.components.swing.form.JFormPane}.
  */
 public class JFormPaneFixture extends JPanelFixture {
-    public static String dumpComponents(org.fest.swing.core.Robot robot) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        robot.printer().printComponents(new PrintStream(os));
-        return "\nComponent hierarchy:\n" + os.toString();
-    }
-
     public JFormPaneFixture(Robot robot, String panelName) {
         super(robot, find(robot, panelName));
     }
