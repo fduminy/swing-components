@@ -37,7 +37,7 @@ public class FixtureUtilities {
         java.util.List<T> components = new ArrayList<>();
         for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
             for (Component component : robot.finder().findAll((Window) window, new TypeMatcher(componentClass))) {
-                if (component.getName().equals(componentName) && !components.contains(component)) {
+                if ((component.getName() != null) && component.getName().equals(componentName) && !components.contains(component)) {
                     components.add(componentClass.cast(component));
                 }
             }
