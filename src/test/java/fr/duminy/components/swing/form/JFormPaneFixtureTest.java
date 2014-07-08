@@ -23,7 +23,6 @@ package fr.duminy.components.swing.form;
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.AbstractSwingTest;
-import org.fest.swing.core.Robot;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JButtonFixture;
 import org.junit.Rule;
@@ -36,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -64,7 +64,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     });
 
     @DataPoint
-    public static final Action<JButton> OPEN_IN_DIALOG = new Action<JButton>(new Supplier<JButton>() {
+    public static final Action<JButton> OPEN_IN_DIALOG = new Action<JButton>(new CustomSupplier<JButton>() {
         @Override
         public JButton get() {
             JButton result = new JButton("Open Dialog");
@@ -72,7 +72,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
-                    JFormPane.showFormDialog(null, builder, null, "title", JFormPane.Mode.CREATE);
+                    JFormPane.showFormDialog(parentComponent, builder, null, "title", JFormPane.Mode.CREATE);
                 }
             });
             result.setName(BUTTON_NAME);
@@ -80,8 +80,9 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }) {
         @Override
-        public JComponent openForm(AbstractSwingTest test) throws Exception {
-            super.openForm(test);
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test) throws Exception {
+            ((CustomSupplier) this.supplier).parentComponent = parentComponent;
+            super.openForm(parentComponent, test);
             test.window.button(BUTTON_NAME).click();
             return (JComponent) test.window.robot.finder().findByName(PANEL_NAME);
         }
@@ -92,7 +93,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Theory
     public void testConstructor_panelName(Action<JComponent> action) throws Exception {
-        action.openForm(this);
+        action.openForm(null, this);
 
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
 
@@ -101,7 +102,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Theory
     public void testConstructor_beanClass(Action<JComponent> action) throws Exception {
-        action.openForm(this);
+        action.openForm(null, this);
 
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), Bean.class);
 
@@ -151,7 +152,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private void testComponent(Action<JComponent> action, boolean useBeanClass) throws Exception {
-        JComponent expectedForm = action.openForm(this);
+        JComponent expectedForm = action.openForm(null, this);
         JFormPaneFixture fixture = useBeanClass ? new JFormPaneFixture(robot(), Bean.class) : new JFormPaneFixture(robot(), PANEL_NAME);
 
         JPanel form = fixture.component();
@@ -163,7 +164,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     @SuppressWarnings("unchecked")
     public void testOkButton(Action<JComponent> action) throws Exception {
-        action.openForm(this);
+        action.openForm(null, this);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
         JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
@@ -180,7 +181,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     @SuppressWarnings("unchecked")
     public void testCancelButton(Action<JComponent> action) throws Exception {
-        action.openForm(this);
+        action.openForm(null, this);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
         JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
@@ -194,20 +195,20 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         verifyNoMoreInteractions(listener);
     }
 
-    private static class Action<T extends JComponent> {
-        private final Supplier<T> supplier;
+    public static class Action<T extends JComponent> {
+        protected final Supplier<T> supplier;
 
-        protected Action(Supplier<T> supplier) {
+        private Action(Supplier<T> supplier) {
             this.supplier = supplier;
         }
 
         @SuppressWarnings("unchecked")
-        public JComponent openForm(AbstractSwingTest test) throws Exception {
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test) throws Exception {
             return test.buildAndShowWindow(supplier);
         }
     }
 
-    private Robot getRobot() {
-        return robot();
+    private static abstract class CustomSupplier<T> implements Supplier<T> {
+        protected Component parentComponent;
     }
 }
