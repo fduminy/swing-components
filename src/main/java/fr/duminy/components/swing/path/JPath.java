@@ -116,6 +116,10 @@ public class JPath extends JPanel {
         setPath(path, true);
     }
 
+    SelectionMode getSelectionMode() {
+        return selectionMode;
+    }
+
     public static void displayFileChooser(final JPath parent, final Path initialPath, final SelectionMode selectionMode) {
         final JFileChooser jfc = new JFileChooser();
 

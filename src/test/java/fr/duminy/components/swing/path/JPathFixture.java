@@ -18,35 +18,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package fr.duminy.components.swing.form;
+package fr.duminy.components.swing.path;
 
 import fr.duminy.components.swing.FixtureUtilities;
 import org.fest.swing.core.Robot;
-import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
 
+import java.nio.file.Path;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
+
 /**
- * A fixture to help testing a {@link fr.duminy.components.swing.form.JFormPane}.
+ * Fixture to help testing a {@link fr.duminy.components.swing.path.JPath}.
  */
-public class JFormPaneFixture extends JPanelFixture {
-    public JFormPaneFixture(Robot robot, String panelName) {
-        super(robot, FixtureUtilities.find(robot, JFormPane.class, panelName));
+public class JPathFixture extends JPanelFixture {
+    private final String componentName;
+
+    public JPathFixture(Robot robot, String componentName) {
+        super(robot, FixtureUtilities.find(robot, JPath.class, componentName));
+        this.componentName = componentName;
     }
 
-    public JFormPaneFixture(Robot robot, Class<?> beanClass) {
-        super(robot, find(robot, beanClass));
+    public void requireSelectionMode(JPath.SelectionMode selectionMode) {
+        if (!path().getSelectionMode().equals(selectionMode)) {
+            fail("JPath component named '" + componentName + "' must have selection mode " + selectionMode);
+        }
     }
 
-    public JButtonFixture okButton() {
-        return button(JFormPane.OK_BUTTON_NAME);
+    public void selectPath(Path path) {
+        path().setPath(path);
     }
 
-    public JButtonFixture cancelButton() {
-        return button(JFormPane.CANCEL_BUTTON_NAME);
+    public void requireSelectedPath(Path path) {
+        assertThat(path().getPath()).as("selectedPath").isEqualTo(path);
     }
 
-    private static JFormPane find(org.fest.swing.core.Robot robot, Class<?> beanClass) {
-        String name = JFormPane.getDefaultPanelName(beanClass);
-        return FixtureUtilities.find(robot, JFormPane.class, name);
+    private JPath path() {
+        return (JPath) component();
     }
 }
