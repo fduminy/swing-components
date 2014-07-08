@@ -33,16 +33,17 @@ import static org.fest.assertions.Fail.fail;
  * Fixture to help testing a {@link fr.duminy.components.swing.path.JPath}.
  */
 public class JPathFixture extends JPanelFixture {
-    private final String componentName;
-
     public JPathFixture(Robot robot, String componentName) {
-        super(robot, FixtureUtilities.find(robot, JPath.class, componentName));
-        this.componentName = componentName;
+        this(robot, FixtureUtilities.find(robot, JPath.class, componentName));
+    }
+
+    public JPathFixture(Robot robot, JPath component) {
+        super(robot, component);
     }
 
     public void requireSelectionMode(JPath.SelectionMode selectionMode) {
         if (!path().getSelectionMode().equals(selectionMode)) {
-            fail("JPath component named '" + componentName + "' must have selection mode " + selectionMode);
+            fail("JPath component named '" + component().getName() + "' must have selection mode " + selectionMode);
         }
     }
 

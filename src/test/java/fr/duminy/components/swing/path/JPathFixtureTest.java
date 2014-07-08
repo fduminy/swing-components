@@ -56,7 +56,7 @@ public class JPathFixtureTest extends AbstractFormTest {
     public static final JPath.SelectionMode[] MODES = JPath.SelectionMode.values();
 
     @Test
-    public void testConstructor_noMatch() {
+    public void testConstructor_nameArg_noMatch() {
         thrown.expect(ComponentLookupException.class);
         thrown.expectMessage("Unable to find a JPath with name '" + COMPONENT_NAME + "'");
 
@@ -64,14 +64,14 @@ public class JPathFixtureTest extends AbstractFormTest {
     }
 
     @Test
-    public void testConstructor_onlyOneMatch() throws Exception {
+    public void testConstructor_nameArg_onlyOneMatch() throws Exception {
         buildAndShow(JPath.SelectionMode.FILES_AND_DIRECTORIES);
 
         new JPathFixture(robot(), COMPONENT_NAME);
     }
 
     @Test
-    public void testConstructor_multipleMatches() throws Exception {
+    public void testConstructor_nameArg_multipleMatches() throws Exception {
         Supplier<JPanel> supplier = new Supplier<JPanel>() {
             @Override
             public JPanel get() {
@@ -91,6 +91,27 @@ public class JPathFixtureTest extends AbstractFormTest {
         thrown.expectMessage("There are duplicates JPath with name '" + COMPONENT_NAME + "'");
 
         new JPathFixture(robot(), COMPONENT_NAME);
+    }
+
+    @Test
+    public void testConstructor_jpathArg_null() throws Exception {
+        thrown.expect(NullPointerException.class);
+        thrown.expectMessage("Target component should not be null");
+
+        new JPathFixture(robot(), (JPath) null);
+    }
+
+    @Test
+    public void testConstructor_jpathArg_notNull() throws Exception {
+        final JPath jpath = GuiActionRunner.execute(new GuiQuery<JPath>() {
+            protected JPath executeInEDT() {
+                return new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+            }
+        });
+
+        JPathFixture fixture = new JPathFixture(robot(), jpath);
+
+        assertThat(fixture.component()).isSameAs(jpath);
     }
 
     @Theory
