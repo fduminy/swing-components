@@ -53,7 +53,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     private static final String BUTTON_NAME = "openInDialog";
 
     @DataPoint
-    public static final Action<JFormPane<Bean>> OPEN_IN_PANEL = new Action<>(new Supplier<JFormPane<Bean>>() {
+    public static final Action<JFormPane<Bean>> OPEN_IN_PANEL = new Action<>(false, new Supplier<JFormPane<Bean>>() {
         @Override
         public JFormPane<Bean> get() {
             final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
@@ -64,7 +64,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     });
 
     @DataPoint
-    public static final Action<JButton> OPEN_IN_DIALOG = new Action<JButton>(new CustomSupplier<JButton>() {
+    public static final Action<JButton> OPEN_IN_DIALOG = new Action<JButton>(true, new CustomSupplier<JButton>() {
         @Override
         public JButton get() {
             JButton result = new JButton("Open Dialog");
@@ -195,10 +195,33 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         verifyNoMoreInteractions(listener);
     }
 
+    @Theory
+    public void testRequireInDialog_asExpected(Action<JComponent> action) throws Exception {
+        testRequireInDialog(action, action.inDialog);
+    }
+
+    @Theory
+    public void testRequireInDialog_notAsExpected(Action<JComponent> action) throws Exception {
+        boolean expectedInDialog = !action.inDialog;
+        thrown.expect(AssertionError.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("The form '" + PANEL_NAME + "' must " + (expectedInDialog ? "" : "not ") + "be in a dialog");
+        testRequireInDialog(action, expectedInDialog);
+    }
+
+    private void testRequireInDialog(Action<JComponent> action, boolean expectedInDialog) throws Exception {
+        action.openForm(null, this);
+        JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
+
+        fixture.requireInDialog(expectedInDialog);
+    }
+
     public static class Action<T extends JComponent> {
+        protected final boolean inDialog;
         protected final Supplier<T> supplier;
 
-        private Action(Supplier<T> supplier) {
+        private Action(boolean inDialog, Supplier<T> supplier) {
+            this.inDialog = inDialog;
             this.supplier = supplier;
         }
 

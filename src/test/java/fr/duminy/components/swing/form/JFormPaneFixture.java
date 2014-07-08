@@ -25,6 +25,11 @@ import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
 
+import javax.swing.*;
+import java.awt.*;
+
+import static org.junit.Assert.fail;
+
 /**
  * A fixture to help testing a {@link fr.duminy.components.swing.form.JFormPane}.
  */
@@ -43,6 +48,24 @@ public class JFormPaneFixture extends JPanelFixture {
 
     public JButtonFixture cancelButton() {
         return button(JFormPane.CANCEL_BUTTON_NAME);
+    }
+
+    public void requireInDialog(boolean expectInADialog) {
+        boolean actuallyInDialog = false;
+
+        Component formPane = component();
+        Window window = SwingUtilities.getWindowAncestor(formPane);
+        if (window instanceof JDialog) {
+            if (((JDialog) window).getContentPane().equals(formPane)) {
+                actuallyInDialog = true;
+            }
+        }
+
+        if (actuallyInDialog && !expectInADialog) {
+            fail("The form '" + component().getName() + "' must not be in a dialog");
+        } else if (!actuallyInDialog && expectInADialog) {
+            fail("The form '" + component().getName() + "' must be in a dialog");
+        }
     }
 
     private static JFormPane find(org.fest.swing.core.Robot robot, Class<?> beanClass) {
