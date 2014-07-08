@@ -41,18 +41,21 @@ public class JPathFixture extends JPanelFixture {
         super(robot, component);
     }
 
-    public void requireSelectionMode(JPath.SelectionMode selectionMode) {
+    public JPathFixture requireSelectionMode(JPath.SelectionMode selectionMode) {
         if (!path().getSelectionMode().equals(selectionMode)) {
             fail("JPath component named '" + component().getName() + "' must have selection mode " + selectionMode);
         }
+        return this;
     }
 
-    public void selectPath(Path path) {
+    public JPathFixture selectPath(Path path) {
         path().setPath(path);
+        return this;
     }
 
-    public void requireSelectedPath(Path path) {
+    public JPathFixture requireSelectedPath(Path path) {
         assertThat(path().getPath()).as("selectedPath").isEqualTo(path);
+        return this;
     }
 
     private JPath path() {

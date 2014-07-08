@@ -119,7 +119,8 @@ public class JPathFixtureTest extends AbstractFormTest {
         buildAndShow(mode);
         JPathFixture fixture = new JPathFixture(robot(), COMPONENT_NAME);
 
-        fixture.requireSelectionMode(mode);
+        JPathFixture actualFixture = fixture.requireSelectionMode(mode);
+        assertThat(actualFixture).as("returned fixture").isSameAs(fixture);
 
         for (JPath.SelectionMode m : JPath.SelectionMode.values()) {
             if (!m.equals(mode)) {
@@ -151,12 +152,12 @@ public class JPathFixtureTest extends AbstractFormTest {
         setPathInEDT(jPath, Paths.get("initialPath"));
         final JPathFixture fixture = new JPathFixture(robot(), COMPONENT_NAME);
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
-                fixture.selectPath(expectedPath);
-                return null;
+        JPathFixture actualFixture = GuiActionRunner.execute(new GuiQuery<JPathFixture>() {
+            protected JPathFixture executeInEDT() {
+                return fixture.selectPath(expectedPath);
             }
         });
+        assertThat(actualFixture).as("returned fixture").isSameAs(fixture);
 
         assertThat(jPath.getPath()).as("selectedPath").isEqualTo(expectedPath);
     }
@@ -176,7 +177,8 @@ public class JPathFixtureTest extends AbstractFormTest {
         setPathInEDT(jPath, expectedPath);
         final JPathFixture fixture = new JPathFixture(robot(), COMPONENT_NAME);
 
-        fixture.requireSelectedPath(expectedPath);
+        JPathFixture actualFixture = fixture.requireSelectedPath(expectedPath);
+        assertThat(actualFixture).as("returned fixture").isSameAs(fixture);
     }
 
     @Test
