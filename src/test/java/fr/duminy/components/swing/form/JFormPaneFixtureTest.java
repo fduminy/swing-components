@@ -215,7 +215,8 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
 
-        fixture.requireInDialog(expectedInDialog);
+        JFormPaneFixture actualFixture = fixture.requireInDialog(expectedInDialog);
+        assertEquals("returned fixture", fixture, actualFixture);
     }
 
     @Theory

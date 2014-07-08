@@ -50,7 +50,7 @@ public class JFormPaneFixture extends JPanelFixture {
         return button(JFormPane.CANCEL_BUTTON_NAME);
     }
 
-    public void requireInDialog(boolean expectInADialog) {
+    public JFormPaneFixture requireInDialog(boolean expectInADialog) {
         boolean actuallyInDialog = false;
 
         JFormPane formPane = form();
@@ -66,6 +66,8 @@ public class JFormPaneFixture extends JPanelFixture {
         } else if (!actuallyInDialog && expectInADialog) {
             fail("The form '" + component().getName() + "' must be in a dialog");
         }
+
+        return this;
     }
 
     public JFormPaneFixture requireModeCreate() {
