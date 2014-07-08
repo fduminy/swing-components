@@ -40,6 +40,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -53,11 +54,11 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     private static final String BUTTON_NAME = "openInDialog";
 
     @DataPoint
-    public static final Action<JFormPane<Bean>> OPEN_IN_PANEL = new Action<>(false, new Supplier<JFormPane<Bean>>() {
+    public static final Action<JFormPane<Bean>> OPEN_IN_PANEL = new Action<>(false, new BaseSupplier<JFormPane<Bean>>() {
         @Override
         public JFormPane<Bean> get() {
             final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
-            JFormPane<Bean> form = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
+            JFormPane<Bean> form = new JFormPane<>(builder, "title", mode);
             form.setName(PANEL_NAME);
             return form;
         }
@@ -72,7 +73,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
-                    JFormPane.showFormDialog(parentComponent, builder, null, "title", JFormPane.Mode.CREATE);
+                    JFormPane.showFormDialog(parentComponent, builder, null, "title", mode);
                 }
             });
             result.setName(BUTTON_NAME);
@@ -80,9 +81,9 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }) {
         @Override
-        public JComponent openForm(Component parentComponent, AbstractSwingTest test) throws Exception {
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode) throws Exception {
             ((CustomSupplier) this.supplier).parentComponent = parentComponent;
-            super.openForm(parentComponent, test);
+            super.openForm(parentComponent, test, mode);
             test.window.button(BUTTON_NAME).click();
             return (JComponent) test.window.robot.finder().findByName(PANEL_NAME);
         }
@@ -93,7 +94,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Theory
     public void testConstructor_panelName(Action<JComponent> action) throws Exception {
-        action.openForm(null, this);
+        action.openForm(null, this, JFormPane.Mode.CREATE);
 
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
 
@@ -102,7 +103,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Theory
     public void testConstructor_beanClass(Action<JComponent> action) throws Exception {
-        action.openForm(null, this);
+        action.openForm(null, this, JFormPane.Mode.CREATE);
 
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), Bean.class);
 
@@ -114,6 +115,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         Supplier<JFormPane<Bean>> wrongName = new Supplier<JFormPane<Bean>>() {
             @Override
             public JFormPane<Bean> get() {
+                OPEN_IN_PANEL.supplier.mode = JFormPane.Mode.CREATE;
                 JFormPane<Bean> form = OPEN_IN_PANEL.supplier.get();
                 form.setName("WrongName");
                 return form;
@@ -152,7 +154,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private void testComponent(Action<JComponent> action, boolean useBeanClass) throws Exception {
-        JComponent expectedForm = action.openForm(null, this);
+        JComponent expectedForm = action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = useBeanClass ? new JFormPaneFixture(robot(), Bean.class) : new JFormPaneFixture(robot(), PANEL_NAME);
 
         JPanel form = fixture.component();
@@ -164,7 +166,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     @SuppressWarnings("unchecked")
     public void testOkButton(Action<JComponent> action) throws Exception {
-        action.openForm(null, this);
+        action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
         JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
@@ -181,7 +183,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     @SuppressWarnings("unchecked")
     public void testCancelButton(Action<JComponent> action) throws Exception {
-        action.openForm(null, this);
+        action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
         JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
@@ -210,28 +212,75 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private void testRequireInDialog(Action<JComponent> action, boolean expectedInDialog) throws Exception {
-        action.openForm(null, this);
+        action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
 
         fixture.requireInDialog(expectedInDialog);
     }
 
+    @Theory
+    public void testRequireModeCreate(Action<JComponent> action) throws Exception {
+        testRequireModeCreate(action, JFormPane.Mode.CREATE);
+    }
+
+    @Theory
+    public void testRequireModeCreate_wrongMode(Action<JComponent> action) throws Exception {
+        thrown.expect(AssertionError.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("The form '" + PANEL_NAME + "' must be in CREATE mode");
+        testRequireModeCreate(action, JFormPane.Mode.UPDATE);
+    }
+
+    private void testRequireModeCreate(Action<JComponent> action, JFormPane.Mode actualMode) throws Exception {
+        action.openForm(null, this, actualMode);
+        JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
+
+        JFormPaneFixture actualFixture = fixture.requireModeCreate();
+        assertEquals("returned fixture", fixture, actualFixture);
+    }
+
+    @Theory
+    public void testRequireModeUpdate(Action<JComponent> action) throws Exception {
+        testRequireModeUpdate(action, JFormPane.Mode.UPDATE);
+    }
+
+    @Theory
+    public void testRequireModeUpdate_wrongMode(Action<JComponent> action) throws Exception {
+        thrown.expect(AssertionError.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("The form '" + PANEL_NAME + "' must be in UPDATE mode");
+        testRequireModeUpdate(action, JFormPane.Mode.CREATE);
+    }
+
+    private void testRequireModeUpdate(Action<JComponent> action, JFormPane.Mode actualMode) throws Exception {
+        action.openForm(null, this, actualMode);
+        JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
+
+        JFormPaneFixture actualFixture = fixture.requireModeUpdate();
+        assertEquals("returned fixture", fixture, actualFixture);
+    }
+
+    private static abstract class BaseSupplier<T> implements Supplier<T> {
+        protected JFormPane.Mode mode;
+    }
+
     public static class Action<T extends JComponent> {
         protected final boolean inDialog;
-        protected final Supplier<T> supplier;
+        protected final BaseSupplier<T> supplier;
 
-        private Action(boolean inDialog, Supplier<T> supplier) {
+        private Action(boolean inDialog, BaseSupplier<T> supplier) {
             this.inDialog = inDialog;
             this.supplier = supplier;
         }
 
         @SuppressWarnings("unchecked")
-        public JComponent openForm(Component parentComponent, AbstractSwingTest test) throws Exception {
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode) throws Exception {
+            supplier.mode = mode;
             return test.buildAndShowWindow(supplier);
         }
     }
 
-    private static abstract class CustomSupplier<T> implements Supplier<T> {
+    private static abstract class CustomSupplier<T> extends BaseSupplier<T> {
         protected Component parentComponent;
     }
 }

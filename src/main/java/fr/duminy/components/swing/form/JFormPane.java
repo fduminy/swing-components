@@ -272,6 +272,10 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
         formContainer.revalidate();
     }
 
+    Mode getMode() {
+        return mode;
+    }
+
 /*
     //TODO manage I18N for JFormPane 
     @Override

@@ -53,7 +53,7 @@ public class JFormPaneFixture extends JPanelFixture {
     public void requireInDialog(boolean expectInADialog) {
         boolean actuallyInDialog = false;
 
-        Component formPane = component();
+        JFormPane formPane = form();
         Window window = SwingUtilities.getWindowAncestor(formPane);
         if (window instanceof JDialog) {
             if (((JDialog) window).getContentPane().equals(formPane)) {
@@ -66,6 +66,26 @@ public class JFormPaneFixture extends JPanelFixture {
         } else if (!actuallyInDialog && expectInADialog) {
             fail("The form '" + component().getName() + "' must be in a dialog");
         }
+    }
+
+    public JFormPaneFixture requireModeCreate() {
+        JFormPane formPane = form();
+        if (!JFormPane.Mode.CREATE.equals(formPane.getMode())) {
+            fail("The form '" + formPane.getName() + "' must be in CREATE mode");
+        }
+        return this;
+    }
+
+    public JFormPaneFixture requireModeUpdate() {
+        JFormPane formPane = form();
+        if (!JFormPane.Mode.UPDATE.equals(formPane.getMode())) {
+            fail("The form '" + formPane.getName() + "' must be in UPDATE mode");
+        }
+        return this;
+    }
+
+    private JFormPane form() {
+        return (JFormPane) component();
     }
 
     private static JFormPane find(org.fest.swing.core.Robot robot, Class<?> beanClass) {
