@@ -21,6 +21,9 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.FixtureUtilities;
+import fr.duminy.components.swing.path.JPath;
+import fr.duminy.components.swing.path.JPathFixture;
+import org.fest.swing.core.GenericTypeMatcher;
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
@@ -84,6 +87,33 @@ public class JFormPaneFixture extends JPanelFixture {
             fail("The form '" + formPane.getName() + "' must be in UPDATE mode");
         }
         return this;
+    }
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a single {@link fr.duminy.components.swing.path.JPath}.
+     *
+     * @return
+     */
+    public JPathFixture path() {
+        return new JPathFixture(robot, findByType(JPath.class));
+    }
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.path.JPathFixture} from a {@link fr.duminy.components.swing.path.JPath} matcher.
+     *
+     * @return
+     */
+    public JPathFixture path(GenericTypeMatcher<? extends JPath> matcher) {
+        return new JPathFixture(robot, find(matcher));
+    }
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a {@link fr.duminy.components.swing.path.JPath} named by <code>name</code>.
+     *
+     * @return
+     */
+    public JPathFixture path(String name) {
+        return new JPathFixture(robot, findByName(name, JPath.class));
     }
 
     private JFormPane form() {

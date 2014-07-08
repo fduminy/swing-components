@@ -23,6 +23,10 @@ package fr.duminy.components.swing.form;
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.AbstractSwingTest;
+import fr.duminy.components.swing.path.JPath;
+import fr.duminy.components.swing.path.JPathFixture;
+import org.fest.swing.core.GenericTypeMatcher;
+import org.fest.swing.core.NameMatcher;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JButtonFixture;
 import org.junit.Rule;
@@ -38,6 +42,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -259,6 +264,215 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
         JFormPaneFixture actualFixture = fixture.requireModeUpdate();
         assertEquals("returned fixture", fixture, actualFixture);
+    }
+
+    @Test
+    public void testPath_noArgs_noMatch() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Unable to find component");
+        thrown.expectMessage(JPath.class.getName());
+        testPath_noArgs(BeanWithoutPath.class);
+    }
+
+    @Test
+    public void testPath_noArgs_onlyOneMatch() throws Exception {
+        FormsSupplier<BeanWithOnePath> supplier = testPath_noArgs(BeanWithOnePath.class);
+
+        assertThat(supplier.pathFixture).isNotNull();
+        Component path = supplier.pathFixture.component();
+        assertThat(path.getName()).isEqualTo("path");
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
+    }
+
+    @Test
+    public void testPath_noArgs_multipleMatches() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Found more than one component");
+        thrown.expectMessage(JPath.class.getName());
+        thrown.expectMessage("path");
+        thrown.expectMessage("path2");
+        testPath_noArgs(BeanWithTwoPaths.class);
+    }
+
+    private <T> FormsSupplier<T> testPath_noArgs(Class<T> beanClass) throws Exception {
+        FormsSupplier<T> supplier = buildAndShowWindowWithPath(beanClass);
+        supplier.pathFixture = supplier.formFixture.path();
+        return supplier;
+    }
+
+    @Test
+    public void testPath_matcherArg_noPath() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Unable to find component");
+        FormsSupplier<BeanWithoutPath> supplier = buildAndShowWindowWithPath(BeanWithoutPath.class);
+
+        supplier.formFixture.path(new PathNameMatcher("path"));
+    }
+
+    @Test
+    public void testPath_matcherArg_wrongName() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Unable to find component");
+        thrown.expectMessage(JPath.class.getName());
+        FormsSupplier<BeanWithOnePath> supplier = buildAndShowWindowWithPath(BeanWithOnePath.class);
+
+        supplier.formFixture.path(new PathNameMatcher("wrongName"));
+    }
+
+    @Test
+    public void testPath_matcherArg_onlyOneMatch() throws Exception {
+        FormsSupplier<BeanWithTwoPaths> supplier = buildAndShowWindowWithPath(BeanWithTwoPaths.class);
+
+        testPath_matcherArg(supplier, "path");
+        testPath_matcherArg(supplier, "path2");
+    }
+
+    private void testPath_matcherArg(FormsSupplier<BeanWithTwoPaths> supplier, String pathName) {
+        JPathFixture pathFixture = supplier.formFixture.path(new PathNameMatcher(pathName));
+
+        assertThat(pathFixture).isNotNull();
+        Component path = pathFixture.component();
+        assertThat(path.getName()).isEqualTo(pathName);
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
+    }
+
+    private static class PathNameMatcher extends GenericTypeMatcher<JPath> {
+        private final String pathName;
+
+        public PathNameMatcher(String pathName) {
+            super(JPath.class, true);
+            this.pathName = pathName;
+        }
+
+        @Override
+        protected boolean isMatching(JPath component) {
+            return new NameMatcher(pathName, true).matches(component);
+        }
+    }
+
+    @Test
+    public void testPath_nameArg_noPath() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Unable to find component");
+        thrown.expectMessage(JPath.class.getName());
+        FormsSupplier<BeanWithoutPath> supplier = buildAndShowWindowWithPath(BeanWithoutPath.class);
+
+        supplier.formFixture.path("path");
+    }
+
+    @Test
+    public void testPath_nameArg_wrongName() throws Exception {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage("Unable to find component");
+        thrown.expectMessage(JPath.class.getName());
+        FormsSupplier<BeanWithOnePath> supplier = buildAndShowWindowWithPath(BeanWithOnePath.class);
+
+        supplier.formFixture.path("wrongName");
+    }
+
+    @Test
+    public void testPath_nameArg_onlyOneMatch() throws Exception {
+        FormsSupplier<BeanWithTwoPaths> supplier = buildAndShowWindowWithPath(BeanWithTwoPaths.class);
+
+        testPath_nameArg(supplier, "path");
+        testPath_nameArg(supplier, "path2");
+    }
+
+    private void testPath_nameArg(FormsSupplier<BeanWithTwoPaths> supplier, String pathName) {
+        JPathFixture pathFixture = supplier.formFixture.path(pathName);
+
+        assertThat(pathFixture).isNotNull();
+        Component path = pathFixture.component();
+        assertThat(path.getName()).isEqualTo(pathName);
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
+    }
+
+    private <T> FormsSupplier<T> buildAndShowWindowWithPath(final Class<T> beanClass) throws Exception {
+        final String formName = JFormPane.getDefaultPanelName(beanClass);
+        Supplier<JFormPane<T>> formSupplier = new Supplier<JFormPane<T>>() {
+            @Override
+            public JFormPane<T> get() {
+                final FormBuilder<T> builder = new DefaultFormBuilder<>(beanClass);
+                final JFormPane<T> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
+                formPane.setName(formName);
+                return formPane;
+            }
+        };
+        FormsSupplier<T> allFormsSupplier = new FormsSupplier<T>(formSupplier);
+        buildAndShowWindow(allFormsSupplier);
+        allFormsSupplier.noiseForm.setName("noiseForm"); // avoid name clash for the 2 JFormPanes
+        allFormsSupplier.formFixture = new JFormPaneFixture(robot(), formName);
+        assertThat(allFormsSupplier.targetForm).isSameAs(allFormsSupplier.formFixture.component());
+
+        return allFormsSupplier;
+    }
+
+    private static class FormsSupplier<T> implements Supplier<JPanel> {
+        private final Supplier<JFormPane<T>> formSupplier;
+        private JFormPane<T> targetForm;
+        private JFormPane<T> noiseForm;
+
+        private JFormPaneFixture formFixture;
+        private JPathFixture pathFixture;
+
+        private FormsSupplier(Supplier<JFormPane<T>> formSupplier) {
+            this.formSupplier = formSupplier;
+        }
+
+        @Override
+        public JPanel get() {
+            JPanel allFormsPanel = new JPanel(new GridLayout(2, 1));
+
+            noiseForm = formSupplier.get();
+            allFormsPanel.add(noiseForm);
+
+            targetForm = formSupplier.get();
+            allFormsPanel.add(targetForm);
+
+            return allFormsPanel;
+        }
+    }
+
+    public static class BeanWithoutPath {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    public static class BeanWithOnePath extends BeanWithoutPath {
+        private File path;
+
+        public File getPath() {
+            return path;
+        }
+
+        public void setPath(File path) {
+            this.path = path;
+        }
+    }
+
+    public static class BeanWithTwoPaths extends BeanWithOnePath {
+        private File path2;
+
+        public File getPath2() {
+            return path2;
+        }
+
+        public void setPath2(File path2) {
+            this.path2 = path2;
+        }
     }
 
     private static abstract class BaseSupplier<T> implements Supplier<T> {
