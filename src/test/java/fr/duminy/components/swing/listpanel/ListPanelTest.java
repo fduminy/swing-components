@@ -469,6 +469,7 @@ public class ListPanelTest extends AbstractSwingTest {
         window.button(buttonName).requireVisible().requireEnabled().click();
 
         InOrder inOrder = Mockito.inOrder(action);
+        inOrder.verify(action, times(1)).updateState(eq(new int[]{}), eq(nbItems));
         inOrder.verify(action, times(1)).updateState(eq(new int[]{selectedIndex}), eq(nbItems));
         inOrder.verify(action, times(1)).executeAction(eq(item));
         inOrder.verifyNoMoreInteractions();

@@ -92,6 +92,7 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
     public void addUserButton(String buttonName, AbstractUserItemAction<T, ?> action) {
         action.setListener(this);
         buttons.addButton(buttonName, action);
+        action.updateState(getSortedSelectedIndices(), list.getSize());
     }
 
     @Override
