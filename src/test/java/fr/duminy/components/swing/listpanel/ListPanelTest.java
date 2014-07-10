@@ -176,27 +176,7 @@ public class ListPanelTest extends AbstractSwingTest {
         @Override
         public ListPanel<JList<String>, String> create(int nbItems, final boolean itemManagerReturnsNull, ItemManager<String> itemManager) {
             if (itemManager == null) {
-                itemManager = new ItemManager<String>() {
-                    @Override
-                    public ListenableFuture<String> createItem() {
-                        return createFuture(NEW_ITEM);
-                    }
-
-                    @Override
-                    public ListenableFuture<String> updateItem(String item) {
-                        return createFuture(UPDATED_ITEM);
-                    }
-
-                    private ListenableFuture<String> createFuture(String resultIfNotCancelled) {
-                        ListenableFuture<String> result;
-                        if (itemManagerReturnsNull) {
-                            result = Futures.immediateCancelledFuture();
-                        } else {
-                            result = Futures.immediateFuture(resultIfNotCancelled);
-                        }
-                        return result;
-                    }
-                };
+                itemManager = new MockItemManager(itemManagerReturnsNull);
             }
             return new MyListPanel<>(new JList<>(createItems(nbItems)), itemManager);
         }
@@ -205,6 +185,34 @@ public class ListPanelTest extends AbstractSwingTest {
             return "PanelFactory<JList>";
         }
     };
+
+    public static class MockItemManager implements ItemManager<String> {
+        private final boolean itemManagerReturnsNull;
+
+        public MockItemManager(boolean itemManagerReturnsNull) {
+            this.itemManagerReturnsNull = itemManagerReturnsNull;
+        }
+
+        @Override
+        public ListenableFuture<String> createItem() {
+            return createFuture(NEW_ITEM);
+        }
+
+        @Override
+        public ListenableFuture<String> updateItem(String item) {
+            return createFuture(UPDATED_ITEM);
+        }
+
+        private ListenableFuture<String> createFuture(String resultIfNotCancelled) {
+            ListenableFuture<String> result;
+            if (itemManagerReturnsNull) {
+                result = Futures.immediateCancelledFuture();
+            } else {
+                result = Futures.immediateFuture(resultIfNotCancelled);
+            }
+            return result;
+        }
+    }
 
     @Before
     public void setUpBeforeTest() {
