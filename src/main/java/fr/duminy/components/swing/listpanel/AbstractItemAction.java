@@ -23,7 +23,9 @@ package fr.duminy.components.swing.listpanel;
 import fr.duminy.components.swing.i18n.AbstractI18nAction;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 
 /**
  * Abstract class for an action on a {@link ListActions}.
@@ -45,8 +47,24 @@ abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements
         this.listener = listener;
 
         putValue(ACCELERATOR_KEY, acceleratorKey);
-        putValue(LARGE_ICON_KEY, new ImageIcon(getClass().getResource(iconResource)));
+        putValue(LARGE_ICON_KEY, loadIcon(iconResource));
         updateMessages();
+    }
+
+    private ImageIcon loadIcon(String iconResource) {
+        if (iconResource == null) {
+            throw new NullPointerException("Icon resource is null");
+        }
+
+        URL imageURL = getClass().getResource(iconResource);
+        if (imageURL != null) {
+            ImageIcon imageIcon = new ImageIcon(imageURL);
+            if (imageIcon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                return imageIcon;
+            }
+        }
+
+        throw new IllegalArgumentException("Icon resource not found : '" + iconResource + "'");
     }
 
     void setListener(ListActions<T> listener) {
@@ -56,7 +74,6 @@ abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements
     @Override
     final public void actionPerformed(ActionEvent e) {
         doAction(listener);
-
     }
 
     /**
