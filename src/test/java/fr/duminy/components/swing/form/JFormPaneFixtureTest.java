@@ -28,6 +28,7 @@ import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.core.GenericTypeMatcher;
 import org.fest.swing.core.NameMatcher;
 import org.fest.swing.exception.ComponentLookupException;
+import org.fest.swing.fixture.ContainerFixture;
 import org.fest.swing.fixture.JButtonFixture;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.MULTIPLE_MATCHES;
+import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.NO_MATCH;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -266,145 +269,242 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         assertEquals("returned fixture", fixture, actualFixture);
     }
 
-    @Test
-    public void testPath_noArgs_noMatch() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Unable to find component");
-        thrown.expectMessage(JPath.class.getName());
-        testPath_noArgs(BeanWithoutPath.class);
-    }
-
-    @Test
-    public void testPath_noArgs_onlyOneMatch() throws Exception {
-        FormsSupplier<BeanWithOnePath> supplier = testPath_noArgs(BeanWithOnePath.class);
-
-        assertThat(supplier.pathFixture).isNotNull();
-        Component path = supplier.pathFixture.component();
-        assertThat(path.getName()).isEqualTo("path");
-        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
-    }
-
-    @Test
-    public void testPath_noArgs_multipleMatches() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Found more than one component");
-        thrown.expectMessage(JPath.class.getName());
-        thrown.expectMessage("path");
-        thrown.expectMessage("path2");
-        testPath_noArgs(BeanWithTwoPaths.class);
-    }
-
-    private <T> FormsSupplier<T> testPath_noArgs(Class<T> beanClass) throws Exception {
-        FormsSupplier<T> supplier = buildAndShowWindowWithPath(beanClass);
-        supplier.pathFixture = supplier.formFixture.path();
-        return supplier;
-    }
-
-    @Test
-    public void testPath_matcherArg_noPath() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Unable to find component");
-        FormsSupplier<BeanWithoutPath> supplier = buildAndShowWindowWithPath(BeanWithoutPath.class);
-
-        supplier.formFixture.path(new PathNameMatcher("path"));
-    }
-
-    @Test
-    public void testPath_matcherArg_wrongName() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Unable to find component");
-        thrown.expectMessage(JPath.class.getName());
-        FormsSupplier<BeanWithOnePath> supplier = buildAndShowWindowWithPath(BeanWithOnePath.class);
-
-        supplier.formFixture.path(new PathNameMatcher("wrongName"));
-    }
-
-    @Test
-    public void testPath_matcherArg_onlyOneMatch() throws Exception {
-        FormsSupplier<BeanWithTwoPaths> supplier = buildAndShowWindowWithPath(BeanWithTwoPaths.class);
-
-        testPath_matcherArg(supplier, "path");
-        testPath_matcherArg(supplier, "path2");
-    }
-
-    private void testPath_matcherArg(FormsSupplier<BeanWithTwoPaths> supplier, String pathName) {
-        JPathFixture pathFixture = supplier.formFixture.path(new PathNameMatcher(pathName));
-
-        assertThat(pathFixture).isNotNull();
-        Component path = pathFixture.component();
-        assertThat(path.getName()).isEqualTo(pathName);
-        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
-    }
-
-    private static class PathNameMatcher extends GenericTypeMatcher<JPath> {
-        private final String pathName;
-
-        public PathNameMatcher(String pathName) {
-            super(JPath.class, true);
-            this.pathName = pathName;
-        }
-
-        @Override
-        protected boolean isMatching(JPath component) {
-            return new NameMatcher(pathName, true).matches(component);
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////// Tests for method path(String) ///////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testPath_nameArg_noPath() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Unable to find component");
-        thrown.expectMessage(JPath.class.getName());
-        FormsSupplier<BeanWithoutPath> supplier = buildAndShowWindowWithPath(BeanWithoutPath.class);
-
-        supplier.formFixture.path("path");
+        testField_nameArg_noField(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class, "path");
     }
 
     @Test
     public void testPath_nameArg_wrongName() throws Exception {
-        thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
-        thrown.expectMessage("Unable to find component");
-        thrown.expectMessage(JPath.class.getName());
-        FormsSupplier<BeanWithOnePath> supplier = buildAndShowWindowWithPath(BeanWithOnePath.class);
-
-        supplier.formFixture.path("wrongName");
+        testField_nameArg_wrongName(new JPathFixtureFactory<BeanWithOneCustomField>(), JPath.class);
     }
 
     @Test
     public void testPath_nameArg_onlyOneMatch() throws Exception {
-        FormsSupplier<BeanWithTwoPaths> supplier = buildAndShowWindowWithPath(BeanWithTwoPaths.class);
-
-        testPath_nameArg(supplier, "path");
-        testPath_nameArg(supplier, "path2");
+        testField_nameArg_onlyOneMatch(new JPathFixtureFactory<BeanWithTwoCustomFields>(), "path", "path2");
     }
 
-    private void testPath_nameArg(FormsSupplier<BeanWithTwoPaths> supplier, String pathName) {
-        JPathFixture pathFixture = supplier.formFixture.path(pathName);
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////// Tests for method path() //////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        assertThat(pathFixture).isNotNull();
-        Component path = pathFixture.component();
-        assertThat(path.getName()).isEqualTo(pathName);
-        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, path)).isEqualTo(supplier.targetForm);
+    @Test
+    public void testPath_noArgs_noMatch() throws Exception {
+        testField_noArgs_noMatch(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class);
     }
 
-    private <T> FormsSupplier<T> buildAndShowWindowWithPath(final Class<T> beanClass) throws Exception {
+    @Test
+    public void testPath_noArgs_onlyOneMatch() throws Exception {
+        testField_noArgs_onlyOneMatch(new JPathFixtureFactory<BeanWithOneCustomField>(), "path");
+    }
+
+    @Test
+    public void testPath_noArgs_multipleMatches() throws Exception {
+        testField_noArgs_multipleMatches(new JPathFixtureFactory<BeanWithTwoCustomFields>(), JPath.class, "path", "path2");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// Tests for method path(GenericTypeMatcher) /////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void testPath_matcherArg_noPath() throws Exception {
+        testField_matcherArg_noField(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class, "path");
+    }
+
+    @Test
+    public void testPath_matcherArg_wrongName() throws Exception {
+        testField_matcherArg_wrongName(new JPathFixtureFactory<BeanWithOneCustomField>(), JPath.class);
+    }
+
+    @Test
+    public void testPath_matcherArg_onlyOneMatch() throws Exception {
+        testField_matcherArg_onlyOneMatch(new JPathFixtureFactory<BeanWithTwoCustomFields>(), JPath.class, "path", "path2");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////// Generic methods for testing custom field (JPath, ListPanel ...) fixtures //////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_noMatch(
+            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
+        expectComponentLookupException(componentClass, NO_MATCH);
+        testField_noArgs(factory, BeanWithoutCustomField.class);
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_onlyOneMatch(
+            FixtureFactory<BeanWithOneCustomField, C, CF> factory, String fieldName) throws Exception {
+        FormsSupplier<BeanWithOneCustomField, CF> supplier = testField_noArgs(factory, BeanWithOneCustomField.class);
+
+        assertThat(supplier.fieldFixture).isNotNull();
+        Component component = supplier.fieldFixture.component();
+        assertThat(component.getName()).isEqualTo(fieldName);
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, component)).isEqualTo(supplier.targetForm);
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_multipleMatches(
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<C> componentClass, String fieldName, String field2Name) throws Exception {
+        expectComponentLookupException(componentClass, MULTIPLE_MATCHES, fieldName, field2Name);
+        testField_noArgs(factory, BeanWithTwoCustomFields.class);
+    }
+
+    private <B, C extends JPanel, CF extends ContainerFixture<JPanel>> FormsSupplier<B, CF> testField_noArgs(FixtureFactory<B, C, CF> factory, Class<B> beanClass) throws Exception {
+        FormsSupplier<B, CF> supplier = buildAndShowWindowWithCustomField(beanClass);
+        supplier.fieldFixture = factory.fixture(supplier);
+        return supplier;
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_noField(
+            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass, String fieldName) throws Exception {
+        expectComponentLookupException(NO_MATCH);
+        FormsSupplier<BeanWithoutCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithoutCustomField.class);
+
+        factory.fixture(supplier, new FieldNameMatcher<>(componentClass, fieldName));
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_wrongName(
+            FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
+        expectComponentLookupException(componentClass, NO_MATCH);
+        FormsSupplier<BeanWithOneCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithOneCustomField.class);
+
+        factory.fixture(supplier, new FieldNameMatcher<>(componentClass, "wrongName"));
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_onlyOneMatch(
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<C> componentClass, String fieldName, String field2Name) throws Exception {
+        FormsSupplier<BeanWithTwoCustomFields, CF> supplier = buildAndShowWindowWithCustomField(BeanWithTwoCustomFields.class);
+
+        testField_matcherArg(factory, supplier, componentClass, fieldName);
+        testField_matcherArg(factory, supplier, componentClass, field2Name);
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg(
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, FormsSupplier<BeanWithTwoCustomFields, CF> supplier,
+            Class<C> componentClass, String fieldName) {
+        CF fixture = factory.fixture(supplier, new FieldNameMatcher<C>(componentClass, fieldName));
+
+        assertThat(fixture).isNotNull();
+        Component component = fixture.component();
+        assertThat(component.getName()).isEqualTo(fieldName);
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, component)).isEqualTo(supplier.targetForm);
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_noField(
+            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass, String fieldName) throws Exception {
+        expectComponentLookupException(componentClass, NO_MATCH);
+        FormsSupplier<BeanWithoutCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithoutCustomField.class);
+
+        factory.fixture(supplier, fieldName);
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_wrongName(
+            FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
+        expectComponentLookupException(componentClass, NO_MATCH);
+        FormsSupplier<BeanWithOneCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithOneCustomField.class);
+
+        factory.fixture(supplier, "wrongName");
+    }
+
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_onlyOneMatch(
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, String fieldName, String field2Name) throws Exception {
+        FormsSupplier<BeanWithTwoCustomFields, CF> supplier = buildAndShowWindowWithCustomField(BeanWithTwoCustomFields.class);
+
+        testField_nameArg(factory, supplier, fieldName);
+        testField_nameArg(factory, supplier, field2Name);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg(
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, FormsSupplier<BeanWithTwoCustomFields, CF> supplier, String fieldName) {
+        CF fieldFixture = factory.fixture(supplier, fieldName);
+
+        assertThat(fieldFixture).isNotNull();
+        C field = (C) fieldFixture.component();
+        assertThat(field.getName()).isEqualTo(fieldName);
+        assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, field)).isEqualTo(supplier.targetForm);
+    }
+
+    private <C extends JPanel> ExpectedException expectComponentLookupException(Class<C> componentClass, ComponentLookupExceptionType type, String... otherMessages) {
+        expectComponentLookupException(type).expectMessage(componentClass.getName());
+        for (String otherMessage : otherMessages) {
+            thrown.expectMessage(otherMessage);
+        }
+        return thrown;
+    }
+
+    private ExpectedException expectComponentLookupException(ComponentLookupExceptionType type) {
+        thrown.expect(ComponentLookupException.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage(type.message);
+        return thrown;
+    }
+
+    public static enum ComponentLookupExceptionType {
+        NO_MATCH("Unable to find component"),
+        MULTIPLE_MATCHES("Found more than one component");
+
+        private final String message;
+
+        private ComponentLookupExceptionType(String message) {
+            this.message = message;
+        }
+    }
+
+    private static interface FixtureFactory<B, C extends JPanel, CF extends ContainerFixture<JPanel>> {
+        CF fixture(FormsSupplier<B, CF> supplier);
+
+        CF fixture(FormsSupplier<B, CF> supplier, GenericTypeMatcher<C> matcher);
+
+        CF fixture(FormsSupplier<B, CF> supplier, String name);
+    }
+
+    private static class JPathFixtureFactory<B> implements FixtureFactory<B, JPath, JPathFixture> {
+        @Override
+        public JPathFixture fixture(FormsSupplier<B, JPathFixture> supplier) {
+            return supplier.formFixture.path();
+        }
+
+        @Override
+        public JPathFixture fixture(FormsSupplier<B, JPathFixture> supplier, GenericTypeMatcher<JPath> matcher) {
+            return supplier.formFixture.path(matcher);
+        }
+
+        @Override
+        public JPathFixture fixture(FormsSupplier<B, JPathFixture> supplier, String name) {
+            return supplier.formFixture.path(name);
+        }
+    }
+
+    private static class FieldNameMatcher<C extends JComponent> extends GenericTypeMatcher<C> {
+        private final String fieldName;
+
+        public FieldNameMatcher(Class<C> componentClass, String fieldName) {
+            super(componentClass, true);
+            this.fieldName = fieldName;
+        }
+
+        @Override
+        protected boolean isMatching(C component) {
+            return new NameMatcher(fieldName, true).matches(component);
+        }
+    }
+
+    private <B, C extends JPanel, CF extends ContainerFixture<JPanel>> FormsSupplier<B, CF> buildAndShowWindowWithCustomField(final Class<B> beanClass) throws Exception {
         final String formName = JFormPane.getDefaultPanelName(beanClass);
-        Supplier<JFormPane<T>> formSupplier = new Supplier<JFormPane<T>>() {
+        Supplier<JFormPane<B>> formSupplier = new Supplier<JFormPane<B>>() {
             @Override
-            public JFormPane<T> get() {
-                final FormBuilder<T> builder = new DefaultFormBuilder<>(beanClass);
-                final JFormPane<T> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
+            public JFormPane<B> get() {
+                final FormBuilder<B> builder = new DefaultFormBuilder<>(beanClass);
+                final JFormPane<B> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
                 formPane.setName(formName);
                 return formPane;
             }
         };
-        FormsSupplier<T> allFormsSupplier = new FormsSupplier<T>(formSupplier);
+        FormsSupplier<B, CF> allFormsSupplier = new FormsSupplier<>(formSupplier);
         buildAndShowWindow(allFormsSupplier);
         allFormsSupplier.noiseForm.setName("noiseForm"); // avoid name clash for the 2 JFormPanes
         allFormsSupplier.formFixture = new JFormPaneFixture(robot(), formName);
@@ -413,15 +513,15 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         return allFormsSupplier;
     }
 
-    private static class FormsSupplier<T> implements Supplier<JPanel> {
-        private final Supplier<JFormPane<T>> formSupplier;
-        private JFormPane<T> targetForm;
-        private JFormPane<T> noiseForm;
+    private static class FormsSupplier<B, CF extends ContainerFixture<JPanel>> implements Supplier<JPanel> {
+        private final Supplier<JFormPane<B>> formSupplier;
+        private JFormPane<B> targetForm;
+        private JFormPane<B> noiseForm;
 
         private JFormPaneFixture formFixture;
-        private JPathFixture pathFixture;
+        private CF fieldFixture;
 
-        private FormsSupplier(Supplier<JFormPane<T>> formSupplier) {
+        private FormsSupplier(Supplier<JFormPane<B>> formSupplier) {
             this.formSupplier = formSupplier;
         }
 
@@ -439,7 +539,10 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    public static class BeanWithoutPath {
+    /**
+     * A bean that won't need our custom fields (like JPath, ListPanel ...).
+     */
+    public static class BeanWithoutCustomField {
         private String name;
 
         public String getName() {
@@ -451,7 +554,10 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    public static class BeanWithOnePath extends BeanWithoutPath {
+    /**
+     * A bean that will need one instance of our custom fields (like JPath, ListPanel ...).
+     */
+    public static class BeanWithOneCustomField extends BeanWithoutCustomField {
         private File path;
 
         public File getPath() {
@@ -463,7 +569,10 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    public static class BeanWithTwoPaths extends BeanWithOnePath {
+    /**
+     * A bean that will need two instances of our custom fields (like JPath, ListPanel ...).
+     */
+    public static class BeanWithTwoCustomFields extends BeanWithOneCustomField {
         private File path2;
 
         public File getPath2() {
