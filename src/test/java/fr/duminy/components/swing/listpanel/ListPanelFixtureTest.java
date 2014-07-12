@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.swing.*;
-import java.awt.*;
 
 import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 import static fr.duminy.components.swing.listpanel.ListPanelTest.MockItemManager;
@@ -52,30 +51,26 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     private ListPanelFixture<String, JList<String>> fixture;
     private MockItemManager itemManager;
     private SimpleItemManager.FormDisplayer displayer;
+    private SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise;
 
     @SuppressWarnings("unchecked")
     @Before
     public void runBeforeTest() throws Exception {
-        final ListPanel[] panel = new ListPanel[1];
-        Supplier<JPanel> supplier = new Supplier<JPanel>() {
+        Supplier<ListPanel<String, JList<String>>> supplier = new Supplier<ListPanel<String, JList<String>>>() {
             @Override
-            public JPanel get() {
-                JPanel parentComponent = new JPanel(new BorderLayout());
-
+            public ListPanel<String, JList<String>> get() {
                 listModel = new DefaultMutableListModel<>();
                 listModel.add(LINE1);
                 listModel.add(LINE2);
                 list = new JList<>(listModel);
                 list.setSelectedIndex(SELECTED_INDEX);
                 itemManager = Mockito.spy(new MockItemManager(false));
-                panel[0] = new ListPanel<String, JList<String>>(list, itemManager);
 
-                parentComponent.add(panel[0]);
-                return parentComponent;
+                return new ListPanel<>(list, itemManager);
             }
         };
-        buildAndShowWindow(supplier);
-        fixture = new ListPanelFixture<String, JList<String>>(robot(), panel[0]);
+        supplierWithNoise = buildAndShowComponentWithNoise(supplier);
+        fixture = new ListPanelFixture<>(robot(), supplierWithNoise.getTargetComponent());
     }
 
     @Test
@@ -142,8 +137,24 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUserButton() throws Exception {
-        final ListPanel<String, JList<String>> listPanel = (ListPanel<String, JList<String>>) fixture.component();
+        final ListPanel<String, JList<String>> targetListPanel = supplierWithNoise.getTargetComponent();
+        final ListPanel<String, JList<String>> noiseListPanel = supplierWithNoise.getNoiseComponent();
         final String buttonName = "userButton";
+        final AbstractUserItemAction<String, ?> targetButtonAction = addUserButton(targetListPanel, buttonName);
+        final AbstractUserItemAction<String, ?> noiseButtonAction = addUserButton(noiseListPanel, buttonName);
+
+        JButtonFixture buttonFixture = fixture.userButton(buttonName);
+
+        assertThat(buttonFixture).as("buttonFixture").isNotNull();
+        assertThat(buttonFixture.component().getName()).as("buttonName").isEqualTo(buttonName);
+        assertThat(buttonFixture.component().getAction()).as("buttonAction").isSameAs(targetButtonAction);
+        buttonFixture.click();
+        verify(noiseButtonAction, never()).executeAction(any(String.class));
+        verify(targetButtonAction, times(1)).executeAction(eq(LINE2));
+    }
+
+    @SuppressWarnings("unchecked")
+    private AbstractUserItemAction<String, ?> addUserButton(final ListPanel<String, JList<String>> listPanel, final String buttonName) {
         final AbstractUserItemAction<String, ?> buttonAction = mock(AbstractUserItemAction.class);
         when(buttonAction.isEnabled()).thenReturn(true);
         doCallRealMethod().when(buttonAction).setListener(any(ListActions.class));
@@ -155,13 +166,6 @@ public class ListPanelFixtureTest extends AbstractFormTest {
                 window.component().invalidate();
             }
         });
-
-        JButtonFixture buttonFixture = fixture.userButton(buttonName);
-
-        assertThat(buttonFixture).as("buttonFixture").isNotNull();
-        assertThat(buttonFixture.component().getName()).as("buttonName").isEqualTo(buttonName);
-        assertThat(buttonFixture.component().getAction()).as("buttonAction").isSameAs(buttonAction);
-        buttonFixture.click();
-        verify(buttonAction, times(1)).executeAction(eq(LINE2));
+        return buttonAction;
     }
 }

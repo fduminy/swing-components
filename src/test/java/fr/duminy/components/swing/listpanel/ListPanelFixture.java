@@ -40,27 +40,27 @@ public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
     }
 
     public JButtonFixture addButton() {
-        return new JButtonFixture(robot, ADD_BUTTON_NAME);
+        return new JButtonFixture(robot, findByName(ADD_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture removeButton() {
-        return new JButtonFixture(robot, REMOVE_BUTTON_NAME);
+        return new JButtonFixture(robot, findByName(REMOVE_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture upButton() {
-        return new JButtonFixture(robot, UP_BUTTON_NAME);
+        return new JButtonFixture(robot, findByName(UP_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture downButton() {
-        return new JButtonFixture(robot, DOWN_BUTTON_NAME);
+        return new JButtonFixture(robot, findByName(DOWN_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture updateButton() {
-        return new JButtonFixture(robot, UPDATE_BUTTON_NAME);
+        return new JButtonFixture(robot, findByName(UPDATE_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture userButton(String buttonName) {
-        return new JButtonFixture(robot, buttonName);
+        return new JButtonFixture(robot, findByName(buttonName, JButton.class));
     }
 
     //TODO add a method for list fixture (JList or JTable ...)

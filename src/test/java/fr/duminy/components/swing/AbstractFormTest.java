@@ -20,6 +20,7 @@
  */
 package fr.duminy.components.swing;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.form.JFormPane;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
@@ -558,5 +559,45 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
     private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
         Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
+    }
+
+    protected static class SupplierWithNoise<C extends JComponent> implements Supplier<JPanel> {
+        private final Supplier<C> componentSupplier;
+
+        private C targetComponent;
+        private C noiseComponent;
+
+        protected SupplierWithNoise(Supplier<C> componentSupplier) {
+            this.componentSupplier = componentSupplier;
+        }
+
+        @Override
+        public JPanel get() {
+            JPanel allFormsPanel = new JPanel(new GridLayout(2, 1));
+
+            noiseComponent = componentSupplier.get();
+            allFormsPanel.add(noiseComponent);
+
+            // targetComponent must be called at the end because the supplier might be stateful
+            targetComponent = componentSupplier.get();
+            allFormsPanel.add(targetComponent);
+
+            return allFormsPanel;
+        }
+
+        public C getTargetComponent() {
+            return targetComponent;
+        }
+
+        public C getNoiseComponent() {
+            return noiseComponent;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <C extends JPanel> SupplierWithNoise<C> buildAndShowComponentWithNoise(Supplier<C> componentSupplier) throws Exception {
+        SupplierWithNoise<C> supplierWithNoise = new SupplierWithNoise<C>(componentSupplier);
+        buildAndShowWindow(supplierWithNoise);
+        return supplierWithNoise;
     }
 }
