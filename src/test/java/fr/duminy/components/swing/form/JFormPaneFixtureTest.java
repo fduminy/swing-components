@@ -23,6 +23,10 @@ package fr.duminy.components.swing.form;
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.AbstractSwingTest;
+import fr.duminy.components.swing.list.DefaultMutableListModel;
+import fr.duminy.components.swing.listpanel.ListPanel;
+import fr.duminy.components.swing.listpanel.ListPanelFixture;
+import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.core.GenericTypeMatcher;
@@ -30,6 +34,7 @@ import org.fest.swing.core.NameMatcher;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.ContainerFixture;
 import org.fest.swing.fixture.JButtonFixture;
+import org.formbuilder.TypeMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -38,6 +43,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,11 +54,11 @@ import java.io.File;
 
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.MULTIPLE_MATCHES;
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.NO_MATCH;
+import static fr.duminy.components.swing.listpanel.SimpleItemManager.ContainerType.DIALOG;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 /**
  * Test for class {@link fr.duminy.components.swing.form.JFormPaneFixture}.
@@ -65,7 +72,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     public static final Action<JFormPane<Bean>> OPEN_IN_PANEL = new Action<>(false, new BaseSupplier<JFormPane<Bean>>() {
         @Override
         public JFormPane<Bean> get() {
-            final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
+            final FormBuilder<Bean> builder = createBuilder(null, Bean.class);
             JFormPane<Bean> form = new JFormPane<>(builder, "title", mode);
             form.setName(PANEL_NAME);
             return form;
@@ -80,7 +87,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
+                    final FormBuilder<Bean> builder = createBuilder((Container) parentComponent, Bean.class);
                     JFormPane.showFormDialog(parentComponent, builder, null, "title", mode);
                 }
             });
@@ -327,11 +334,74 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////// Tests for method listPanel(String) ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void testListPanel_nameArg_noMatch_noCustomField() throws Exception {
+        testField_nameArg_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel>(), ListPanel.class, "list");
+    }
+
+    @Test
+    public void testListPanel_nameArg_noMatch_wrongCustomFieldName() throws Exception {
+        testField_nameArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), ListPanel.class);
+    }
+
+    @Test
+    public void testListPanel_nameArg_onlyOneMatch() throws Exception {
+        testField_nameArg_onlyOneMatch(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), "list", "list2");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////// Tests for method listPanel() ///////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void testListPanel_noArgs_noMatch_noCustomField() throws Exception {
+        testField_noArgs_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel>(), ListPanel.class);
+    }
+
+    @Test
+    public void testListPanel_noArgs_multipleMatches() throws Exception {
+        testField_noArgs_multipleMatches(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), ListPanel.class, "list", "list2");
+    }
+
+    @Test
+    public void testListPanel_noArgs_onlyOneMatch() throws Exception {
+        testField_noArgs_onlyOneMatch(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), "list");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Tests for method listPanel(GenericTypeMatcher) //////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testListPanel_matcherArg_noMatch_noCustomField() throws Exception {
+        Class<?> componentClass = ListPanel.class;
+        testField_matcherArg_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel<BeanWithoutCustomField, JList>>(), (Class<ListPanel<BeanWithoutCustomField, ListPanel<BeanWithoutCustomField, JList>>>) componentClass, "list");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testListPanel_matcherArg_noMatch_wrongCustomFieldName() throws Exception {
+        Class<?> componentClass = ListPanel.class;
+        testField_matcherArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), (Class<ListPanel<BeanWithOneCustomField, ListPanel>>) componentClass);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testListPanel_matcherArg_onlyOneMatch() throws Exception {
+        Class<?> componentClass = ListPanel.class;
+        testField_matcherArg_onlyOneMatch(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), (Class<ListPanel<BeanWithTwoCustomFields, ListPanel>>) componentClass, "list", "list2");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////// Generic methods for testing custom field (JPath, ListPanel ...) fixtures //////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_noMatch_noCustomField(
-            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
+            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<? super C> componentClass) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         testField_noArgs(factory, BeanWithoutCustomField.class);
     }
@@ -347,7 +417,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_multipleMatches(
-            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<C> componentClass, String fieldName, String field2Name) throws Exception {
+            FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<? super C> componentClass, String fieldName, String field2Name) throws Exception {
         expectComponentLookupException(componentClass, MULTIPLE_MATCHES, fieldName, field2Name);
         testField_noArgs(factory, BeanWithTwoCustomFields.class);
     }
@@ -394,7 +464,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_noMatch_noCustomField(
-            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass, String fieldName) throws Exception {
+            FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<? super C> componentClass, String fieldName) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         FormsSupplier<BeanWithoutCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithoutCustomField.class);
 
@@ -402,7 +472,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_noMatch_wrongCustomFieldName(
-            FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
+            FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<? super C> componentClass) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         FormsSupplier<BeanWithOneCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithOneCustomField.class);
 
@@ -428,7 +498,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, field)).isEqualTo(supplier.targetForm);
     }
 
-    private <C extends JPanel> ExpectedException expectComponentLookupException(Class<C> componentClass, ComponentLookupExceptionType type, String... otherMessages) {
+    private <C extends JPanel> ExpectedException expectComponentLookupException(Class<? super C> componentClass, ComponentLookupExceptionType type, String... otherMessages) {
         expectComponentLookupException(type).expectMessage(componentClass.getName());
         for (String otherMessage : otherMessages) {
             thrown.expectMessage(otherMessage);
@@ -479,6 +549,23 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
+    private static class ListPanelFixtureFactory<B, C extends JComponent> implements FixtureFactory<B, ListPanel<B, C>, ListPanelFixture<B, C>> {
+        @Override
+        public ListPanelFixture<B, C> fixture(FormsSupplier<B, ListPanelFixture<B, C>> supplier) {
+            return supplier.formFixture.listPanel();
+        }
+
+        @Override
+        public ListPanelFixture<B, C> fixture(FormsSupplier<B, ListPanelFixture<B, C>> supplier, GenericTypeMatcher<ListPanel<B, C>> matcher) {
+            return supplier.formFixture.listPanel(matcher);
+        }
+
+        @Override
+        public ListPanelFixture<B, C> fixture(FormsSupplier<B, ListPanelFixture<B, C>> supplier, String name) {
+            return supplier.formFixture.listPanel(name);
+        }
+    }
+
     private static class FieldNameMatcher<C extends JComponent> extends GenericTypeMatcher<C> {
         private final String fieldName;
 
@@ -498,7 +585,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         Supplier<JFormPane<B>> formSupplier = new Supplier<JFormPane<B>>() {
             @Override
             public JFormPane<B> get() {
-                final FormBuilder<B> builder = new DefaultFormBuilder<>(beanClass);
+                final FormBuilder<B> builder = createBuilder(null, beanClass);
                 final JFormPane<B> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
                 formPane.setName(formName);
                 return formPane;
@@ -559,6 +646,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
      */
     public static class BeanWithOneCustomField extends BeanWithoutCustomField {
         private File path;
+        private java.util.List<String> list;
 
         public File getPath() {
             return path;
@@ -567,6 +655,14 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         public void setPath(File path) {
             this.path = path;
         }
+
+        public java.util.List<String> getList() {
+            return list;
+        }
+
+        public void setList(java.util.List<String> list) {
+            this.list = list;
+        }
     }
 
     /**
@@ -574,6 +670,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
      */
     public static class BeanWithTwoCustomFields extends BeanWithOneCustomField {
         private File path2;
+        private java.util.List<String> list2;
 
         public File getPath2() {
             return path2;
@@ -581,6 +678,14 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
         public void setPath2(File path2) {
             this.path2 = path2;
+        }
+
+        public java.util.List<String> getList2() {
+            return list2;
+        }
+
+        public void setList2(java.util.List<String> list2) {
+            this.list2 = list2;
         }
     }
 
@@ -606,5 +711,37 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     private static abstract class CustomSupplier<C extends JComponent> extends BaseSupplier<C> {
         protected Component parentComponent;
+    }
+
+    private static class MockFormBuilder<B> extends DefaultFormBuilder<B> {
+        private final Container parentComponent;
+
+        public MockFormBuilder(Container parentComponent, Class<B> beanClass) {
+            super(beanClass);
+            this.parentComponent = parentComponent;
+        }
+
+        @Override
+        protected void configureBuilder(org.formbuilder.FormBuilder<B> builder) {
+            super.configureBuilder(builder);
+            TypeMapper mapper = Mockito.mock(TypeMapper.class);
+            when(mapper.createEditorComponent()).thenAnswer(new Answer<ListPanel<String, JList<String>>>() {
+                @Override
+                public ListPanel<String, JList<String>> answer(InvocationOnMock invocation) throws Throwable {
+                    JList<String> list = new JList<>(new DefaultMutableListModel<String>());
+                    list.setName("strings");
+
+                    SimpleItemManager<String> sourceProvider = new SimpleItemManager<>(String.class, parentComponent, "Strings", DIALOG);
+                    return new ListPanel<>(list, sourceProvider);
+                }
+            });
+            when(mapper.getValueClass()).thenReturn(java.util.List.class);
+            builder.useForProperty("list", mapper);
+            builder.useForProperty("list2", mapper);
+        }
+    }
+
+    private static <B> FormBuilder<B> createBuilder(Container parentComponent, Class<B> beanClass) {
+        return new MockFormBuilder<B>(parentComponent, beanClass);
     }
 }

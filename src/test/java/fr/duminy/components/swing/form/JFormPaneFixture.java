@@ -21,6 +21,8 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.FixtureUtilities;
+import fr.duminy.components.swing.listpanel.ListPanel;
+import fr.duminy.components.swing.listpanel.ListPanelFixture;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.core.GenericTypeMatcher;
@@ -91,8 +93,6 @@ public class JFormPaneFixture extends JPanelFixture {
 
     /**
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a single {@link fr.duminy.components.swing.path.JPath}.
-     *
-     * @return
      */
     public JPathFixture path() {
         return new JPathFixture(robot, findByType(JPath.class));
@@ -100,8 +100,6 @@ public class JFormPaneFixture extends JPanelFixture {
 
     /**
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} from a {@link fr.duminy.components.swing.path.JPath} matcher.
-     *
-     * @return
      */
     public JPathFixture path(GenericTypeMatcher<? extends JPath> matcher) {
         return new JPathFixture(robot, find(matcher));
@@ -109,11 +107,33 @@ public class JFormPaneFixture extends JPanelFixture {
 
     /**
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a {@link fr.duminy.components.swing.path.JPath} named by <code>name</code>.
-     *
-     * @return
      */
     public JPathFixture path(String name) {
         return new JPathFixture(robot, findByName(name, JPath.class));
+    }
+
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.listpanel.ListPanelFixture} for a single {@link fr.duminy.components.swing.listpanel.ListPanel}.
+     */
+    @SuppressWarnings("unchecked")
+    public <B, C extends JComponent> ListPanelFixture<B, C> listPanel() {
+        return new ListPanelFixture<B, C>(robot, findByType(ListPanel.class));
+    }
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.listpanel.ListPanelFixture} from a {@link fr.duminy.components.swing.listpanel.ListPanel} matcher.
+     */
+    public <B, C extends JComponent> ListPanelFixture<B, C> listPanel(GenericTypeMatcher<? extends ListPanel<B, C>> matcher) {
+        return new ListPanelFixture<>(robot, find(matcher));
+    }
+
+    /**
+     * Creates a {@link fr.duminy.components.swing.listpanel.ListPanelFixture} for a {@link fr.duminy.components.swing.listpanel.ListPanel} named by <code>name</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public <B, C extends JComponent> ListPanelFixture<B, C> listPanel(String name) {
+        return new ListPanelFixture<B, C>(robot, findByName(name, ListPanel.class));
     }
 
     private JFormPane form() {
