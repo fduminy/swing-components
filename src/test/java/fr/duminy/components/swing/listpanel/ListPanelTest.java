@@ -110,7 +110,7 @@ public class ListPanelTest extends AbstractSwingTest {
         DATA = result.toArray(new TestData[result.size()]);
     }
 
-    public static class MyListPanel<TC extends JComponent, T> extends ListPanel<TC, T> {
+    public static class MyListPanel<TC extends JComponent, T> extends ListPanel<T, TC> {
         private Throwable updateItemThrown;
         private CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -169,12 +169,12 @@ public class ListPanelTest extends AbstractSwingTest {
     @DataPoint
     public static final PanelFactory JLIST = new PanelFactory() {
         @Override
-        public ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull) {
+        public ListPanel<String, JList<String>> create(int nbItems, boolean itemFactoryReturnsNull) {
             return create(nbItems, itemFactoryReturnsNull, null);
         }
 
         @Override
-        public ListPanel<JList<String>, String> create(int nbItems, final boolean itemManagerReturnsNull, ItemManager<String> itemManager) {
+        public ListPanel<String, JList<String>> create(int nbItems, final boolean itemManagerReturnsNull, ItemManager<String> itemManager) {
             if (itemManager == null) {
                 itemManager = new MockItemManager(itemManagerReturnsNull);
             }
@@ -221,7 +221,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
     @Theory
     public final void testExtendsI18nAble(PanelFactory factory) throws Exception {
-        ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
+        ListPanel<String, JList<String>> component = buildAndShowWindow(factory, 1);
         assertTrue("component extends I18nAble", I18nAble.class.isAssignableFrom(component.getClass()));
     }
 
@@ -234,9 +234,9 @@ public class ListPanelTest extends AbstractSwingTest {
                 return new JList<>(new DefaultMutableListModel<String>());
             }
         });
-        ListPanel<JList<String>, String> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<JList<String>, String>>() {
+        ListPanel<String, JList<String>> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<String, JList<String>>>() {
             @Override
-            protected ListPanel<JList<String>, String> executeInEDT() throws Throwable {
+            protected ListPanel<String, JList<String>> executeInEDT() throws Throwable {
                 return new ListPanel<>(list, null);
             }
         });
@@ -253,9 +253,9 @@ public class ListPanelTest extends AbstractSwingTest {
             }
         });
         final JListComponentWrapper<String> wrapper = new JListComponentWrapper<>(list, null);
-        ListPanel<JList<String>, String> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<JList<String>, String>>() {
+        ListPanel<String, JList<String>> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<String, JList<String>>>() {
             @Override
-            protected ListPanel<JList<String>, String> executeInEDT() throws Throwable {
+            protected ListPanel<String, JList<String>> executeInEDT() throws Throwable {
                 return new ListPanel<>(wrapper);
             }
         });
@@ -266,7 +266,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
     @Theory
     public final void testI18nMessages(PanelFactory factory, Locale locale) throws Exception {
-        final ListPanel<JList<String>, String> component = buildAndShowWindow(factory, 1);
+        final ListPanel<String, JList<String>> component = buildAndShowWindow(factory, 1);
         Locale.setDefault(locale);
 
         GuiActionRunner.execute(new GuiQuery<Object>() {
@@ -454,7 +454,7 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testAddUserButton(PanelFactory factory) throws Exception {
         int nbItems = 2;
-        final ListPanel<JList<String>, String> component = buildAndShowWindow(factory, nbItems);
+        final ListPanel<String, JList<String>> component = buildAndShowWindow(factory, nbItems);
         int selectedIndex = 1;
         String item = component.getListComponent().getModel().getElementAt(selectedIndex);
         final AbstractUserItemAction<String, ?> action = mock(AbstractUserItemAction.class);
@@ -491,16 +491,16 @@ public class ListPanelTest extends AbstractSwingTest {
         }
     }
 
-    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems) throws Exception {
+    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems) throws Exception {
         return buildAndShowWindow(factory, nbItems, false, null);
     }
 
-    private ListPanel<JList<String>, String> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager)
+    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager)
             throws Exception {
-        return buildAndShowWindow(new Supplier<ListPanel<JList<String>, String>>() {
+        return buildAndShowWindow(new Supplier<ListPanel<String, JList<String>>>() {
             @Override
-            public ListPanel<JList<String>, String> get() {
-                ListPanel<JList<String>, String> result;
+            public ListPanel<String, JList<String>> get() {
+                ListPanel<String, JList<String>> result;
                 if (itemManager != null) {
                     result = factory.create(nbItems, itemFactoryReturnsNull, itemManager);
                 } else {
@@ -512,9 +512,9 @@ public class ListPanelTest extends AbstractSwingTest {
     }
 
     static interface PanelFactory {
-        ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull);
+        ListPanel<String, JList<String>> create(int nbItems, boolean itemFactoryReturnsNull);
 
-        ListPanel<JList<String>, String> create(int nbItems, boolean itemFactoryReturnsNull, ItemManager<String> manager);
+        ListPanel<String, JList<String>> create(int nbItems, boolean itemFactoryReturnsNull, ItemManager<String> manager);
     }
 
     static List<String> createItemList(int nbItems) {

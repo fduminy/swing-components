@@ -584,15 +584,15 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    private static abstract class BaseSupplier<T> implements Supplier<T> {
+    private static abstract class BaseSupplier<C extends JComponent> implements Supplier<C> {
         protected JFormPane.Mode mode;
     }
 
-    public static class Action<T extends JComponent> {
+    public static class Action<C extends JComponent> {
         protected final boolean inDialog;
-        protected final BaseSupplier<T> supplier;
+        protected final BaseSupplier<C> supplier;
 
-        private Action(boolean inDialog, BaseSupplier<T> supplier) {
+        private Action(boolean inDialog, BaseSupplier<C> supplier) {
             this.inDialog = inDialog;
             this.supplier = supplier;
         }
@@ -604,7 +604,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    private static abstract class CustomSupplier<T> extends BaseSupplier<T> {
+    private static abstract class CustomSupplier<C extends JComponent> extends BaseSupplier<C> {
         protected Component parentComponent;
     }
 }

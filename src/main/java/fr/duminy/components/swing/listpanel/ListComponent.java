@@ -24,11 +24,11 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * @param <TC> The class of list component.
- * @param <T>  The class of items in the list.
+ * @param <B> The class of items in the list.
+ * @param <C> The class of list component.
  */
-interface ListComponent<TC extends JComponent, T> {
-    TC getComponent();
+interface ListComponent<B, C extends JComponent> {
+    C getComponent();
 
     void addItem();
 
@@ -48,5 +48,5 @@ interface ListComponent<TC extends JComponent, T> {
 
     void setSelectedIndices(int... indices);
 
-    T getItem(int i);
+    B getItem(int i);
 }

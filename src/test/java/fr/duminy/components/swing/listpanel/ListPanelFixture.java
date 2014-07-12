@@ -31,11 +31,11 @@ import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 /**
  * A fixture to help testing a {@link fr.duminy.components.swing.listpanel.ListPanel}.
  *
- * @param <TC> The class of list component (example : a JList).
- * @param <T>  The class of items in the list.
+ * @param <B> The class of items in the list.
+ * @param <C> The class of list component (example : a JList).
  */
-public class ListPanelFixture<TC extends JComponent, T> extends JPanelFixture {
-    public ListPanelFixture(Robot robot, ListPanel<TC, T> panel) {
+public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
+    public ListPanelFixture(Robot robot, ListPanel<B, C> panel) {
         super(robot, panel);
     }
 

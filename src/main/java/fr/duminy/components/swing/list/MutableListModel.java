@@ -25,14 +25,14 @@ import javax.swing.*;
 /**
  * Interface representing a {@link ListModel} that can be modified.
  *
- * @param <E> The type of element in the list.
+ * @param <B> The type of elements in the list.
  */
-public interface MutableListModel<E> extends ListModel<E> {
-    E remove(int i);
+public interface MutableListModel<B> extends ListModel<B> {
+    B remove(int i);
 
-    void add(E item);
+    void add(B item);
 
-    void add(int i, E item);
+    void add(int i, B item);
 
-    E set(int i, E item);
+    B set(int i, B item);
 }

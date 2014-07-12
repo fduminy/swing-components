@@ -34,37 +34,37 @@ import java.util.concurrent.CancellationException;
 /**
  * This class is an implementation of {@link ListComponent} that wraps a {@link JList} component.
  *
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
-class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
+class JListComponentWrapper<B> implements ListComponent<B, JList<B>> {
     private static Logger LOG = LoggerFactory.getLogger(JListComponentWrapper.class);
 
-    private final JList<T> list;
-    private final MutableListModel<T> model;
-    private final ItemManager<T> itemManager;
+    private final JList<B> list;
+    private final MutableListModel<B> model;
+    private final ItemManager<B> itemManager;
 
     /**
      * @param list        The list component to wrap.
      * @param itemManager This manager of items.
      */
-    JListComponentWrapper(JList<T> list, ItemManager<T> itemManager) {
+    JListComponentWrapper(JList<B> list, ItemManager<B> itemManager) {
         this.list = list;
-        model = (MutableListModel<T>) list.getModel();
+        model = (MutableListModel<B>) list.getModel();
         this.itemManager = itemManager;
     }
 
     @Override
-    public JList<T> getComponent() {
+    public JList<B> getComponent() {
         return list;
     }
 
     @Override
     public void addItem() {
-        ListenableFuture<T> futureItem = itemManager.createItem();
+        ListenableFuture<B> futureItem = itemManager.createItem();
 
-        Futures.addCallback(futureItem, new FutureCallback<T>() {
+        Futures.addCallback(futureItem, new FutureCallback<B>() {
             @Override
-            public void onSuccess(T result) {
+            public void onSuccess(B result) {
                 model.add(result);
             }
 
@@ -83,12 +83,12 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     @Override
     public void updateItem(final int i) {
         if (isValidIndex(i, true, true)) {
-            final T oldItem = model.getElementAt(i);
-            final ListenableFuture<T> futureNewItem = itemManager.updateItem(oldItem);
+            final B oldItem = model.getElementAt(i);
+            final ListenableFuture<B> futureNewItem = itemManager.updateItem(oldItem);
 
-            Futures.addCallback(futureNewItem, new FutureCallback<T>() {
+            Futures.addCallback(futureNewItem, new FutureCallback<B>() {
                 @Override
-                public void onSuccess(T newItem) {
+                public void onSuccess(B newItem) {
                     if (oldItem == newItem) {
                         //TODO also give a user feedback
                         throw new IllegalStateException("The element returned by " + itemManager.getClass().getName() +
@@ -121,7 +121,7 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     @Override
     public void moveUpItem(int i) {
         if (isValidIndex(i, false, true)) {
-            T item = model.remove(i);
+            B item = model.remove(i);
             model.add(i - 1, item);
         }
     }
@@ -129,7 +129,7 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     @Override
     public void moveDownItem(int i) {
         if (isValidIndex(i, true, false)) {
-            T item = model.remove(i);
+            B item = model.remove(i);
             model.add(i + 1, item);
         }
     }
@@ -161,7 +161,7 @@ class JListComponentWrapper<T> implements ListComponent<JList<T>, T> {
     }
 
     @Override
-    public T getItem(int i) {
+    public B getItem(int i) {
         return model.getElementAt(i);
     }
 }

@@ -49,7 +49,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
 
     private DefaultMutableListModel<String> listModel;
     private JList<String> list;
-    private ListPanelFixture<JList<String>, String> fixture;
+    private ListPanelFixture<String, JList<String>> fixture;
     private MockItemManager itemManager;
     private SimpleItemManager.FormDisplayer displayer;
 
@@ -68,14 +68,14 @@ public class ListPanelFixtureTest extends AbstractFormTest {
                 list = new JList<>(listModel);
                 list.setSelectedIndex(SELECTED_INDEX);
                 itemManager = Mockito.spy(new MockItemManager(false));
-                panel[0] = new ListPanel<JList<String>, String>(list, itemManager);
+                panel[0] = new ListPanel<String, JList<String>>(list, itemManager);
 
                 parentComponent.add(panel[0]);
                 return parentComponent;
             }
         };
         buildAndShowWindow(supplier);
-        fixture = new ListPanelFixture<JList<String>, String>(robot(), panel[0]);
+        fixture = new ListPanelFixture<String, JList<String>>(robot(), panel[0]);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUserButton() throws Exception {
-        final ListPanel<JList<String>, String> listPanel = (ListPanel<JList<String>, String>) fixture.component();
+        final ListPanel<String, JList<String>> listPanel = (ListPanel<String, JList<String>>) fixture.component();
         final String buttonName = "userButton";
         final AbstractUserItemAction<String, ?> buttonAction = mock(AbstractUserItemAction.class);
         when(buttonAction.isEnabled()).thenReturn(true);

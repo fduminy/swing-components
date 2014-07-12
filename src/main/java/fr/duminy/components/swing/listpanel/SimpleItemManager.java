@@ -36,8 +36,10 @@ import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 
 /**
  * An implementation of {@link ItemManager} interface that use {@link FormBuilder} to build a form to create/modify a bean.
+ *
+ * @param <B>  The class of managed items.
  */
-public class SimpleItemManager<T> implements ItemManager<T> {
+public class SimpleItemManager<B> implements ItemManager<B> {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleItemManager.class);
 
     static interface FormDisplayer {
@@ -113,18 +115,18 @@ public class SimpleItemManager<T> implements ItemManager<T> {
 
     }
 
-    private final Class<T> itemClass;
-    private final FormBuilder<T> formBuilder;
+    private final Class<B> itemClass;
+    private final FormBuilder<B> formBuilder;
     private final Container parentComponent;
     private final String title;
     private final FormDisplayer type;
     private String panelName;
 
-    public SimpleItemManager(Class<T> itemClass, Container parentComponent, String title, ContainerType type) {
+    public SimpleItemManager(Class<B> itemClass, Container parentComponent, String title, ContainerType type) {
         this(itemClass, new DefaultFormBuilder<>(itemClass), parentComponent, title, (FormDisplayer) type);
     }
 
-    public SimpleItemManager(Class<T> itemClass, FormBuilder<T> formBuilder, Container parentComponent, String title, ContainerType type) {
+    public SimpleItemManager(Class<B> itemClass, FormBuilder<B> formBuilder, Container parentComponent, String title, ContainerType type) {
         this(itemClass, formBuilder, parentComponent, title, (FormDisplayer) type);
     }
 
@@ -137,7 +139,7 @@ public class SimpleItemManager<T> implements ItemManager<T> {
      * @param title
      * @param type
      */
-    SimpleItemManager(Class<T> itemClass, FormBuilder<T> formBuilder, Container parentComponent, String title, FormDisplayer type) {
+    SimpleItemManager(Class<B> itemClass, FormBuilder<B> formBuilder, Container parentComponent, String title, FormDisplayer type) {
         this.itemClass = itemClass;
         this.formBuilder = formBuilder;
         this.parentComponent = type.checkParentComponent(parentComponent);
@@ -146,8 +148,8 @@ public class SimpleItemManager<T> implements ItemManager<T> {
     }
 
     @Override
-    public final ListenableFuture<T> createItem() {
-        T item;
+    public final ListenableFuture<B> createItem() {
+        B item;
 
         try {
             item = itemClass.newInstance();
@@ -159,11 +161,11 @@ public class SimpleItemManager<T> implements ItemManager<T> {
         return type.displayForm(this, item, CREATE);
     }
 
-    protected void initItem(T item) {
+    protected void initItem(B item) {
     }
 
     @Override
-    public final ListenableFuture<T> updateItem(T item) {
+    public final ListenableFuture<B> updateItem(B item) {
         return type.displayForm(this, item, UPDATE);
     }
 

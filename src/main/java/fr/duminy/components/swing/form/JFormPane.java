@@ -39,6 +39,8 @@ import static fr.duminy.components.swing.Bundle.getBundle;
  * (by calling {@link #showDialog(java.awt.Component)}.
  * Note the static method {@link #showFormDialog(java.awt.Component, FormBuilder, Object, String, fr.duminy.components.swing.form.JFormPane.Mode)}
  * for typical usage inside a dialog.
+ *
+ * @param <B> The class of bean used to represent this form.
  */
 public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
     private static final Logger LOG = LoggerFactory.getLogger(JFormPane.class);

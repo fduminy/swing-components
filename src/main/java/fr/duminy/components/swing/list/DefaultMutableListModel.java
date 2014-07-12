@@ -24,10 +24,12 @@ import javax.swing.*;
 
 /**
  * A subclass of {@link javax.swing.DefaultListModel} that implements {@link MutableListModel}.
+ *
+ * @param <B> The type of elements in the list.
  */
-public class DefaultMutableListModel<E> extends DefaultListModel<E> implements MutableListModel<E> {
+public class DefaultMutableListModel<B> extends DefaultListModel<B> implements MutableListModel<B> {
     @Override
-    public void add(E item) {
+    public void add(B item) {
         add(getSize(), item);
     }
 }

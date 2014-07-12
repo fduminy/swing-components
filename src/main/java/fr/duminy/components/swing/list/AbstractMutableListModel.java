@@ -25,11 +25,11 @@ import javax.swing.*;
 /**
  * An abstract class that implements partially {@link MutableListModel}.
  *
- * @param <E> The type of elements contained in this model.
+ * @param <B> The type of elements in the list.
  */
-abstract public class AbstractMutableListModel<E> extends AbstractListModel<E> implements MutableListModel<E> {
+abstract public class AbstractMutableListModel<B> extends AbstractListModel<B> implements MutableListModel<B> {
     @Override
-    public void add(E item) {
+    public void add(B item) {
         add(getSize(), item);
     }
 }

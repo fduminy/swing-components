@@ -38,27 +38,27 @@ import java.util.Arrays;
  * <li>move an item down</li>
  * </ul>.
  *
- * @param <TC> The class of list component (example : a JList).
- * @param <T>  The class of items in the list.
+ * @param <B> The class of items in the list.
+ * @param <C> The class of list component (example : a JList).
  */
 @SuppressWarnings("serial")
-public class ListPanel<TC extends JComponent, T> extends JPanel implements ListActions<T>, I18nAble {
-    private final ListComponent<TC, T> list;
-    private final ButtonsPanel<T> buttons;
+public class ListPanel<B, C extends JComponent> extends JPanel implements ListActions<B>, I18nAble {
+    private final ListComponent<B, C> list;
+    private final ButtonsPanel<B> buttons;
 
     /**
      * @param list        The list component to wrap.
      * @param itemManager The manager of items to use.
      */
     @SuppressWarnings("unchecked")
-    public ListPanel(JList<T> list, ItemManager<T> itemManager) {
-        this((ListComponent<TC, T>) new JListComponentWrapper<T>(list, itemManager));
+    public ListPanel(JList<B> list, ItemManager<B> itemManager) {
+        this((ListComponent<B, C>) new JListComponentWrapper<B>(list, itemManager));
     }
 
     /**
      * @param list The listpanel component to wrap.
      */
-    public ListPanel(final ListComponent<TC, T> list) {
+    public ListPanel(final ListComponent<B, C> list) {
         setLayout(new BorderLayout());
 
         this.list = list;
@@ -79,7 +79,7 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
         updateButtons();
     }
 
-    public TC getListComponent() {
+    public C getListComponent() {
         return list.getComponent();
     }
 
@@ -89,16 +89,16 @@ public class ListPanel<TC extends JComponent, T> extends JPanel implements ListA
      * @param buttonName The name of the button (used for tests).
      * @param action     The action to add.
      */
-    public void addUserButton(String buttonName, AbstractUserItemAction<T, ?> action) {
+    public void addUserButton(String buttonName, AbstractUserItemAction<B, ?> action) {
         action.setListener(this);
         buttons.addButton(buttonName, action);
         action.updateState(getSortedSelectedIndices(), list.getSize());
     }
 
     @Override
-    public void executeUserAction(UserListAction<T> action) {
+    public void executeUserAction(UserListAction<B> action) {
         for (int selectedIndice : getSortedSelectedIndices()) {
-            T item = list.getItem(selectedIndice);
+            B item = list.getItem(selectedIndice);
             action.executeAction(item);
         }
     }
