@@ -22,17 +22,18 @@ package fr.duminy.components.swing;
 
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.form.JFormPane;
-import fr.duminy.components.swing.form.JFormPaneTest;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
 import org.fest.swing.core.Robot;
+import org.fest.swing.core.TypeMatcher;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.ContainerFixture;
 import org.fest.swing.fixture.DialogFixture;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
+import org.junit.Assert;
 import org.junit.experimental.theories.DataPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +43,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.CANCEL_TEXT_KEY;
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExpectedMessage;
+import static fr.duminy.components.swing.TestUtilities.dumpComponents;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static javax.swing.SwingUtilities.getAncestorOfClass;
 import static org.fest.assertions.Assertions.assertThat;
@@ -411,10 +414,6 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
             this.checkTooltip = checkTooltip;
         }
 
-        public final JPanelFixture getFormPaneFixture(Robot robot, String panelName) {
-            return JFormPaneTest.formPane(robot, panelName);
-        }
-
         abstract public ContainerFixture checkStaticProperties(Robot robot, NameType nameType, String title);
 
         public final String getButtonName() {
@@ -455,7 +454,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         @Override
         public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
-            JPanel formPane = getFormPaneFixture(robot, nameType.getName()).component();
+            JPanel formPane = formPane(robot, nameType.getName()).component();
             assertThat(formPane).isInstanceOf(JFormPane.class);
 
             Window parentWindow = SwingUtilities.getWindowAncestor(formPane);
@@ -477,7 +476,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         private DialogFixture getOptionPaneFixture(Robot robot, String panelName) {
-            JDialog p = (JDialog) getAncestorOfClass(JDialog.class, getFormPaneFixture(robot, panelName).component());
+            JDialog p = (JDialog) getAncestorOfClass(JDialog.class, formPane(robot, panelName).component());
             return new DialogFixture(robot, p);
         }
 
@@ -532,5 +531,32 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
                     ", path=" + path +
                     '}';
         }
+    }
+
+    protected static JPanelFixture formPane(org.fest.swing.core.Robot robot, String panelName) {
+        java.util.List<JFormPane> panels = new ArrayList<>();
+        for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
+            for (Component formPane : robot.finder().findAll((Window) window, new TypeMatcher(JFormPane.class))) {
+                if (formPane.getName().equals(panelName) && !panels.contains(formPane)) {
+                    panels.add((JFormPane) formPane);
+                }
+            }
+        }
+
+        if (panels.isEmpty()) {
+            fail(robot, panelName, "Unable to find a", "");
+        } else if (panels.size() > 1) {
+            StringBuilder middleMessage = new StringBuilder();
+            for (JFormPane f : panels) {
+                middleMessage.append('\t').append(f).append('\n');
+            }
+            fail(robot, panelName, "There are duplicates", middleMessage.toString());
+        }
+
+        return new JPanelFixture(robot, panels.get(0));
+    }
+
+    private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
+        Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
     }
 }

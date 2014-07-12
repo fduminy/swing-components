@@ -242,7 +242,7 @@ public class SimpleItemManagerTest extends AbstractFormTest {
 
         @Override
         public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
-            JPanelFixture result = getFormPaneFixture(robot, nameType.getName());
+            JPanelFixture result = formPane(robot, nameType.getName());
             JPanel formPane = result.component();
             assertThat(formPane).isInstanceOf(JFormPane.class);
             sleep();
@@ -253,12 +253,12 @@ public class SimpleItemManagerTest extends AbstractFormTest {
 
         @Override
         protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode) {
-            return getFormPaneFixture(robot, panelName).button(JFormPane.OK_BUTTON_NAME).requireText(mode.getText());
+            return formPane(robot, panelName).button(JFormPane.OK_BUTTON_NAME).requireText(mode.getText());
         }
 
         @Override
         protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName) {
-            return getFormPaneFixture(robot, panelName).button(JFormPane.CANCEL_BUTTON_NAME).requireText(getBundle().cancelText());
+            return formPane(robot, panelName).button(JFormPane.CANCEL_BUTTON_NAME).requireText(getBundle().cancelText());
         }
 
         @Override

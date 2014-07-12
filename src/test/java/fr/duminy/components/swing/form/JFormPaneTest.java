@@ -23,10 +23,7 @@ package fr.duminy.components.swing.form;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
 import org.fest.swing.core.BasicRobot;
-import org.fest.swing.core.TypeMatcher;
 import org.fest.swing.fixture.FrameFixture;
-import org.fest.swing.fixture.JPanelFixture;
-import org.junit.Assert;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -34,12 +31,9 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.Locale;
 
-import static fr.duminy.components.swing.TestUtilities.dumpComponents;
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
@@ -244,38 +238,6 @@ public class JFormPaneTest extends AbstractFormTest {
                 }
             }
         };
-    }
-
-    public static JPanelFixture formPane(org.fest.swing.core.Robot robot, Class<?> beanClass) {
-        String name = JFormPane.getDefaultPanelName(beanClass);
-        return formPane(robot, name);
-    }
-
-    public static JPanelFixture formPane(org.fest.swing.core.Robot robot, String panelName) {
-        java.util.List<JFormPane> panels = new ArrayList<>();
-        for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
-            for (Component formPane : robot.finder().findAll((Window) window, new TypeMatcher(JFormPane.class))) {
-                if (formPane.getName().equals(panelName) && !panels.contains(formPane)) {
-                    panels.add((JFormPane) formPane);
-                }
-            }
-        }
-
-        if (panels.isEmpty()) {
-            fail(robot, panelName, "Unable to find a", "");
-        } else if (panels.size() > 1) {
-            StringBuilder middleMessage = new StringBuilder();
-            for (JFormPane f : panels) {
-                middleMessage.append('\t').append(f).append('\n');
-            }
-            fail(robot, panelName, "There are duplicates", middleMessage.toString());
-        }
-
-        return new JPanelFixture(robot, panels.get(0));
-    }
-
-    private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
-        Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
     }
 
     public static void main(String[] args) throws Exception {
