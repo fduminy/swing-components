@@ -24,9 +24,12 @@ import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import org.fest.swing.edt.GuiActionRunner;
+import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.edt.GuiTask;
 import org.fest.swing.fixture.JButtonFixture;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import javax.swing.*;
@@ -44,6 +47,31 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     private static final int SELECTED_INDEX = 1;
     private static final String LINE1 = "line1";
     private static final String LINE2 = "line2";
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Test
+    public void testConstructor_listpanelArg_null() throws Exception {
+        thrown.expect(NullPointerException.class);
+        thrown.expectMessage("Target component should not be null");
+
+        new ListPanelFixture<String, JList<String>>(robot(), null);
+    }
+
+    @Test
+    public void testConstructor_listpanelArg_notNull() throws Exception {
+        final ListPanel<String, JList<String>> listPanel = GuiActionRunner.execute(new GuiQuery<ListPanel<String, JList<String>>>() {
+            @SuppressWarnings("unchecked")
+            protected ListPanel<String, JList<String>> executeInEDT() {
+                return new ListPanel<>(new JList<>(new DefaultMutableListModel<String>()), Mockito.mock(ItemManager.class));
+            }
+        });
+
+        ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), listPanel);
+
+        assertThat(fixture.component()).isSameAs(listPanel);
+    }
 
     @Test
     public void testAddButton() throws Exception {
