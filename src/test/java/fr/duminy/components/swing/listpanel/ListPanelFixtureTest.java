@@ -26,7 +26,6 @@ import fr.duminy.components.swing.list.DefaultMutableListModel;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiTask;
 import org.fest.swing.fixture.JButtonFixture;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -46,104 +45,83 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     private static final String LINE1 = "line1";
     private static final String LINE2 = "line2";
 
-    private DefaultMutableListModel<String> listModel;
-    private JList<String> list;
-    private ListPanelFixture<String, JList<String>> fixture;
-    private MockItemManager itemManager;
-    private SimpleItemManager.FormDisplayer displayer;
-    private SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise;
-
-    @SuppressWarnings("unchecked")
-    @Before
-    public void runBeforeTest() throws Exception {
-        Supplier<ListPanel<String, JList<String>>> supplier = new Supplier<ListPanel<String, JList<String>>>() {
-            @Override
-            public ListPanel<String, JList<String>> get() {
-                listModel = new DefaultMutableListModel<>();
-                listModel.add(LINE1);
-                listModel.add(LINE2);
-                list = new JList<>(listModel);
-                list.setSelectedIndex(SELECTED_INDEX);
-                itemManager = Mockito.spy(new MockItemManager(false));
-
-                return new ListPanel<>(list, itemManager);
-            }
-        };
-        supplierWithNoise = buildAndShowComponentWithNoise(supplier);
-        fixture = new ListPanelFixture<>(robot(), supplierWithNoise.getTargetComponent());
-    }
-
     @Test
     public void testAddButton() throws Exception {
-        JButtonFixture buttonFixture = fixture.addButton();
+        ListData listData = buildAndShowList();
+        JButtonFixture buttonFixture = listData.fixture.addButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(ADD_BUTTON_NAME);
         buttonFixture.click();
-        assertThat(listModel.size()).isEqualTo(3);
-        String newLine = listModel.get(2);
+        assertThat(listData.listModel.size()).isEqualTo(3);
+        String newLine = listData.listModel.get(2);
         assertThat(newLine).isNotEqualTo(LINE1).isNotEqualTo(LINE2);
     }
 
     @Test
     public void testRemoveButton() throws Exception {
-        JButtonFixture buttonFixture = fixture.removeButton();
+        ListData listData = buildAndShowList();
+        JButtonFixture buttonFixture = listData.fixture.removeButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(REMOVE_BUTTON_NAME);
         buttonFixture.click();
-        assertThat(listModel.size()).isEqualTo(1);
-        assertThat(listModel.get(0)).isSameAs(LINE1);
+        assertThat(listData.listModel.size()).isEqualTo(1);
+        assertThat(listData.listModel.get(0)).isSameAs(LINE1);
     }
 
     @Test
     public void testUpButton() throws Exception {
-        JButtonFixture buttonFixture = fixture.upButton();
+        ListData listData = buildAndShowList();
+        JButtonFixture buttonFixture = listData.fixture.upButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(UP_BUTTON_NAME);
         buttonFixture.click();
-        assertThat(listModel.get(0)).isSameAs(LINE2);
-        assertThat(listModel.get(1)).isSameAs(LINE1);
+        assertThat(listData.listModel.get(0)).isSameAs(LINE2);
+        assertThat(listData.listModel.get(1)).isSameAs(LINE1);
     }
 
     @Test
     public void testDownButton() throws Exception {
+        final ListData listData = buildAndShowList();
         GuiActionRunner.execute(new GuiTask() {
             protected void executeInEDT() {
-                list.setSelectedIndex(0);
+                listData.list.setSelectedIndex(0);
             }
         });
 
-        JButtonFixture buttonFixture = fixture.downButton();
+        JButtonFixture buttonFixture = listData.fixture.downButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(DOWN_BUTTON_NAME);
         buttonFixture.click();
-        assertThat(listModel.get(0)).isSameAs(LINE2);
-        assertThat(listModel.get(1)).isSameAs(LINE1);
+        assertThat(listData.listModel.get(0)).isSameAs(LINE2);
+        assertThat(listData.listModel.get(1)).isSameAs(LINE1);
     }
 
     @Test
     public void testUpdateButton() throws Exception {
-        JButtonFixture buttonFixture = fixture.updateButton();
+        ListData listData = buildAndShowList();
+        JButtonFixture buttonFixture = listData.fixture.updateButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(UPDATE_BUTTON_NAME);
         buttonFixture.click();
-        verify(itemManager, times(1)).updateItem(eq(LINE2));
+        verify(listData.itemManager, times(1)).updateItem(eq(LINE2));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testUserButton() throws Exception {
-        final ListPanel<String, JList<String>> targetListPanel = supplierWithNoise.getTargetComponent();
-        final ListPanel<String, JList<String>> noiseListPanel = supplierWithNoise.getNoiseComponent();
+        ListData listData = buildAndShowList();
+        final ListPanel<String, JList<String>> targetListPanel = listData.supplierWithNoise.getTargetComponent();
+        final ListPanel<String, JList<String>> noiseListPanel = listData.supplierWithNoise.getNoiseComponent();
         final String buttonName = "userButton";
         final AbstractUserItemAction<String, ?> targetButtonAction = addUserButton(targetListPanel, buttonName);
         final AbstractUserItemAction<String, ?> noiseButtonAction = addUserButton(noiseListPanel, buttonName);
 
-        JButtonFixture buttonFixture = fixture.userButton(buttonName);
+        JButtonFixture buttonFixture = listData.fixture.userButton(buttonName);
 
         assertThat(buttonFixture).as("buttonFixture").isNotNull();
         assertThat(buttonFixture.component().getName()).as("buttonName").isEqualTo(buttonName);
@@ -167,5 +145,45 @@ public class ListPanelFixtureTest extends AbstractFormTest {
             }
         });
         return buttonAction;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ListData buildAndShowList() throws Exception {
+        final DefaultMutableListModel[] listModel = new DefaultMutableListModel[1];
+        final JList[] list = new JList[1];
+        final MockItemManager[] itemManager = new MockItemManager[1];
+        Supplier<ListPanel<String, JList<String>>> supplier = new Supplier<ListPanel<String, JList<String>>>() {
+            @Override
+            public ListPanel<String, JList<String>> get() {
+                listModel[0] = new DefaultMutableListModel<String>();
+                listModel[0].add(LINE1);
+                listModel[0].add(LINE2);
+                list[0] = new JList<String>(listModel[0]);
+                list[0].setSelectedIndex(SELECTED_INDEX);
+                itemManager[0] = Mockito.spy(new MockItemManager(false));
+
+                return new ListPanel<>(list[0], itemManager[0]);
+            }
+        };
+        SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise = buildAndShowComponentWithNoise(supplier);
+        ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), supplierWithNoise.getTargetComponent());
+
+        return new ListData(listModel[0], list[0], fixture, itemManager[0], supplierWithNoise);
+    }
+
+    private static class ListData {
+        private final DefaultMutableListModel<String> listModel;
+        private final JList<String> list;
+        private final ListPanelFixture<String, JList<String>> fixture;
+        private final MockItemManager itemManager;
+        private final SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise;
+
+        private ListData(DefaultMutableListModel<String> listModel, JList<String> list, ListPanelFixture<String, JList<String>> fixture, MockItemManager itemManager, SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise) {
+            this.listModel = listModel;
+            this.list = list;
+            this.fixture = fixture;
+            this.itemManager = itemManager;
+            this.supplierWithNoise = supplierWithNoise;
+        }
     }
 }
