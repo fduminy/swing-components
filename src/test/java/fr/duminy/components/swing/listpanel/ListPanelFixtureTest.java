@@ -23,9 +23,12 @@ package fr.duminy.components.swing.listpanel;
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
+import fr.duminy.components.swing.path.JPath;
+import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.edt.GuiTask;
+import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JButtonFixture;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +36,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import javax.swing.*;
+import java.awt.*;
 
 import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
 import static fr.duminy.components.swing.listpanel.ListPanelTest.MockItemManager;
@@ -44,6 +48,7 @@ import static org.mockito.Mockito.*;
  * Tests for class {@link fr.duminy.components.swing.listpanel.ListPanelFixture}.
  */
 public class ListPanelFixtureTest extends AbstractFormTest {
+    private static final String COMPONENT_NAME = "listPanelComponent";
     private static final int SELECTED_INDEX = 1;
     private static final String LINE1 = "line1";
     private static final String LINE2 = "line2";
@@ -52,11 +57,50 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
+    public void testConstructor_nameArg_noMatch() {
+        thrown.expect(ComponentLookupException.class);
+        thrown.expectMessage("Unable to find a ListPanel with name '" + COMPONENT_NAME + "'");
+
+        new ListPanelFixture(robot(), COMPONENT_NAME);
+    }
+
+    @Test
+    public void testConstructor_nameArg_onlyOneMatch() throws Exception {
+        buildAndShowList(false);
+
+        new ListPanelFixture(robot(), COMPONENT_NAME);
+    }
+
+    @Test
+    public void testConstructor_nameArg_multipleMatches() throws Exception {
+        Supplier<JPanel> supplier = new Supplier<JPanel>() {
+            @Override
+            public JPanel get() {
+                final JPath jPath1 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                jPath1.setName(COMPONENT_NAME);
+                final JPath jPath2 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                jPath2.setName(COMPONENT_NAME);
+
+                JPanel jPanel = new JPanel(new GridLayout(2, 1));
+                jPanel.add(jPath1);
+                jPanel.add(jPath2);
+                return jPanel;
+            }
+        };
+        buildAndShowWindow(supplier);
+        thrown.expect(ComponentLookupException.class);
+        thrown.expectMessage("There are duplicates JPath with name '" + COMPONENT_NAME + "'");
+
+        new JPathFixture(robot(), COMPONENT_NAME);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
     public void testConstructor_listpanelArg_null() throws Exception {
         thrown.expect(NullPointerException.class);
         thrown.expectMessage("Target component should not be null");
 
-        new ListPanelFixture<String, JList<String>>(robot(), null);
+        new ListPanelFixture<String, JList<String>>(robot(), (ListPanel) null);
     }
 
     @Test
@@ -175,8 +219,12 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         return buttonAction;
     }
 
-    @SuppressWarnings("unchecked")
     public ListData buildAndShowList() throws Exception {
+        return buildAndShowList(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ListData buildAndShowList(boolean withNoise) throws Exception {
         final DefaultMutableListModel[] listModel = new DefaultMutableListModel[1];
         final JList[] list = new JList[1];
         final MockItemManager[] itemManager = new MockItemManager[1];
@@ -190,13 +238,23 @@ public class ListPanelFixtureTest extends AbstractFormTest {
                 list[0].setSelectedIndex(SELECTED_INDEX);
                 itemManager[0] = Mockito.spy(new MockItemManager(false));
 
-                return new ListPanel<>(list[0], itemManager[0]);
+                final ListPanel<String, JList<String>> listPanel = new ListPanel<>(list[0], itemManager[0]);
+                listPanel.setName(COMPONENT_NAME);
+                return listPanel;
             }
         };
-        SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise = buildAndShowComponentWithNoise(supplier);
-        ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), supplierWithNoise.getTargetComponent());
 
-        return new ListData(listModel[0], list[0], fixture, itemManager[0], supplierWithNoise);
+        if (withNoise) {
+            SupplierWithNoise<ListPanel<String, JList<String>>> supplierWithNoise = buildAndShowComponentWithNoise(supplier);
+            ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), supplierWithNoise.getTargetComponent());
+
+            return new ListData(listModel[0], list[0], fixture, itemManager[0], supplierWithNoise);
+        } else {
+            ListPanel<String, JList<String>> listPanel = buildAndShowWindow(supplier);
+            ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), listPanel);
+
+            return new ListData(listModel[0], list[0], fixture, itemManager[0], null);
+        }
     }
 
     private static class ListData {

@@ -20,6 +20,7 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import fr.duminy.components.swing.FixtureUtilities;
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JPanelFixture;
@@ -35,6 +36,11 @@ import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
  * @param <C> The class of list component (example : a JList).
  */
 public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
+    @SuppressWarnings("unchecked")
+    public ListPanelFixture(Robot robot, String componentName) {
+        this(robot, FixtureUtilities.find(robot, ListPanel.class, componentName));
+    }
+
     public ListPanelFixture(Robot robot, ListPanel<B, C> panel) {
         super(robot, panel);
     }
