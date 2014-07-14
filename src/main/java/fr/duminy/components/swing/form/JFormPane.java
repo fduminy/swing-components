@@ -91,7 +91,9 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
     public static <B> B showFormDialog(Component parentComponent, FormBuilder<B> formBuilder, B initialValue, String title, Mode mode, String panelName) {
         JFormPane<B> formPane = new JFormPane<>(formBuilder, title, mode);
         formPane.setValue(initialValue);
-        formPane.setName(getActualPanelName(formBuilder, panelName));
+        if (panelName != null) {
+            formPane.setName(panelName);
+        }
         return formPane.showDialog(parentComponent);
     }
 
@@ -121,6 +123,7 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
         buttonsPanel = buildButtonsPanel();
         add(buttonsPanel, BorderLayout.SOUTH);
         setBorder(BorderFactory.createTitledBorder(title));
+        setName(getDefaultPanelName(formBuilder.getBeanClass()));
     }
 
     /**

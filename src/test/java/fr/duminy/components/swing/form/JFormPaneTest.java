@@ -23,7 +23,10 @@ package fr.duminy.components.swing.form;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
 import org.fest.swing.core.BasicRobot;
+import org.fest.swing.edt.GuiActionRunner;
+import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.FrameFixture;
+import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -37,6 +40,7 @@ import java.util.Locale;
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 /**
@@ -75,6 +79,19 @@ public class JFormPaneTest extends AbstractFormTest {
         assertTrue("JFormPane extends I18nAble", I18nAble.class.isAssignableFrom(JFormPane.class));
     }
 */
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testConstructor() {
+        JFormPane<Bean> formPane = GuiActionRunner.execute(new GuiQuery<JFormPane<Bean>>() {
+            protected JFormPane<Bean> executeInEDT() {
+                FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
+                return new JFormPane<>(builder, "", Mode.CREATE);
+            }
+        });
+
+        assertThat(formPane.getName()).as("name").isEqualTo(Bean.class.getSimpleName());
+    }
 
     @Theory
     public void testAddFormListener_formValidated(NameType nameType) throws Exception {
