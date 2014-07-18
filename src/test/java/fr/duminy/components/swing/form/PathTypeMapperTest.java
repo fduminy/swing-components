@@ -20,8 +20,16 @@
  */
 package fr.duminy.components.swing.form;
 
+import fr.duminy.components.swing.path.JPath;
+import org.fest.swing.edt.GuiActionRunner;
+import org.fest.swing.edt.GuiQuery;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Tests for class {@link fr.duminy.components.swing.form.PathTypeMapper}.
@@ -31,9 +39,34 @@ public class PathTypeMapperTest extends AbstractFileTypeMapperTest<PathTypeMappe
         super(Bean.class, PathTypeMapper.INSTANCE, "path");
     }
 
+    @Test
+    public void testGetValue_nullPath() {
+        testGetValue(null);
+    }
+
+    @Test
+    public void testGetValue_nonNullPath() {
+        testGetValue(Paths.get("aPath"));
+    }
+
+    private void testGetValue(final Path path) {
+        JPath jPath = GuiActionRunner.execute(new GuiQuery<JPath>() {
+            @Override
+            protected JPath executeInEDT() throws Throwable {
+                JPath jPath = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                jPath.setPath(path);
+                return jPath;
+            }
+        });
+
+        Path actualPath = PathTypeMapper.INSTANCE.getValue(jPath);
+
+        assertThat(actualPath).isEqualTo(path);
+    }
+
     @Override
     Bean createBean(String fileName) {
-        return new Bean(new File(fileName).toPath());
+        return new Bean((fileName == null) ? null : new File(fileName).toPath());
     }
 
     public static class Bean {

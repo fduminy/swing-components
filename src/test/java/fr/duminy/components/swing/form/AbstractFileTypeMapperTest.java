@@ -22,6 +22,7 @@ package fr.duminy.components.swing.form;
 
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.AbstractSwingTest;
+import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.formbuilder.Form;
@@ -29,6 +30,9 @@ import org.formbuilder.FormBuilder;
 import org.junit.Test;
 
 import javax.swing.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.formbuilder.FormBuilder.map;
 import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
@@ -68,8 +72,17 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
 
     @Test
     public final void testBuild() throws Exception {
+        testBuild(new File("aFile").getAbsolutePath());
+    }
+
+    @Test
+    public final void testBuild_null() throws Exception {
+        testBuild(null);
+    }
+
+    private final void testBuild(String fileName) throws Exception {
+        Path expectedPath = (fileName == null) ? null : Paths.get(fileName);
         final FormBuilder<B> builder = map(beanClass).formsOf(REPLICATING);
-        String fileName = "aFile";
         final B b = createBean(fileName);
 
         GuiActionRunner.execute(new GuiQuery<Object>() {
@@ -81,7 +94,7 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
             }
         });
 
-        window.panel(fieldName).textBox("pathField").requireText(fileName);
+        new JPathFixture(robot(), fieldName).requireSelectedPath(expectedPath);
     }
 
     abstract B createBean(String fileName);
