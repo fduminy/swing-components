@@ -397,8 +397,8 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
     protected final void resetContentPane() {
         if (formContainer != null) {
-            GuiActionRunner.execute(new GuiQuery<Object>() {
-                protected Object executeInEDT() {
+            GuiActionRunner.execute(new GuiQuery<Void>() {
+                protected Void executeInEDT() {
                     formContainer.add(new JLabel("No form"), BorderLayout.CENTER);
                     return null;
                 }

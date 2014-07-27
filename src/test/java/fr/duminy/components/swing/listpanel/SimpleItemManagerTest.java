@@ -79,8 +79,8 @@ public class SimpleItemManagerTest extends AbstractFormTest {
         final FormBuilder<Bean> builder = new DefaultFormBuilder<>(Bean.class);
         final MutableBoolean called = new MutableBoolean(false);
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 final SimpleItemManager manager = new SimpleItemManager<Bean>(Bean.class, builder, new JLabel(""), title, displayer) {
                     @Override
                     protected void initItem(Bean item) {

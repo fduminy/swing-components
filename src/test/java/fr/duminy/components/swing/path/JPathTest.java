@@ -29,6 +29,7 @@ import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.WaitTimedOutError;
 import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JFileChooserFixture;
+import org.fest.swing.fixture.JTextComponentFixture;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +40,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +104,7 @@ public class JPathTest extends AbstractSwingTest {
     }
 
     @Test
-    public void testCreate_withoutBaseDirectoryGetter() {
+    public void testConstructor() {
         Exception e = create();
         assertThat(e).isNull();
     }
@@ -138,24 +140,24 @@ public class JPathTest extends AbstractSwingTest {
     }
 
     @Theory
-    public void testSetPath_readOnly_withoutBasePathGetter(SelectionMode selectionMode) throws Exception {
+    public void testSetPath_disabled(SelectionMode selectionMode) throws Exception {
         testSetPath(selectionMode, false);
     }
 
     @Theory
-    public void testSetPath_withoutBasePathGetter(SelectionMode selectionMode) throws Exception {
+    public void testSetPath_enabled(SelectionMode selectionMode) throws Exception {
         testSetPath(selectionMode, true);
     }
 
     private void testSetPath(SelectionMode selectionMode, boolean enabled) throws Exception {
-        final PathToSelect pathToSelect = new PathToSelect(enabled, selectionMode);
-        final JPath field = doBuildAndShowWindow(pathToSelect, selectionMode, enabled);
+        final Parameters parameters = new Parameters(enabled, selectionMode);
+        final JPath field = doBuildAndShowWindow(parameters);
 
         Exception exception = GuiActionRunner.execute(new GuiQuery<Exception>() {
             protected Exception executeInEDT() {
                 Exception result = null;
                 try {
-                    field.setPath(pathToSelect.getPath());
+                    field.setPath(parameters.getPath());
                 } catch (Exception e) {
                     result = e;
                 }
@@ -163,38 +165,37 @@ public class JPathTest extends AbstractSwingTest {
             }
         });
 
-        checkActualState(field, pathToSelect, exception, true, true);
+        checkActualState(field, parameters, exception, true, true);
     }
 
     @Theory
-    public void testSelectPath_readOnly_withoutBasePathGetter(SelectionMode selectionMode, boolean enterPath) throws Exception {
+    public void testSelectPath_disabled(SelectionMode selectionMode, boolean enterPath) throws Exception {
         testSelectPath(selectionMode, enterPath, false);
     }
 
     @Theory
-    public void testSelectPath_withoutBasePathGetter(SelectionMode selectionMode, boolean enterPath) throws Exception {
+    public void testSelectPath_enabled(SelectionMode selectionMode, boolean enterPath) throws Exception {
         testSelectPath(selectionMode, enterPath, true);
     }
 
     private void testSelectPath(SelectionMode selectionMode, boolean enterPath, boolean enabled) throws Exception {
-        final PathToSelect pathToSelect = new PathToSelect(enabled, selectionMode);
+        final Parameters parameters = new Parameters(enabled, selectionMode);
 
-        JPath field = doBuildAndShowWindow(pathToSelect,
-                selectionMode, enabled);
+        JPath field = doBuildAndShowWindow(parameters);
 
-        window.textBox().requireText(pathToSelect.getInitialText());
+        window.textBox().requireText(parameters.getInitialText());
 
         if (enterPath) {
             boolean expectError = !enabled;
 
-            Exception exception = executeInEDT(new GuiQuery<Object>() {
-                protected Object executeInEDT() throws Exception {
-                    window.textBox().component().setText(pathToSelect.getText());
+            Exception exception = executeInEDT(new GuiQuery<Void>() {
+                protected Void executeInEDT() throws Exception {
+                    window.textBox().component().setText(parameters.getText());
                     return null;
                 }
             }, expectError);
 
-            checkActualState(field, pathToSelect, exception, false, false);
+            checkActualState(field, parameters, exception, false, false);
         } else {
             boolean expectError = false;
 
@@ -202,15 +203,15 @@ public class JPathTest extends AbstractSwingTest {
             if (enabled) {
                 jbf.requireEnabled();
 
-                executeInEDT(new GuiQuery<Object>() {
-                    protected Object executeInEDT() {
+                executeInEDT(new GuiQuery<Void>() {
+                    protected Void executeInEDT() {
                         jbf.targetCastedTo(JButton.class).doClick();
                         return null;
                     }
                 }, expectError);
 
                 JFileChooserFixture jfc = window.fileChooser();
-                File fileToSelect = pathToSelect.getPath().toFile();
+                File fileToSelect = parameters.getPath().toFile();
                 if (selectionMode.allowsDirectory()) {
                     jfc.setCurrentDirectory(fileToSelect.getParentFile());
                 }
@@ -220,11 +221,11 @@ public class JPathTest extends AbstractSwingTest {
                 jbf.requireDisabled();
             }
 
-            checkActualState(field, pathToSelect, null, false, false);
+            checkActualState(field, parameters, null, false, false);
         }
     }
 
-    private Exception executeInEDT(GuiQuery query, boolean expectError) {
+    private Exception executeInEDT(GuiQuery<Void> query, boolean expectError) {
         Exception result = null;
         try {
             GuiActionRunner.execute(query);
@@ -238,10 +239,19 @@ public class JPathTest extends AbstractSwingTest {
         return result;
     }
 
-    private void checkActualState(JPath field, PathToSelect pathToSelect, Exception exception, boolean expectException, boolean expectIllegalStateException) {
-        if (pathToSelect.enabled) {
-            window.textBox(PATH_FIELD_NAME).requireEnabled().requireEditable();
-            window.button(CHOOSE_BUTTON_NAME).requireEnabled();
+    private void checkActualState(JPath field, Parameters parameters, Exception exception, boolean expectException, boolean expectIllegalStateException) {
+        assertThat(field.isEnabled()).isEqualTo(parameters.enabled);
+
+        //TODO add requireEnabled(boolean), requireEditable(boolean) ... etc to JTextComponentFixture, JButtonFixture...
+        final JTextComponentFixture textBoxFixture = window.textBox(PATH_FIELD_NAME);
+        JTextComponent textBox = textBoxFixture.component();
+        assertThat(textBox.isEnabled()).as("textBox.enabled").isEqualTo(parameters.enabled);
+        assertThat(textBox.isEnabled()).as("textBox.editable").isEqualTo(parameters.enabled);
+
+        JButton button = window.button(CHOOSE_BUTTON_NAME).component();
+        assertThat(button.isEnabled()).as("button.enabled").isEqualTo(parameters.enabled);
+
+        if (parameters.enabled) {
             if (exception != null) {
                 Assert.fail("expected exception to be null but is " + exception);
             }
@@ -261,44 +271,34 @@ public class JPathTest extends AbstractSwingTest {
                     });
                 }
             }
-
-            window.textBox(PATH_FIELD_NAME).requireDisabled().requireNotEditable();
-            window.button(CHOOSE_BUTTON_NAME).requireDisabled();
         }
-        assertThat(field.isEnabled()).isEqualTo(pathToSelect.enabled);
 
-        String expectedText;
-
-        Path expectedPath = pathToSelect.getExpectedPath();
+        Path expectedPath = parameters.getExpectedPath();
 
         Path actualPath = field.getPath();
         assertThat(actualPath).isNotNull();
-
         assertThat(actualPath).isEqualTo(expectedPath);
-        expectedText = expectedPath.toAbsolutePath().toString();
 
-        window.textBox(PATH_FIELD_NAME).requireText(expectedText);
+        textBoxFixture.requireText(expectedPath.toAbsolutePath().toString());
     }
 
-    private JPath doBuildAndShowWindow(
-            final PathToSelect pathToSelect,
-            final SelectionMode selectionMode, final boolean enabled)
+    private JPath doBuildAndShowWindow(final Parameters parameters)
             throws Exception {
         return buildAndShowWindow(new Supplier<JPath>() {
             @Override
             public JPath get() {
-                final JPath result = new JPath(selectionMode);
+                final JPath result = new JPath(parameters.selectionMode);
                 result.setColumns(10);
 
-                if (!enabled) {
-                    result.setPath(pathToSelect.getInitialPath());
-                    GuiActionRunner.execute(new GuiQuery<Object>() {
-                        protected Object executeInEDT() {
-                            result.setEnabled(false);
-                            return null;
-                        }
-                    });
+                if (!parameters.enabled) {
+                    result.setPath(parameters.getInitialPath());
                 }
+                GuiActionRunner.execute(new GuiQuery<Void>() {
+                    protected Void executeInEDT() {
+                        result.setEnabled(parameters.enabled);
+                        return null;
+                    }
+                });
 
                 return result;
             }
@@ -306,14 +306,14 @@ public class JPathTest extends AbstractSwingTest {
         });
     }
 
-    private class PathToSelect {
+    private class Parameters {
         private final boolean enabled;
         private final SelectionMode selectionMode;
 
         private final Path initialPath;
         private final Path pathToSelect;
 
-        public PathToSelect(final boolean enabled, SelectionMode selectionMode) {
+        public Parameters(final boolean enabled, SelectionMode selectionMode) {
             this.enabled = enabled;
             this.selectionMode = selectionMode;
 

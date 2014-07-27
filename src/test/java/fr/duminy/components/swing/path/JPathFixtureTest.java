@@ -220,8 +220,8 @@ public class JPathFixtureTest extends AbstractFormTest {
     }
 
     private void setPathInEDT(final JPath jPath, final Path path) {
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 jPath.setPath(path);
                 return null;
             }

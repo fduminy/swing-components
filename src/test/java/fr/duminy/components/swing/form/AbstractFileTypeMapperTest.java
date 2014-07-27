@@ -85,8 +85,8 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
         final FormBuilder<B> builder = map(beanClass).formsOf(REPLICATING);
         final B b = createBean(fileName);
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 Form<B> form = builder.use(typeMapper).buildForm();
                 form.setValue(b);
                 content.add(form.asComponent());

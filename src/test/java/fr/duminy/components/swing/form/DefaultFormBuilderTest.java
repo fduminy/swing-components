@@ -90,8 +90,8 @@ public class DefaultFormBuilderTest extends AbstractSwingTest {
         final JComponent component = form.asComponent();
         assertThat(component).isNotNull();
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 getFrame().setContentPane(component);
                 return null;
             }
@@ -116,8 +116,8 @@ public class DefaultFormBuilderTest extends AbstractSwingTest {
         b.setName(A_NAME);
         b.setFile(new File(A_FILE));
         b.setPath(Paths.get(A_PATH));
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 form.setValue(b);
                 return null;
             }
@@ -126,8 +126,8 @@ public class DefaultFormBuilderTest extends AbstractSwingTest {
         final JComponent component = form.asComponent();
         assertThat(component).isNotNull();
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 getFrame().setContentPane(component);
                 return null;
             }
@@ -146,8 +146,8 @@ public class DefaultFormBuilderTest extends AbstractSwingTest {
                 return builder.buildForm();
             }
         });
-        GuiActionRunner.execute(new GuiQuery<Object>() {
-            protected Object executeInEDT() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
+            protected Void executeInEDT() {
                 getFrame().setContentPane(form.asComponent());
                 return null;
             }

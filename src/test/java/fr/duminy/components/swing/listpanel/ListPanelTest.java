@@ -269,9 +269,9 @@ public class ListPanelTest extends AbstractSwingTest {
         final ListPanel<String, JList<String>> component = buildAndShowWindow(factory, 1);
         Locale.setDefault(locale);
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
             @Override
-            protected Object executeInEDT() throws Throwable {
+            protected Void executeInEDT() throws Throwable {
                 component.updateMessages();
                 return null;
             }
@@ -463,9 +463,9 @@ public class ListPanelTest extends AbstractSwingTest {
         action.setListener(component);
         final String buttonName = "myButton";
 
-        GuiActionRunner.execute(new GuiQuery<Object>() {
+        GuiActionRunner.execute(new GuiQuery<Void>() {
             @Override
-            protected Object executeInEDT() throws Throwable {
+            protected Void executeInEDT() throws Throwable {
                 component.addUserButton(buttonName, action);
                 window.component().pack();
                 window.component().invalidate();
