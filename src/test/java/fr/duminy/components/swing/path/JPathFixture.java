@@ -48,6 +48,13 @@ public class JPathFixture extends JPanelFixture {
         return this;
     }
 
+    public JPathFixture requireFileHidingEnabled(boolean fileHidingEnabled) {
+        if (path().isFileHidingEnabled() != fileHidingEnabled) {
+            fail("JPath component named '" + component().getName() + "' must have fileHidingEnabled=" + fileHidingEnabled);
+        }
+        return this;
+    }
+
     public JPathFixture selectPath(Path path) {
         path().setPath(path);
         return this;

@@ -114,6 +114,34 @@ public class JPathFixtureTest extends AbstractFormTest {
         assertThat(fixture.component()).isSameAs(jpath);
     }
 
+    @Test
+    public void testRequireFileHidingEnabled_true() throws Exception {
+        testRequireFileHidingEnabled(true);
+    }
+
+    @Test
+    public void testRequireFileHidingEnabled_false() throws Exception {
+        testRequireFileHidingEnabled(false);
+    }
+
+    private void testRequireFileHidingEnabled(boolean fileHidingEnabled) throws Exception {
+        buildAndShow(JPath.SelectionMode.FILES_AND_DIRECTORIES, fileHidingEnabled);
+        JPathFixture fixture = new JPathFixture(robot(), COMPONENT_NAME);
+
+        JPathFixture actualFixture = fixture.requireFileHidingEnabled(fileHidingEnabled);
+        assertThat(actualFixture).as("returned fixture").isSameAs(fixture);
+
+        AssertionError error = null;
+        boolean wrongValue = !fileHidingEnabled;
+        try {
+            fixture.requireFileHidingEnabled(wrongValue);
+        } catch (AssertionError e) {
+            error = e;
+        }
+        assertThat(error).as("requireFileHidingEnabled must fail for " + wrongValue).isExactlyInstanceOf(AssertionError.class).
+                hasMessage("JPath component named '" + COMPONENT_NAME + "' must have fileHidingEnabled=" + wrongValue);
+    }
+
     @Theory
     public void testRequireSelectionMode(final JPath.SelectionMode mode) throws Exception {
         buildAndShow(mode);
@@ -208,11 +236,16 @@ public class JPathFixtureTest extends AbstractFormTest {
     }
 
     private JPath buildAndShow(final JPath.SelectionMode mode) throws Exception {
+        return buildAndShow(mode, true);
+    }
+
+    private JPath buildAndShow(final JPath.SelectionMode mode, final boolean fileHidingEnabled) throws Exception {
         Supplier<JPath> supplier = new Supplier<JPath>() {
             @Override
             public JPath get() {
                 final JPath jPath = new JPath(mode);
                 jPath.setName(COMPONENT_NAME);
+                jPath.setFileHidingEnabled(fileHidingEnabled);
                 return jPath;
             }
         };

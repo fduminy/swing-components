@@ -49,6 +49,7 @@ public class JPath extends JPanel {
     private JButton chooseButton;
     private final SelectionMode selectionMode;
     private Path path;
+    private boolean fileHidingEnabled = true;
 
     public JPath(SelectionMode selectionMode) {
         super(new BorderLayout());
@@ -120,10 +121,15 @@ public class JPath extends JPanel {
         return selectionMode;
     }
 
-    public static void displayFileChooser(final JPath parent, final Path initialPath, final SelectionMode selectionMode) {
+    boolean isFileHidingEnabled() {
+        return fileHidingEnabled;
+    }
+
+    public static void displayFileChooser(final JPath parent, final Path initialPath, final SelectionMode selectionMode, boolean fileHidingEnabled) {
         final JFileChooser jfc = new JFileChooser();
 
         jfc.setFileSelectionMode(selectionMode.fileChooserMode);
+        jfc.setFileHidingEnabled(fileHidingEnabled);
 
         if (initialPath != null) {
             File f = initialPath.toAbsolutePath().toFile();
@@ -145,7 +151,7 @@ public class JPath extends JPanel {
     }
 
     private void displayFileChooser() {
-        displayFileChooser(this, getPath(), selectionMode);
+        displayFileChooser(this, getPath(), selectionMode, fileHidingEnabled);
     }
 
     private void updatePathFromText() {
@@ -172,6 +178,10 @@ public class JPath extends JPanel {
                 pathField.setText(path.toString());
             }
         }
+    }
+
+    public void setFileHidingEnabled(boolean fileHidingEnabled) {
+        this.fileHidingEnabled = fileHidingEnabled;
     }
 
     public static enum SelectionMode {
