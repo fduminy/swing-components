@@ -53,7 +53,7 @@ public class PathTypeMapperTest extends AbstractFileTypeMapperTest<PathTypeMappe
         JPath jPath = GuiActionRunner.execute(new GuiQuery<JPath>() {
             @Override
             protected JPath executeInEDT() throws Throwable {
-                JPath jPath = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                JPath jPath = new JPath();
                 jPath.setPath(path);
                 return jPath;
             }

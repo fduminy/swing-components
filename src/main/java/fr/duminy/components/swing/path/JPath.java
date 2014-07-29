@@ -41,20 +41,19 @@ import java.nio.file.Paths;
  */
 public class JPath extends JPanel {
     private static final Logger LOG = LoggerFactory.getLogger(JPath.class);
+    private static final SelectionMode DEFAULT_SELECTION_MODE = SelectionMode.FILES_AND_DIRECTORIES;
 
     static final String PATH_FIELD_NAME = "pathField";
     static final String CHOOSE_BUTTON_NAME = "chooseButton";
 
     private JTextField pathField;
     private JButton chooseButton;
-    private final SelectionMode selectionMode;
+    private SelectionMode selectionMode = DEFAULT_SELECTION_MODE;
     private Path path;
     private boolean fileHidingEnabled = true;
 
-    public JPath(SelectionMode selectionMode) {
+    public JPath() {
         super(new BorderLayout());
-
-        this.selectionMode = (selectionMode == null) ? SelectionMode.FILES_ONLY : selectionMode;
 
         buildComponent();
 
@@ -119,6 +118,10 @@ public class JPath extends JPanel {
 
     SelectionMode getSelectionMode() {
         return selectionMode;
+    }
+
+    public void setSelectionMode(SelectionMode selectionMode) {
+        this.selectionMode = (selectionMode == null) ? DEFAULT_SELECTION_MODE : selectionMode;
     }
 
     boolean isFileHidingEnabled() {
@@ -216,6 +219,15 @@ public class JPath extends JPanel {
 
         public final boolean allowsDirectory() {
             return allowsDirectory;
+        }
+
+        public static SelectionMode of(JFileChooser fileChooser) {
+            for (SelectionMode mode : values()) {
+                if (fileChooser.getFileSelectionMode() == mode.fileChooserMode) {
+                    return mode;
+                }
+            }
+            return null;
         }
     }
 

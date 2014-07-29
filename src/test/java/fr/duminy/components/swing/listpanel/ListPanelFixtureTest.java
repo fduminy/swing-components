@@ -76,9 +76,9 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         Supplier<JPanel> supplier = new Supplier<JPanel>() {
             @Override
             public JPanel get() {
-                final JPath jPath1 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                final JPath jPath1 = new JPath();
                 jPath1.setName(COMPONENT_NAME);
-                final JPath jPath2 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                final JPath jPath2 = new JPath();
                 jPath2.setName(COMPONENT_NAME);
 
                 JPanel jPanel = new JPanel(new GridLayout(2, 1));

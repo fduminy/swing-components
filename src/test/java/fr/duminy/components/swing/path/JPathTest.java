@@ -106,9 +106,34 @@ public class JPathTest extends AbstractSwingTest {
     @Test
     public void testConstructor() throws Exception {
         final Parameters parameters = new Parameters(true, SelectionMode.FILES_AND_DIRECTORIES);
-        doBuildAndShowWindow(parameters);
+        JPath jpath = doBuildAndShowWindow(parameters);
 
-        openFileChooser(true, false);
+        checkFileChooserState(jpath, true, false, parameters.selectionMode);
+    }
+
+    @Theory
+    public void testSetSelectionMode(final SelectionMode selectionMode) throws Exception {
+        testSetSelectionMode(selectionMode, selectionMode);
+    }
+
+    @Test
+    public void testSetSelectionMode_null() throws Exception {
+        testSetSelectionMode(null, SelectionMode.FILES_AND_DIRECTORIES);
+    }
+
+    private void testSetSelectionMode(final SelectionMode selectionMode, SelectionMode expectedSelectionMode) throws Exception {
+        Supplier<JPath> pathSupplier = new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                JPath field = new JPath();
+                field.setSelectionMode(selectionMode);
+                return field;
+            }
+        };
+
+        JPath jpath = buildAndShowWindow(pathSupplier);
+
+        checkFileChooserState(jpath, true, false, expectedSelectionMode);
     }
 
     @Theory
@@ -116,7 +141,7 @@ public class JPathTest extends AbstractSwingTest {
         Supplier<JPath> pathSupplier = new Supplier<JPath>() {
             @Override
             public JPath get() {
-                JPath field = new JPath(SelectionMode.FILES_AND_DIRECTORIES);
+                JPath field = new JPath();
                 field.setColumns(columns);
                 return field;
             }
@@ -198,7 +223,7 @@ public class JPathTest extends AbstractSwingTest {
             if (enabled) {
                 jbf.requireEnabled();
 
-                JFileChooserFixture jfc = openFileChooser(fileHidingEnabled, expectError);
+                JFileChooserFixture jfc = checkFileChooserState(field, fileHidingEnabled, expectError, selectionMode);
 
                 File fileToSelect = parameters.getPath().toFile();
                 if (selectionMode.allowsDirectory()) {
@@ -214,7 +239,7 @@ public class JPathTest extends AbstractSwingTest {
         }
     }
 
-    private JFileChooserFixture openFileChooser(boolean expectFileHidingEnabled, boolean expectError) {
+    private JFileChooserFixture checkFileChooserState(JPath jpath, boolean expectFileHidingEnabled, boolean expectError, SelectionMode expectSelectionMode) {
         final JButtonFixture jbf = window.button(CHOOSE_BUTTON_NAME);
         executeInEDT(new GuiQuery<Void>() {
             protected Void executeInEDT() {
@@ -228,6 +253,7 @@ public class JPathTest extends AbstractSwingTest {
         // check file chooser state
         JFileChooser fileChooser = jfc.component();
         assertThat(fileChooser.isFileHidingEnabled()).as("fileHidingEnabled").isEqualTo(expectFileHidingEnabled);
+        assertThat(SelectionMode.of(fileChooser)).as("selectionMode").isEqualTo(expectSelectionMode);
         return jfc;
     }
 
@@ -293,7 +319,8 @@ public class JPathTest extends AbstractSwingTest {
         return buildAndShowWindow(new Supplier<JPath>() {
             @Override
             public JPath get() {
-                final JPath result = new JPath(parameters.selectionMode);
+                final JPath result = new JPath();
+                result.setSelectionMode(parameters.selectionMode);
                 result.setColumns(10);
 
                 if (!parameters.enabled) {

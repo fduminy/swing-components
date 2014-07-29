@@ -52,7 +52,7 @@ public class FileTypeMapperTest extends AbstractFileTypeMapperTest<FileTypeMappe
         JPath jPath = GuiActionRunner.execute(new GuiQuery<JPath>() {
             @Override
             protected JPath executeInEDT() throws Throwable {
-                JPath jPath = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                JPath jPath = new JPath();
                 jPath.setPath((file == null) ? null : file.toPath());
                 return jPath;
             }

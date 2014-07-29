@@ -75,9 +75,9 @@ public class JPathFixtureTest extends AbstractFormTest {
         Supplier<JPanel> supplier = new Supplier<JPanel>() {
             @Override
             public JPanel get() {
-                final JPath jPath1 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                final JPath jPath1 = new JPath();
                 jPath1.setName(COMPONENT_NAME);
-                final JPath jPath2 = new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                final JPath jPath2 = new JPath();
                 jPath2.setName(COMPONENT_NAME);
 
                 JPanel jPanel = new JPanel(new GridLayout(2, 1));
@@ -105,7 +105,7 @@ public class JPathFixtureTest extends AbstractFormTest {
     public void testConstructor_jpathArg_notNull() throws Exception {
         final JPath jpath = GuiActionRunner.execute(new GuiQuery<JPath>() {
             protected JPath executeInEDT() {
-                return new JPath(JPath.SelectionMode.FILES_AND_DIRECTORIES);
+                return new JPath();
             }
         });
 
@@ -243,7 +243,8 @@ public class JPathFixtureTest extends AbstractFormTest {
         Supplier<JPath> supplier = new Supplier<JPath>() {
             @Override
             public JPath get() {
-                final JPath jPath = new JPath(mode);
+                final JPath jPath = new JPath();
+                jPath.setSelectionMode(mode);
                 jPath.setName(COMPONENT_NAME);
                 jPath.setFileHidingEnabled(fileHidingEnabled);
                 return jPath;

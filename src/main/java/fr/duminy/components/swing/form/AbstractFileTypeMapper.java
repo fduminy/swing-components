@@ -27,8 +27,6 @@ import org.formbuilder.mapping.change.ChangeHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
-import static fr.duminy.components.swing.path.JPath.SelectionMode.FILES_AND_DIRECTORIES;
-
 /**
  * Base implementation of {@link org.formbuilder.TypeMapper} for following property types :
  * <ul>
@@ -52,7 +50,7 @@ abstract class AbstractFileTypeMapper<T> implements TypeMapper<JPath, T> {
     @Nonnull
     @Override
     public final JPath createEditorComponent() {
-        return new JPath(FILES_AND_DIRECTORIES);
+        return new JPath();
     }
 
     @Nonnull
