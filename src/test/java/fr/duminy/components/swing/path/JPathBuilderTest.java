@@ -20,59 +20,43 @@
  */
 package fr.duminy.components.swing.path;
 
-import org.junit.experimental.theories.Theories;
-import org.junit.runner.RunWith;
-
 import java.nio.file.Path;
 
-import static fr.duminy.components.swing.path.JPath.SelectionMode;
-
 /**
- * Tests for class {@link JPath}.
+ * Tests for class {@link fr.duminy.components.swing.path.JPathBuilder}.
  */
-@RunWith(Theories.class)
-public class JPathTest extends AbstractPathTest {
+public class JPathBuilderTest extends AbstractPathTest {
     @Override
     protected final JPath createJPath() {
-        return new JPath();
+        return new JPathBuilder().build();
     }
 
     @Override
-    protected final JPath createJPath(SelectionMode selectionMode) {
-        JPath field = new JPath();
-        field.setSelectionMode(selectionMode);
-        return field;
+    protected final JPath createJPath(JPath.SelectionMode selectionMode) {
+        return new JPathBuilder().select(selectionMode).build();
     }
 
     @Override
     protected final JPath createJPath(int columns) {
-        JPath field = new JPath();
-        field.setColumns(columns);
-        return field;
+        return new JPathBuilder().columns(columns).build();
     }
 
     @Override
     protected final JPath createJPathAndSetEnabled(boolean enabled) {
-        JPath field = new JPath();
-        field.setEnabled(enabled);
-        return field;
+        return new JPathBuilder().enable(enabled).build();
     }
 
     @Override
     protected final JPath createJPathAndSetFileHidingEnabled(boolean enableFileHiding) {
-        JPath field = new JPath();
-        field.setFileHidingEnabled(enableFileHiding);
-        return field;
+        return new JPathBuilder().fileHidingEnabled(enableFileHiding).build();
     }
 
     @Override
-    protected final JPath createJPath(SelectionMode selectionMode, Path initialPath, boolean enabled) {
-        final JPath result = new JPath();
-        result.setSelectionMode(selectionMode);
+    protected final JPath createJPath(JPath.SelectionMode selectionMode, Path initialPath, boolean enabled) {
+        JPathBuilder builder = new JPathBuilder().select(selectionMode);
         if (!enabled) {
-            result.setPath(initialPath);
+            builder.initialPath(initialPath);
         }
-        result.setEnabled(enabled);
-        return result;
+        return builder.enable(enabled).build();
     }
 }
