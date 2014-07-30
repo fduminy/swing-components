@@ -67,11 +67,6 @@ public class JPathTest extends AbstractSwingTest {
     public static final SelectionMode FILES_AND_DIRECTORIES = SelectionMode.FILES_AND_DIRECTORIES;
 
     @DataPoint
-    public static final boolean ENTER_FILE_PATH = true;
-    @DataPoint
-    public static final boolean SELECT_FILE = false;
-
-    @DataPoint
     public static final int ONE_COLUMN = 1;
     @DataPoint
     public static final int TWENTY_COLUMNS = 20;
@@ -103,12 +98,55 @@ public class JPathTest extends AbstractSwingTest {
         return result;
     }
 
+    private JPath createJPath() {
+        return new JPath();
+    }
+
+    private JPath createJPath(SelectionMode selectionMode) {
+        JPath field = new JPath();
+        field.setSelectionMode(selectionMode);
+        return field;
+    }
+
+    private JPath createJPath(int columns) {
+        JPath field = new JPath();
+        field.setColumns(columns);
+        return field;
+    }
+
+    private JPath createJPathAndSetEnabled(boolean enabled) {
+        JPath field = new JPath();
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private JPath createJPathAndSetFileHidingEnabled(boolean enableFileHiding) {
+        JPath field = new JPath();
+        field.setFileHidingEnabled(enableFileHiding);
+        return field;
+    }
+
+    private JPath createJPath(SelectionMode selectionMode, Path initialPath, boolean enabled) {
+        final JPath result = new JPath();
+        result.setSelectionMode(selectionMode);
+        if (!enabled) {
+            result.setPath(initialPath);
+        }
+        result.setEnabled(enabled);
+        return result;
+    }
+
     @Test
     public void testConstructor() throws Exception {
-        final Parameters parameters = new Parameters(true, SelectionMode.FILES_AND_DIRECTORIES);
-        JPath jpath = doBuildAndShowWindow(parameters);
+        JPath jpath = buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPath();
+            }
+        });
 
-        checkFileChooserState(jpath, true, false, parameters.selectionMode);
+        checkFileChooserState(true, false, SelectionMode.FILES_AND_DIRECTORIES);
+        checkEnabledState(jpath, true);
     }
 
     @Theory
@@ -122,35 +160,69 @@ public class JPathTest extends AbstractSwingTest {
     }
 
     private void testSetSelectionMode(final SelectionMode selectionMode, SelectionMode expectedSelectionMode) throws Exception {
-        Supplier<JPath> pathSupplier = new Supplier<JPath>() {
+        buildAndShowWindow(new Supplier<JPath>() {
             @Override
             public JPath get() {
-                JPath field = new JPath();
-                field.setSelectionMode(selectionMode);
-                return field;
+                return createJPath(selectionMode);
             }
-        };
+        });
 
-        JPath jpath = buildAndShowWindow(pathSupplier);
-
-        checkFileChooserState(jpath, true, false, expectedSelectionMode);
+        checkFileChooserState(true, false, expectedSelectionMode);
     }
 
     @Theory
     public void testSetColumns(final int columns) throws Exception {
-        Supplier<JPath> pathSupplier = new Supplier<JPath>() {
+        buildAndShowWindow(new Supplier<JPath>() {
             @Override
             public JPath get() {
-                JPath field = new JPath();
-                field.setColumns(columns);
-                return field;
+                return createJPath(columns);
             }
-        };
-
-        buildAndShowWindow(pathSupplier);
+        });
 
         JTextField tf = (JTextField) window.textBox(PATH_FIELD_NAME).component();
         assertThat(tf.getColumns()).isEqualTo(columns);
+    }
+
+    @Test
+    public void testSetEnabled_true() throws Exception {
+        testSetEnabled(true);
+    }
+
+    @Test
+    public void testSetEnabled_false() throws Exception {
+        testSetEnabled(false);
+    }
+
+    public void testSetEnabled(final boolean enabled) throws Exception {
+        JPath field = buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPathAndSetEnabled(enabled);
+            }
+        });
+
+        checkEnabledState(field, enabled);
+    }
+
+    @Test
+    public void testEnableFileHiding_true() throws Exception {
+        testEnableFileHiding(true);
+    }
+
+    @Test
+    public void testEnableFileHiding_false() throws Exception {
+        testEnableFileHiding(false);
+    }
+
+    public void testEnableFileHiding(final boolean enableFileHiding) throws Exception {
+        buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPathAndSetFileHidingEnabled(enableFileHiding);
+            }
+        });
+
+        checkFileChooserState(enableFileHiding, false, SelectionMode.FILES_AND_DIRECTORIES);
     }
 
     @Theory
@@ -163,9 +235,15 @@ public class JPathTest extends AbstractSwingTest {
         testSetPath(selectionMode, true);
     }
 
-    private void testSetPath(SelectionMode selectionMode, boolean enabled) throws Exception {
+    private void testSetPath(final SelectionMode selectionMode, final boolean enabled) throws Exception {
         final Parameters parameters = new Parameters(enabled, selectionMode);
-        final JPath field = doBuildAndShowWindow(parameters);
+        final JPath field = buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
+            }
+
+        });
 
         Exception exception = GuiActionRunner.execute(new GuiQuery<Exception>() {
             protected Exception executeInEDT() {
@@ -183,63 +261,80 @@ public class JPathTest extends AbstractSwingTest {
     }
 
     @Theory
-    public void testSelectPath_disabled(SelectionMode selectionMode, boolean enterPath) throws Exception {
-        testSelectPath(selectionMode, enterPath, false, false);
+    public void testSelectPath_disabled(SelectionMode selectionMode) throws Exception {
+        testSelectPath(selectionMode, false);
     }
 
     @Theory
-    public void testSelectPath_enabled_fileHidingDisabled(SelectionMode selectionMode, boolean enterPath) throws Exception {
-        testSelectPath(selectionMode, enterPath, true, false);
+    public void testSelectPath_enabled(SelectionMode selectionMode) throws Exception {
+        testSelectPath(selectionMode, true);
     }
 
-    @Theory
-    public void testSelectPath_enabled_fileHidingEnabled(SelectionMode selectionMode, boolean enterPath) throws Exception {
-        testSelectPath(selectionMode, enterPath, true, true);
-    }
 
-    private void testSelectPath(SelectionMode selectionMode, boolean enterPath, boolean enabled, boolean fileHidingEnabled) throws Exception {
+    private void testSelectPath(final SelectionMode selectionMode, final boolean enabled) throws Exception {
         final Parameters parameters = new Parameters(enabled, selectionMode);
-
-        JPath field = doBuildAndShowWindow(parameters);
-        field.setFileHidingEnabled(fileHidingEnabled);
+        JPath field = buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
+            }
+        });
 
         window.textBox().requireText(parameters.getInitialText());
 
-        if (enterPath) {
-            boolean expectError = !enabled;
+        final JButtonFixture jbf = window.button(CHOOSE_BUTTON_NAME);
+        if (enabled) {
+            jbf.requireEnabled();
 
-            Exception exception = executeInEDT(new GuiQuery<Void>() {
-                protected Void executeInEDT() throws Exception {
-                    window.textBox().component().setText(parameters.getText());
-                    return null;
-                }
-            }, expectError);
+            JFileChooserFixture jfc = checkFileChooserState(true, false, selectionMode);
 
-            checkActualState(field, parameters, exception, false, false);
-        } else {
-            boolean expectError = false;
-
-            final JButtonFixture jbf = window.button(CHOOSE_BUTTON_NAME);
-            if (enabled) {
-                jbf.requireEnabled();
-
-                JFileChooserFixture jfc = checkFileChooserState(field, fileHidingEnabled, expectError, selectionMode);
-
-                File fileToSelect = parameters.getPath().toFile();
-                if (selectionMode.allowsDirectory()) {
-                    jfc.setCurrentDirectory(fileToSelect.getParentFile());
-                }
-                jfc.selectFile(fileToSelect);
-                jfc.approve();
-            } else {
-                jbf.requireDisabled();
+            File fileToSelect = parameters.getPath().toFile();
+            if (selectionMode.allowsDirectory()) {
+                jfc.setCurrentDirectory(fileToSelect.getParentFile());
             }
-
-            checkActualState(field, parameters, null, false, false);
+            jfc.selectFile(fileToSelect);
+            jfc.approve();
+        } else {
+            jbf.requireDisabled();
         }
+
+        checkActualState(field, parameters, null, false, false);
     }
 
-    private JFileChooserFixture checkFileChooserState(JPath jpath, boolean expectFileHidingEnabled, boolean expectError, SelectionMode expectSelectionMode) {
+    @Theory
+    public void testEnterPath_disabled(SelectionMode selectionMode) throws Exception {
+        testEnterPath(selectionMode, false);
+    }
+
+    @Theory
+    public void testEnterPath_enabled(SelectionMode selectionMode) throws Exception {
+        testEnterPath(selectionMode, true);
+    }
+
+    private void testEnterPath(final SelectionMode selectionMode, final boolean enabled) throws Exception {
+        final Parameters parameters = new Parameters(enabled, selectionMode);
+        JPath field = buildAndShowWindow(new Supplier<JPath>() {
+            @Override
+            public JPath get() {
+                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
+            }
+
+        });
+
+        window.textBox().requireText(parameters.getInitialText());
+
+        boolean expectError = !enabled;
+        Exception exception = executeInEDT(new GuiQuery<Void>() {
+            protected Void executeInEDT() throws Exception {
+                window.textBox().component().setText(parameters.getText());
+                return null;
+            }
+        }, expectError);
+
+        checkActualState(field, parameters, exception, false, false);
+    }
+
+    private JFileChooserFixture checkFileChooserState(boolean expectFileHidingEnabled, boolean expectError, SelectionMode expectSelectionMode) {
         final JButtonFixture jbf = window.button(CHOOSE_BUTTON_NAME);
         executeInEDT(new GuiQuery<Void>() {
             protected Void executeInEDT() {
@@ -272,18 +367,21 @@ public class JPathTest extends AbstractSwingTest {
     }
 
     private void checkActualState(JPath field, Parameters parameters, Exception exception, boolean expectException, boolean expectIllegalStateException) {
-        assertThat(field.isEnabled()).isEqualTo(parameters.enabled);
+        final JTextComponentFixture textBoxFixture = checkEnabledState(field, parameters.enabled);
 
-        //TODO add requireEnabled(boolean), requireEditable(boolean) ... etc to JTextComponentFixture, JButtonFixture...
-        final JTextComponentFixture textBoxFixture = window.textBox(PATH_FIELD_NAME);
-        JTextComponent textBox = textBoxFixture.component();
-        assertThat(textBox.isEnabled()).as("textBox.enabled").isEqualTo(parameters.enabled);
-        assertThat(textBox.isEditable()).as("textBox.editable").isEqualTo(parameters.enabled);
+        checkExpectedException(parameters.enabled, exception, expectException, expectIllegalStateException);
 
-        JButton button = window.button(CHOOSE_BUTTON_NAME).component();
-        assertThat(button.isEnabled()).as("button.enabled").isEqualTo(parameters.enabled);
+        Path expectedPath = parameters.getExpectedPath();
 
-        if (parameters.enabled) {
+        Path actualPath = field.getPath();
+        assertThat(actualPath).isNotNull();
+        assertThat(actualPath).isEqualTo(expectedPath);
+
+        textBoxFixture.requireText(expectedPath.toAbsolutePath().toString());
+    }
+
+    private void checkExpectedException(boolean enabled, Exception exception, boolean expectException, boolean expectIllegalStateException) {
+        if (enabled) {
             if (exception != null) {
                 Assert.fail("expected exception to be null but is " + exception);
             }
@@ -304,39 +402,20 @@ public class JPathTest extends AbstractSwingTest {
                 }
             }
         }
-
-        Path expectedPath = parameters.getExpectedPath();
-
-        Path actualPath = field.getPath();
-        assertThat(actualPath).isNotNull();
-        assertThat(actualPath).isEqualTo(expectedPath);
-
-        textBoxFixture.requireText(expectedPath.toAbsolutePath().toString());
     }
 
-    private JPath doBuildAndShowWindow(final Parameters parameters)
-            throws Exception {
-        return buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                final JPath result = new JPath();
-                result.setSelectionMode(parameters.selectionMode);
-                result.setColumns(10);
+    private JTextComponentFixture checkEnabledState(JPath field, boolean expectEnabled) {
+        assertThat(field.isEnabled()).isEqualTo(expectEnabled);
 
-                if (!parameters.enabled) {
-                    result.setPath(parameters.getInitialPath());
-                }
-                GuiActionRunner.execute(new GuiQuery<Void>() {
-                    protected Void executeInEDT() {
-                        result.setEnabled(parameters.enabled);
-                        return null;
-                    }
-                });
+        //TODO add requireEnabled(boolean), requireEditable(boolean) ... etc to JTextComponentFixture, JButtonFixture...
+        final JTextComponentFixture textBoxFixture = window.textBox(PATH_FIELD_NAME);
+        JTextComponent textBox = textBoxFixture.component();
+        assertThat(textBox.isEnabled()).as("textBox.enabled").isEqualTo(expectEnabled);
+        assertThat(textBox.isEditable()).as("textBox.editable").isEqualTo(expectEnabled);
 
-                return result;
-            }
-
-        });
+        JButton button = window.button(CHOOSE_BUTTON_NAME).component();
+        assertThat(button.isEnabled()).as("button.enabled").isEqualTo(expectEnabled);
+        return textBoxFixture;
     }
 
     private class Parameters {
