@@ -21,6 +21,7 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.path.JPath;
+import org.apache.commons.lang3.builder.Builder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,11 +32,15 @@ import java.nio.file.Path;
  * An implementation of {@link org.formbuilder.TypeMapper} for {@link java.nio.file.Path}.
  */
 @ThreadSafe
-final class PathTypeMapper extends AbstractFileTypeMapper<Path> {
+final public class PathTypeMapper extends AbstractFileTypeMapper<Path> {
     public static final PathTypeMapper INSTANCE = new PathTypeMapper();
 
     private PathTypeMapper() {
         super(Path.class);
+    }
+
+    public PathTypeMapper(Builder<JPath> jPathBuilder) {
+        super(Path.class, jPathBuilder);
     }
 
     @Nullable

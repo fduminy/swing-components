@@ -36,7 +36,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class PathTypeMapperTest extends AbstractFileTypeMapperTest<PathTypeMapperTest.Bean, PathTypeMapper> {
     public PathTypeMapperTest() {
-        super(Bean.class, PathTypeMapper.INSTANCE, "path");
+        super(Bean.class, PathTypeMapper.INSTANCE, new PathTypeMapper(SUPPLIER), "path");
     }
 
     @Test

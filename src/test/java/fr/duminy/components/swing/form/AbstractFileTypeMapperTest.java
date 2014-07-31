@@ -22,6 +22,7 @@ package fr.duminy.components.swing.form;
 
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.AbstractSwingTest;
+import fr.duminy.components.swing.path.JPathBuilder;
 import fr.duminy.components.swing.path.JPathFixture;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
@@ -41,15 +42,21 @@ import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
  * Abstract Tests for class {@link FileTypeMapper} and {@link PathTypeMapper}.
  */
 abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeMapper> extends AbstractSwingTest {
+    private static final String FILE = new File("aFile").getAbsolutePath();
+
+    protected static final JPathBuilder SUPPLIER = new JPathBuilder();
+
     private final Class<B> beanClass;
-    private final TM typeMapper;
+    private final TM defaultTypeMapper;
+    private final TM customTypeMapper;
     private final String fieldName;
 
     private JPanel content;
 
-    protected AbstractFileTypeMapperTest(Class<B> beanClass, TM typeMapper, String fieldName) {
+    protected AbstractFileTypeMapperTest(Class<B> beanClass, TM defaultTypeMapper, TM customTypeMapper, String fieldName) {
         this.beanClass = beanClass;
-        this.typeMapper = typeMapper;
+        this.defaultTypeMapper = defaultTypeMapper;
+        this.customTypeMapper = customTypeMapper;
         this.fieldName = fieldName;
     }
 
@@ -71,16 +78,21 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
     }
 
     @Test
-    public final void testBuild() throws Exception {
-        testBuild(new File("aFile").getAbsolutePath());
+    public final void testBuild_customTypeMapper() throws Exception {
+        testBuild(customTypeMapper, FILE);
     }
 
     @Test
-    public final void testBuild_null() throws Exception {
-        testBuild(null);
+    public final void testBuild_defaultTypeMapper() throws Exception {
+        testBuild(defaultTypeMapper, FILE);
     }
 
-    private final void testBuild(String fileName) throws Exception {
+    @Test
+    public final void testBuild__defaultTypeMapper_nullPath() throws Exception {
+        testBuild(defaultTypeMapper, null);
+    }
+
+    private final void testBuild(final TM typeMapper, String fileName) throws Exception {
         Path expectedPath = (fileName == null) ? null : Paths.get(fileName);
         final FormBuilder<B> builder = map(beanClass).formsOf(REPLICATING);
         final B b = createBean(fileName);

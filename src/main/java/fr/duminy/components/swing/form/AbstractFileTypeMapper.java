@@ -21,6 +21,8 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.path.JPath;
+import fr.duminy.components.swing.path.JPathBuilder;
+import org.apache.commons.lang3.builder.Builder;
 import org.formbuilder.TypeMapper;
 import org.formbuilder.mapping.change.ChangeHandler;
 
@@ -36,10 +38,18 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 abstract class AbstractFileTypeMapper<T> implements TypeMapper<JPath, T> {
+    private static final Builder<JPath> DEFAULT_BUILDER = new JPathBuilder();
+
     private final Class<T> valueType;
+    private final Builder<JPath> jPathBuilder;
 
     AbstractFileTypeMapper(Class<T> valueType) {
+        this(valueType, DEFAULT_BUILDER);
+    }
+
+    AbstractFileTypeMapper(Class<T> valueType, Builder<JPath> jPathBuilder) {
         this.valueType = valueType;
+        this.jPathBuilder = jPathBuilder;
     }
 
     @Override
@@ -50,7 +60,7 @@ abstract class AbstractFileTypeMapper<T> implements TypeMapper<JPath, T> {
     @Nonnull
     @Override
     public final JPath createEditorComponent() {
-        return new JPath();
+        return jPathBuilder.build();
     }
 
     @Nonnull
