@@ -34,20 +34,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * <ul>
  * <li>{@link java.io.File}</li>
  * <li>{@link java.nio.file.Path}</li>
+ * <li>{@link java.lang.String}</li>
  * </ul>.
+ *
+ * @param <B> The type of property associated with the {@link fr.duminy.components.swing.path.JPath} component.
  */
 @ThreadSafe
-abstract class AbstractFileTypeMapper<T> implements TypeMapper<JPath, T> {
+abstract class AbstractFileTypeMapper<B> implements TypeMapper<JPath, B> {
     private static final Builder<JPath> DEFAULT_BUILDER = new JPathBuilder();
 
-    private final Class<T> valueType;
+    private final Class<B> valueType;
     private final Builder<JPath> jPathBuilder;
 
-    AbstractFileTypeMapper(Class<T> valueType) {
+    AbstractFileTypeMapper(Class<B> valueType) {
         this(valueType, DEFAULT_BUILDER);
     }
 
-    AbstractFileTypeMapper(Class<T> valueType, Builder<JPath> jPathBuilder) {
+    AbstractFileTypeMapper(Class<B> valueType, Builder<JPath> jPathBuilder) {
         this.valueType = valueType;
         this.jPathBuilder = jPathBuilder;
     }
@@ -65,7 +68,7 @@ abstract class AbstractFileTypeMapper<T> implements TypeMapper<JPath, T> {
 
     @Nonnull
     @Override
-    public final Class<T> getValueClass() {
+    public final Class<B> getValueClass() {
         return valueType;
     }
 }

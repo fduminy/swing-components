@@ -25,16 +25,16 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import java.awt.event.KeyEvent;
 
 /**
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
 @SuppressWarnings("serial")
-class MoveDownItemAction<T> extends StandardItemAction<T> {
-    MoveDownItemAction(ListActions<T> listener) {
+class MoveDownItemAction<B> extends StandardItemAction<B> {
+    MoveDownItemAction(ListActions<B> listener) {
         super(listener, KeyEvent.VK_DOWN, "down.png");
     }
 
     @Override
-    protected void doAction(ListActions<T> listener) {
+    protected void doAction(ListActions<B> listener) {
         listener.moveDownItem();
     }
 

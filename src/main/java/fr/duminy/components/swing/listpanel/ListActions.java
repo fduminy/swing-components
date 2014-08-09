@@ -21,9 +21,9 @@
 package fr.duminy.components.swing.listpanel;
 
 /**
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
-interface ListActions<T> {
+interface ListActions<B> {
     void addItem();
 
     void updateItem();
@@ -34,5 +34,5 @@ interface ListActions<T> {
 
     void moveDownItem();
 
-    void executeUserAction(UserListAction<T> action);
+    void executeUserAction(UserListAction<B> action);
 }

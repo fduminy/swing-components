@@ -28,6 +28,8 @@ import static org.formbuilder.mapping.form.FormFactories.REPLICATING;
 
 /**
  * Default implementation of {@link FormBuilder}.
+ *
+ * @param <B> The type of beans managed by this builder.
  */
 public class DefaultFormBuilder<B> implements FormBuilder<B> {
     private static final TypeMapper<?, ?>[] TYPE_MAPPERS = new TypeMapper<?, ?>[]{

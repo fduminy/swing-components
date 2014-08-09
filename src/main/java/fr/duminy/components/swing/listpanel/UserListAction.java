@@ -23,8 +23,8 @@ package fr.duminy.components.swing.listpanel;
 /**
  * The interface that a user action must implement.
  *
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
-public interface UserListAction<T> extends ListAction {
-    void executeAction(T item);
+public interface UserListAction<B> extends ListAction {
+    void executeAction(B item);
 }

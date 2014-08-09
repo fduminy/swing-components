@@ -25,16 +25,16 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import java.awt.event.KeyEvent;
 
 /**
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
 @SuppressWarnings("serial")
-class RemoveItemAction<T> extends StandardItemAction<T> {
-    RemoveItemAction(ListActions<T> listener) {
+class RemoveItemAction<B> extends StandardItemAction<B> {
+    RemoveItemAction(ListActions<B> listener) {
         super(listener, KeyEvent.VK_DELETE, "remove.png");
     }
 
     @Override
-    protected void doAction(ListActions<T> listener) {
+    protected void doAction(ListActions<B> listener) {
         listener.removeItem();
     }
 

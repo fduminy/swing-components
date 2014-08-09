@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
 @SuppressWarnings("serial")
-class ButtonsPanel<T> extends JPanel {
+class ButtonsPanel<B> extends JPanel {
     private static final int PADDING = 2;
 
     static final String ADD_BUTTON_NAME = "addButton";
@@ -44,7 +44,7 @@ class ButtonsPanel<T> extends JPanel {
 
     private Dimension buttonSize;
 
-    ButtonsPanel(ListActions<T> listener) {
+    ButtonsPanel(ListActions<B> listener) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         addButton(ADD_BUTTON_NAME, new AddItemAction<>(listener));

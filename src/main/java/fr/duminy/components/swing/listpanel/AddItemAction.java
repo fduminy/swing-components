@@ -25,16 +25,16 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import java.awt.event.KeyEvent;
 
 /**
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
 @SuppressWarnings("serial")
-class AddItemAction<T> extends StandardItemAction<T> {
-    AddItemAction(ListActions<T> listener) {
+class AddItemAction<B> extends StandardItemAction<B> {
+    AddItemAction(ListActions<B> listener) {
         super(listener, KeyEvent.VK_INSERT, "add.png");
     }
 
     @Override
-    protected void doAction(ListActions<T> listener) {
+    protected void doAction(ListActions<B> listener) {
         listener.addItem();
     }
 

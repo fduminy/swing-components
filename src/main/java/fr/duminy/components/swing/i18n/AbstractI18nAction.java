@@ -28,12 +28,12 @@ import javax.swing.*;
 /**
  * Abstract implementation of {@link I18nAction}.
  *
- * @param <T> The interface type that provides I18n messages.
+ * @param <M> The class of message bundle.
  */
-public abstract class AbstractI18nAction<T> extends AbstractAction implements I18nAction {
-    private final Class<T> messagesClass;
+public abstract class AbstractI18nAction<M> extends AbstractAction implements I18nAction {
+    private final Class<M> messagesClass;
 
-    public AbstractI18nAction(Class<T> messagesClass) {
+    public AbstractI18nAction(Class<M> messagesClass) {
         this.messagesClass = messagesClass;
     }
 
@@ -43,17 +43,17 @@ public abstract class AbstractI18nAction<T> extends AbstractAction implements I1
         putValue(Action.SHORT_DESCRIPTION, getShortDescription(getBundle()));
     }
 
-    protected final T getBundle() {
+    protected final M getBundle() {
         return getBundle(messagesClass);
     }
 
-    T getBundle(Class<T> messagesClass) {
+    M getBundle(Class<M> messagesClass) {
         return Bundle.getBundle(messagesClass);
     }
 
-    abstract protected String getShortDescription(T bundle);
+    abstract protected String getShortDescription(M bundle);
 
-    protected String getName(T bundle) {
+    protected String getName(M bundle) {
         return null;
     }
 }

@@ -30,11 +30,11 @@ import java.net.URL;
 /**
  * Abstract class for an action on a {@link ListActions}.
  *
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  * @param <M> The class of message bundle.
  */
-abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements ListAction {
-    private ListActions<T> listener;
+abstract class AbstractItemAction<B, M> extends AbstractI18nAction<M> implements ListAction {
+    private ListActions<B> listener;
 
     /**
      * @param listener       The interface for interactions with the associated listpanel component.
@@ -42,7 +42,7 @@ abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements
      * @param iconResource   The icon resource for the action.
      * @param messagesClass  The class of messages containing the action label.
      */
-    AbstractItemAction(ListActions<T> listener, int acceleratorKey, String iconResource, Class<M> messagesClass) {
+    AbstractItemAction(ListActions<B> listener, int acceleratorKey, String iconResource, Class<M> messagesClass) {
         super(messagesClass);
         this.listener = listener;
 
@@ -67,7 +67,7 @@ abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements
         throw new IllegalArgumentException("Icon resource not found : '" + iconResource + "'");
     }
 
-    void setListener(ListActions<T> listener) {
+    void setListener(ListActions<B> listener) {
         this.listener = listener;
     }
 
@@ -79,5 +79,5 @@ abstract class AbstractItemAction<T, M> extends AbstractI18nAction<M> implements
     /**
      * @param listener The interface for interactions with the associated listpanel component.
      */
-    abstract protected void doAction(ListActions<T> listener);
+    abstract protected void doAction(ListActions<B> listener);
 }

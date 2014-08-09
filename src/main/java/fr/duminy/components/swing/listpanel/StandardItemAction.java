@@ -25,10 +25,10 @@ import fr.duminy.components.swing.SwingComponentMessages;
 /**
  * The abstract class for standard actions on an item.
  *
- * @param <T> The class of items in the list.
+ * @param <B> The class of items in the list.
  */
-abstract class StandardItemAction<T> extends AbstractItemAction<T, SwingComponentMessages> {
-    protected StandardItemAction(ListActions<T> listener, int acceleratorKey, String iconResource) {
+abstract class StandardItemAction<B> extends AbstractItemAction<B, SwingComponentMessages> {
+    protected StandardItemAction(ListActions<B> listener, int acceleratorKey, String iconResource) {
         super(listener, acceleratorKey, iconResource, SwingComponentMessages.class);
     }
 }
