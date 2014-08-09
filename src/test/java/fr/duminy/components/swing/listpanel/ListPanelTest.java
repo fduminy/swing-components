@@ -55,7 +55,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.*;
-import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
+import static fr.duminy.components.swing.listpanel.EditingFeature.*;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTON_NAME;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;

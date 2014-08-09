@@ -38,8 +38,10 @@ import org.mockito.Mockito;
 import javax.swing.*;
 import java.awt.*;
 
-import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
+import static fr.duminy.components.swing.listpanel.EditingFeature.*;
 import static fr.duminy.components.swing.listpanel.ListPanelTest.MockItemManager;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTON_NAME;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;

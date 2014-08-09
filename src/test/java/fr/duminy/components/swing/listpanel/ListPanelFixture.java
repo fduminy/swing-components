@@ -27,7 +27,9 @@ import org.fest.swing.fixture.JPanelFixture;
 
 import javax.swing.*;
 
-import static fr.duminy.components.swing.listpanel.ButtonsPanel.*;
+import static fr.duminy.components.swing.listpanel.EditingFeature.*;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTON_NAME;
+import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
 
 /**
  * A fixture to help testing a {@link fr.duminy.components.swing.listpanel.ListPanel}.
