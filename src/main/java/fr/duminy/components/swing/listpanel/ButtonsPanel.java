@@ -20,10 +20,11 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -65,7 +66,7 @@ class ButtonsPanel<T> extends JPanel {
         add(button);
     }
 
-    public Collection<ListAction> getActions() {
-        return actions;
+    ImmutableList<ListAction> getActions() {
+        return ImmutableList.copyOf(actions);
     }
 }
