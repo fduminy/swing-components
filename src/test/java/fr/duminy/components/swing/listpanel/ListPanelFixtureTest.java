@@ -210,7 +210,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         final AbstractUserItemAction<String, ?> buttonAction = mock(AbstractUserItemAction.class);
         when(buttonAction.isEnabled()).thenReturn(true);
         doCallRealMethod().when(buttonAction).setListener(any(ListActions.class));
-        buttonAction.setListener(listPanel);
+        buttonAction.setListener(listPanel.getListActions());
         GuiActionRunner.execute(new GuiTask() {
             protected void executeInEDT() {
                 listPanel.addUserButton(buttonName, buttonAction);

@@ -28,6 +28,8 @@ import javax.swing.event.ListSelectionListener;
  * @param <C> The class of list component.
  */
 interface ListComponent<B, C extends JComponent> {
+    // This is only needed by tests.
+    // FIXME Find a way to remove this method from here.
     C getComponent();
 
     void addItem();

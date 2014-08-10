@@ -121,7 +121,7 @@ public class ListPanelTest extends AbstractSwingTest {
         }
 
         @Override
-        public void updateItem() {
+        void updateItem() {
             Handler h = new Handler() {
                 @Override
                 public void publish(LogRecord record) {
@@ -462,7 +462,7 @@ public class ListPanelTest extends AbstractSwingTest {
         final AbstractUserItemAction<String, ?> action = mock(AbstractUserItemAction.class);
         when(action.isEnabled()).thenReturn(true);
         doCallRealMethod().when(action).setListener(any(ListActions.class));
-        action.setListener(component);
+        action.setListener(component.getListActions());
         final String buttonName = "myButton";
 
         GuiActionRunner.execute(new GuiQuery<Void>() {

@@ -42,9 +42,10 @@ import java.util.Arrays;
  * @param <C> The class of list component (example : a JList).
  */
 @SuppressWarnings("serial")
-public class ListPanel<B, C extends JComponent> extends JPanel implements ListActions<B>, I18nAble {
-    private final ListComponent<B, C> list;
-    private final ButtonsPanel<B> buttons;
+public class ListPanel<B, C extends JComponent> extends JPanel implements I18nAble {
+    private final transient ListComponent<B, C> list;
+    private final transient ButtonsPanel<B> buttons;
+    private final transient ListActions<B> listActions = new ListActionsImpl();
 
     /**
      * @param list        The list component to wrap.
@@ -64,7 +65,7 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements ListAc
         this.list = list;
         add(new JScrollPane(list.getComponent(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
-        buttons = new ButtonsPanel<>(this);
+        buttons = new ButtonsPanel<>(listActions);
         add(buttons, BorderLayout.EAST);
 
         list.addSelectionListener(new ListSelectionListener() {
@@ -79,10 +80,6 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements ListAc
         updateButtons();
     }
 
-    public C getListComponent() {
-        return list.getComponent();
-    }
-
     /**
      * Add a user action.
      *
@@ -90,65 +87,37 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements ListAc
      * @param action     The action to add.
      */
     public void addUserButton(String buttonName, AbstractUserItemAction<B, ?> action) {
-        action.setListener(this);
+        action.setListener(listActions);
         buttons.addButton(buttonName, action);
         action.updateState(getSortedSelectedIndices(), list.getSize());
     }
 
     @Override
-    public void executeUserAction(UserListAction<B> action) {
-        for (int selectedIndice : getSortedSelectedIndices()) {
-            B item = list.getItem(selectedIndice);
-            action.executeAction(item);
+    public void updateMessages() {
+        for (I18nAble action : buttons.getActions()) {
+            action.updateMessages();
         }
     }
 
-    @Override
-    public void addItem() {
-        list.addItem();
+    ///////////////////////////////////
+    ///// package private methods /////
+    ///////////////////////////////////
+
+    final C getListComponent() {
+        return list.getComponent();
     }
 
-    @Override
-    public void updateItem() {
+    final ListActions<B> getListActions() {
+        return listActions;
+    }
+
+    //We need this method here instead of inside ListActionsImpl class because of a test.
+    //FIXME Find way to remove this method here.
+    void updateItem() {
         int[] selectedItems = getSortedSelectedIndices();
         if (selectedItems.length > 0) {
             list.updateItem(selectedItems[0]);
         }
-    }
-
-    @Override
-    public void removeItem() {
-        int[] selectedItems = getSortedSelectedIndices();
-        for (int i = selectedItems.length - 1; i >= 0; i--) {
-            list.removeItem(selectedItems[i]);
-        }
-    }
-
-    @Override
-    public void moveUpItem() {
-        int[] selectedIndices = getSortedSelectedIndices();
-        for (int selectedIndice : selectedIndices) {
-            list.moveUpItem(selectedIndice);
-        }
-
-        list.setSelectedIndices(moveIndicesUp(selectedIndices));
-    }
-
-    @Override
-    public void moveDownItem() {
-        int[] selectedIndices = getSortedSelectedIndices();
-        for (int i = selectedIndices.length - 1; i >= 0; i--) {
-            list.moveDownItem(selectedIndices[i]);
-        }
-
-        list.setSelectedIndices(moveIndicesDown(selectedIndices, list.getSize()));
-    }
-
-
-    private static int[] subArray(int[] array, int begin, int end) {
-        int[] result = new int[end - begin];
-        System.arraycopy(array, begin, result, 0, result.length);
-        return result;
     }
 
     static int[] moveIndicesUp(int[] indices) {
@@ -181,6 +150,64 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements ListAc
         return indices;
     }
 
+    ///////////////////////////////////
+    ///////// private methods /////////
+    ///////////////////////////////////
+
+    private class ListActionsImpl implements ListActions<B> {
+        @Override
+        public void executeUserAction(UserListAction<B> action) {
+            for (int selectedIndice : getSortedSelectedIndices()) {
+                B item = list.getItem(selectedIndice);
+                action.executeAction(item);
+            }
+        }
+
+        @Override
+        public void addItem() {
+            list.addItem();
+        }
+
+        @Override
+        public void updateItem() {
+            ListPanel.this.updateItem();
+        }
+
+        @Override
+        public void removeItem() {
+            int[] selectedItems = getSortedSelectedIndices();
+            for (int i = selectedItems.length - 1; i >= 0; i--) {
+                list.removeItem(selectedItems[i]);
+            }
+        }
+
+        @Override
+        public void moveUpItem() {
+            int[] selectedIndices = getSortedSelectedIndices();
+            for (int selectedIndice : selectedIndices) {
+                list.moveUpItem(selectedIndice);
+            }
+
+            list.setSelectedIndices(moveIndicesUp(selectedIndices));
+        }
+
+        @Override
+        public void moveDownItem() {
+            int[] selectedIndices = getSortedSelectedIndices();
+            for (int i = selectedIndices.length - 1; i >= 0; i--) {
+                list.moveDownItem(selectedIndices[i]);
+            }
+
+            list.setSelectedIndices(moveIndicesDown(selectedIndices, list.getSize()));
+        }
+    }
+
+    private static int[] subArray(int[] array, int begin, int end) {
+        int[] result = new int[end - begin];
+        System.arraycopy(array, begin, result, 0, result.length);
+        return result;
+    }
+
     private int[] getSortedSelectedIndices() {
         int[] selectedItems = list.getSelectedIndices();
         Arrays.sort(selectedItems);
@@ -191,13 +218,6 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements ListAc
         int[] selectedItems = getSortedSelectedIndices();
         for (ListAction action : buttons.getActions()) {
             action.updateState(selectedItems, list.getSize());
-        }
-    }
-
-    @Override
-    public void updateMessages() {
-        for (I18nAble action : buttons.getActions()) {
-            action.updateMessages();
         }
     }
 }
