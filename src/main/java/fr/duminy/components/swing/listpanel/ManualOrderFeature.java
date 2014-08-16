@@ -20,6 +20,8 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import static fr.duminy.components.swing.listpanel.ButtonsPanel.FeatureHandle;
+
 /**
  * This feature allows the user to move up and down items in a {@link fr.duminy.components.swing.listpanel.ListPanel}.
  *
@@ -33,8 +35,8 @@ class ManualOrderFeature<B> implements ListPanelFeature<B> {
     }
 
     @Override
-    public void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener) {
-        buttonsPanel.addButton(UP_BUTTON_NAME, new MoveUpItemAction<>(listener));
-        buttonsPanel.addButton(DOWN_BUTTON_NAME, new MoveDownItemAction<>(listener));
+    public void install(FeatureHandle<B> handle) {
+        handle.addButton(UP_BUTTON_NAME, new MoveUpItemAction<>(handle.getListener()));
+        handle.addButton(DOWN_BUTTON_NAME, new MoveDownItemAction<>(handle.getListener()));
     }
 }

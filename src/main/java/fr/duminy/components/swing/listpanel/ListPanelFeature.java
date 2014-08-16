@@ -20,11 +20,13 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import static fr.duminy.components.swing.listpanel.ButtonsPanel.FeatureHandle;
+
 /**
  * This interface represents a feature for the {@link fr.duminy.components.swing.listpanel.ListPanel} component.
  *
  * @param <B> The class of items in the list.
  */
 interface ListPanelFeature<B> {
-    void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener);
+    void install(FeatureHandle<B> handle);
 }

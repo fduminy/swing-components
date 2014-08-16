@@ -20,23 +20,25 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import static fr.duminy.components.swing.listpanel.ButtonsPanel.FeatureHandle;
+
 /**
  * This enum represents the set of standard {@link fr.duminy.components.swing.listpanel.ListPanelFeature}s
  * supported by the {@link fr.duminy.components.swing.listpanel.ListPanel} component.
  */
-enum StandardListPanelFeature {
+public enum StandardListPanelFeature {
     MANUAL_ORDER {
         @Override
-        <B> void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener) {
-            new ManualOrderFeature<B>().install(buttonsPanel, listener);
+        <B> void install(FeatureHandle<B> handle) {
+            new ManualOrderFeature<B>().install(handle);
         }
     },
     EDITING {
         @Override
-        <B> void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener) {
-            new EditingFeature<B>().install(buttonsPanel, listener);
+        <B> void install(FeatureHandle<B> handle) {
+            new EditingFeature<B>().install(handle);
         }
     };
 
-    abstract <B> void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener);
+    abstract <B> void install(FeatureHandle<B> handle);
 }

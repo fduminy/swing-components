@@ -20,6 +20,11 @@
  */
 package fr.duminy.components.swing;
 
+import org.fest.swing.exception.ComponentLookupException;
+import org.fest.swing.fixture.ContainerFixture;
+import org.junit.Assert;
+
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -28,5 +33,30 @@ public class TestUtilities {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         robot.printer().printComponents(new PrintStream(os));
         return "\nComponent hierarchy:\n" + os.toString();
+    }
+
+    public static <T extends Container> void assertThatButtonIsPresent(ContainerFixture<T> container, String buttonName) {
+        if (!buttonIsPresent(container, buttonName)) {
+            Assert.fail("The button '" + buttonName + "' was expected in container " + container.target);
+        }
+    }
+
+    public static <T extends Container> void assertThatButtonIsAbsent(ContainerFixture<T> container, String buttonName) {
+        if (buttonIsPresent(container, buttonName)) {
+            Assert.fail("The button '" + buttonName + "' was not expected in container " + container.target);
+        }
+    }
+
+    private static <T extends Container> boolean buttonIsPresent(ContainerFixture<T> container, String buttonName) {
+        boolean present;
+
+        try {
+            container.button(buttonName);
+            present = true;
+        } catch (ComponentLookupException cle) {
+            present = false;
+        }
+
+        return present;
     }
 }

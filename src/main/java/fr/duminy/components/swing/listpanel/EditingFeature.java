@@ -20,6 +20,8 @@
  */
 package fr.duminy.components.swing.listpanel;
 
+import static fr.duminy.components.swing.listpanel.ButtonsPanel.FeatureHandle;
+
 /**
  * This feature allows the user to add,remove and update an item in a {@link ListPanel}.
  *
@@ -34,9 +36,9 @@ class EditingFeature<B> implements ListPanelFeature<B> {
     }
 
     @Override
-    public void install(ButtonsPanel<B> buttonsPanel, ListActions<B> listener) {
-        buttonsPanel.addButton(ADD_BUTTON_NAME, new AddItemAction<>(listener));
-        buttonsPanel.addButton(REMOVE_BUTTON_NAME, new RemoveItemAction<>(listener));
-        buttonsPanel.addButton(UPDATE_BUTTON_NAME, new UpdateItemAction<>(listener));
+    public void install(FeatureHandle<B> handle) {
+        handle.addButton(ADD_BUTTON_NAME, new AddItemAction<>(handle.getListener()));
+        handle.addButton(REMOVE_BUTTON_NAME, new RemoveItemAction<>(handle.getListener()));
+        handle.addButton(UPDATE_BUTTON_NAME, new UpdateItemAction<>(handle.getListener()));
     }
 }

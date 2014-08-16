@@ -576,11 +576,11 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
             JPanel allFormsPanel = new JPanel(new GridLayout(2, 1));
 
             noiseComponent = componentSupplier.get();
-            allFormsPanel.add(noiseComponent);
+            allFormsPanel.add(wrapInPanel(noiseComponent, "noisePanel"));
 
             // targetComponent must be called at the end because the supplier might be stateful
             targetComponent = componentSupplier.get();
-            allFormsPanel.add(targetComponent);
+            allFormsPanel.add(wrapInPanel(targetComponent, "targetPanel"));
 
             return allFormsPanel;
         }
@@ -591,6 +591,14 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         public C getNoiseComponent() {
             return noiseComponent;
+        }
+
+        private JPanel wrapInPanel(JComponent component, String title) {
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setName(title);
+            panel.setBorder(BorderFactory.createTitledBorder(title));
+            panel.add(component);
+            return panel;
         }
     }
 

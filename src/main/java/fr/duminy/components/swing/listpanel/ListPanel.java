@@ -92,6 +92,35 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements I18nAb
         action.updateState(getSortedSelectedIndices(), list.getSize());
     }
 
+    /**
+     * Add a new {@link fr.duminy.components.swing.listpanel.StandardListPanelFeature} to this component.
+     *
+     * @param feature The feature to add.
+     */
+    public void addFeature(StandardListPanelFeature feature) {
+        buttons.addFeature(feature);
+        updateButtons();
+    }
+
+    /**
+     * Remove a {@link fr.duminy.components.swing.listpanel.StandardListPanelFeature} from this component.
+     *
+     * @param feature The feature to remove.
+     */
+    public void removeFeature(StandardListPanelFeature feature) {
+        buttons.removeFeature(feature);
+    }
+
+    /**
+     * Does this component has the given feature ?
+     *
+     * @param feature
+     * @return true if this component has the given feature.
+     */
+    public boolean hasFeature(StandardListPanelFeature feature) {
+        return buttons.hasFeature(feature);
+    }
+
     @Override
     public void updateMessages() {
         for (I18nAble action : buttons.getActions()) {

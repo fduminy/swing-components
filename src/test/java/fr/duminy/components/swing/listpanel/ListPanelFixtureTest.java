@@ -25,6 +25,7 @@ import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
+import org.apache.commons.lang3.StringUtils;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.edt.GuiTask;
@@ -42,6 +43,8 @@ import static fr.duminy.components.swing.listpanel.EditingFeature.*;
 import static fr.duminy.components.swing.listpanel.ListPanelTest.MockItemManager;
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTON_NAME;
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
+import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.EDITING;
+import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.MANUAL_ORDER;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -120,8 +123,43 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     }
 
     @Test
+    public void testRequireOnlyFeatures() throws Exception {
+        ListData listData = buildAndShowList(EDITING);
+
+        ListPanelFixture listPanelFixture = listData.fixture.requireOnlyFeatures(EDITING);
+        assertThat(listPanelFixture).as("returned fixture").isSameAs(listData.fixture);
+    }
+
+    @Test
+    public void testRequireOnlyFeatures_missingFeature() throws Exception {
+        testRequireOnlyFeatures_missingFeature(EDITING, MANUAL_ORDER);
+    }
+
+    @Test
+    public void testRequireOnlyFeatures_tooManyFeatures() throws Exception {
+        testRequireOnlyFeatures_missingFeature(EDITING, MANUAL_ORDER, EDITING);
+    }
+
+    private void testRequireOnlyFeatures_missingFeature(StandardListPanelFeature expectedFeature,
+                                                        StandardListPanelFeature... actualFeatures) throws Exception {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(String.format("The ListPanel '%s' must have only features {%s} but has actual features {%s}",
+                COMPONENT_NAME, expectedFeature, StringUtils.join(actualFeatures, ',')));
+        ListData listData = buildAndShowList(actualFeatures);
+
+        listData.fixture.requireOnlyFeatures(expectedFeature);
+    }
+
+    @Test
+    public void testAddButton_noEditingFeature() throws Exception {
+        ListData listData = buildAndShowListWithMissingFeature(EDITING, ADD_BUTTON_NAME);
+
+        listData.fixture.addButton();
+    }
+
+    @Test
     public void testAddButton() throws Exception {
-        ListData listData = buildAndShowList();
+        ListData listData = buildAndShowList(EDITING);
         JButtonFixture buttonFixture = listData.fixture.addButton();
 
         assertThat(buttonFixture).isNotNull();
@@ -133,20 +171,35 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     }
 
     @Test
+    public void testRemoveButton_noEditingFeature() throws Exception {
+        ListData listData = buildAndShowListWithMissingFeature(EDITING, REMOVE_BUTTON_NAME);
+
+        listData.fixture.removeButton();
+    }
+
+    @Test
     public void testRemoveButton() throws Exception {
-        ListData listData = buildAndShowList();
+        ListData listData = buildAndShowList(EDITING);
         JButtonFixture buttonFixture = listData.fixture.removeButton();
 
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(REMOVE_BUTTON_NAME);
         buttonFixture.click();
-        assertThat(listData.listModel.size()).isEqualTo(1);
-        assertThat(listData.listModel.get(0)).isSameAs(LINE1);
+        robot().waitForIdle();
+        assertThat(listData.listModel.size()).as("listSize").isEqualTo(1);
+        assertThat(listData.listModel.get(0)).as("list[0]").isSameAs(LINE1);
+    }
+
+    @Test
+    public void testUpButton_noEditingFeature() throws Exception {
+        ListData listData = buildAndShowListWithMissingFeature(MANUAL_ORDER, UP_BUTTON_NAME);
+
+        listData.fixture.upButton();
     }
 
     @Test
     public void testUpButton() throws Exception {
-        ListData listData = buildAndShowList();
+        ListData listData = buildAndShowList(MANUAL_ORDER);
         JButtonFixture buttonFixture = listData.fixture.upButton();
 
         assertThat(buttonFixture).isNotNull();
@@ -157,8 +210,15 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     }
 
     @Test
+    public void testDownButton_noEditingFeature() throws Exception {
+        ListData listData = buildAndShowListWithMissingFeature(MANUAL_ORDER, DOWN_BUTTON_NAME);
+
+        listData.fixture.downButton();
+    }
+
+    @Test
     public void testDownButton() throws Exception {
-        final ListData listData = buildAndShowList();
+        final ListData listData = buildAndShowList(MANUAL_ORDER);
         GuiActionRunner.execute(new GuiTask() {
             protected void executeInEDT() {
                 listData.list.setSelectedIndex(0);
@@ -170,13 +230,21 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         assertThat(buttonFixture).isNotNull();
         assertThat(buttonFixture.component().getName()).isEqualTo(DOWN_BUTTON_NAME);
         buttonFixture.click();
+        robot().waitForIdle();
         assertThat(listData.listModel.get(0)).isSameAs(LINE2);
         assertThat(listData.listModel.get(1)).isSameAs(LINE1);
     }
 
     @Test
+    public void testUpdateButton_noEditingFeature() throws Exception {
+        ListData listData = buildAndShowListWithMissingFeature(EDITING, UPDATE_BUTTON_NAME);
+
+        listData.fixture.updateButton();
+    }
+
+    @Test
     public void testUpdateButton() throws Exception {
-        ListData listData = buildAndShowList();
+        ListData listData = buildAndShowList(EDITING);
         JButtonFixture buttonFixture = listData.fixture.updateButton();
 
         assertThat(buttonFixture).isNotNull();
@@ -221,12 +289,12 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         return buttonAction;
     }
 
-    public ListData buildAndShowList() throws Exception {
-        return buildAndShowList(true);
+    public ListData buildAndShowList(StandardListPanelFeature... features) throws Exception {
+        return buildAndShowList(true, features);
     }
 
     @SuppressWarnings("unchecked")
-    public ListData buildAndShowList(boolean withNoise) throws Exception {
+    public ListData buildAndShowList(boolean withNoise, final StandardListPanelFeature... features) throws Exception {
         final DefaultMutableListModel[] listModel = new DefaultMutableListModel[1];
         final JList[] list = new JList[1];
         final MockItemManager[] itemManager = new MockItemManager[1];
@@ -242,6 +310,9 @@ public class ListPanelFixtureTest extends AbstractFormTest {
 
                 final ListPanel<String, JList<String>> listPanel = new ListPanel<>(list[0], itemManager[0]);
                 listPanel.setName(COMPONENT_NAME);
+                for (StandardListPanelFeature feature : features) {
+                    listPanel.addFeature(feature);
+                }
                 return listPanel;
             }
         };
@@ -273,5 +344,11 @@ public class ListPanelFixtureTest extends AbstractFormTest {
             this.itemManager = itemManager;
             this.supplierWithNoise = supplierWithNoise;
         }
+    }
+
+    private ListData buildAndShowListWithMissingFeature(StandardListPanelFeature expectedFeature, String expectedButtonName) throws Exception {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(String.format("The button '%s' requires ListPanel '%s' to have feature %s", expectedButtonName, COMPONENT_NAME, expectedFeature));
+        return buildAndShowList();
     }
 }

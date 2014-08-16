@@ -25,39 +25,100 @@ import com.google.common.collect.ImmutableList;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
-
-import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.EDITING;
-import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.MANUAL_ORDER;
 
 /**
  * @param <B> The class of items in the list.
  */
 @SuppressWarnings("serial")
 class ButtonsPanel<B> extends JPanel {
+    private static final int BUTTON_SIZE = 32;
     private static final int PADDING = 2;
 
     private final List<ListAction> actions = new ArrayList<>();
+    private final ListActions<B> listener;
+    private final EnumMap<StandardListPanelFeature, FeatureHandle<B>> features = new EnumMap<>(StandardListPanelFeature.class);
+    private FeatureHandle<B> userFeatureHandle;
 
     private Dimension buttonSize;
 
     ButtonsPanel(ListActions<B> listener) {
+        this.listener = listener;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    }
 
-        MANUAL_ORDER.install(this, listener);
-        EDITING.install(this, listener);
+    void addFeature(StandardListPanelFeature feature) {
+        if (hasFeature(feature)) {
+            return;
+        }
+
+        FeatureHandle<B> handle = new FeatureHandle<B>(this);
+        feature.install(handle);
+        features.put(feature, handle);
+        revalidate();
+    }
+
+    void removeFeature(StandardListPanelFeature feature) {
+        FeatureHandle<B> handle = features.remove(feature);
+        if (handle == null) {
+            return;
+        }
+
+        for (ButtonHandle buttonHandle : handle.buttonHandles) {
+            actions.remove(buttonHandle.action);
+            remove(buttonHandle.button);
+        }
+        revalidate();
+    }
+
+    boolean hasFeature(StandardListPanelFeature feature) {
+        return features.containsKey(feature);
     }
 
     void addButton(String buttonName, ListAction action) {
-        actions.add(action);
-        JButton button = new JButton(action);
-        if (buttonSize == null) {
-            buttonSize = new Dimension(button.getIcon().getIconWidth() + PADDING, button.getIcon().getIconHeight() + PADDING);
+        if (userFeatureHandle == null) {
+            userFeatureHandle = new FeatureHandle<B>(this);
         }
 
-        button.setPreferredSize(buttonSize);
-        button.setName(buttonName);
-        add(button);
+        userFeatureHandle.addButton(buttonName, action);
+    }
+
+    static class FeatureHandle<B> {
+        private final ButtonsPanel<B> buttonsPanel;
+        private final List<ButtonHandle> buttonHandles = new ArrayList<>();
+
+        private FeatureHandle(ButtonsPanel<B> buttonsPanel) {
+            this.buttonsPanel = buttonsPanel;
+        }
+
+        void addButton(String buttonName, ListAction action) {
+            buttonsPanel.actions.add(action);
+            JButton button = new JButton(action);
+            if (buttonsPanel.buttonSize == null) {
+                buttonsPanel.buttonSize = new Dimension(BUTTON_SIZE + PADDING, BUTTON_SIZE + PADDING);
+            }
+
+            button.setPreferredSize(buttonsPanel.buttonSize);
+            button.setName(buttonName);
+            buttonsPanel.add(button);
+
+            buttonHandles.add(new ButtonHandle<B>(action, button));
+        }
+
+        public ListActions<B> getListener() {
+            return buttonsPanel.listener;
+        }
+    }
+
+    private static class ButtonHandle<B> {
+        private final ListAction action;
+        private final JButton button;
+
+        private ButtonHandle(ListAction action, JButton button) {
+            this.action = action;
+            this.button = button;
+        }
     }
 
     ImmutableList<ListAction> getActions() {

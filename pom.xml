@@ -109,6 +109,12 @@
                         <java.awt.graphicsenv>net.java.openjdk.cacio.ctc.CTCGraphicsEnvironment</java.awt.graphicsenv>
                         <swing.defaultlaf>javax.swing.plaf.metal.MetalLookAndFeel</swing.defaultlaf>
                         <java.awt.headless>false</java.awt.headless>
+
+                        <!-- Delay for rendering off screen -->
+                        <delayBetweenEvents>0</delayBetweenEvents>
+
+                        <!-- Delay for rendering on screen -->
+                        <!--<delayBetweenEvents>100</delayBetweenEvents>-->
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

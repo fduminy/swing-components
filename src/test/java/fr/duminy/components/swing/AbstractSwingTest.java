@@ -27,6 +27,7 @@ import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.junit.testcase.FestSwingJUnitTestCase;
 import org.junit.BeforeClass;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
@@ -47,7 +48,18 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
         window = new FrameFixture(robot(), frame);
         window.show();
 
-        robot().settings().delayBetweenEvents(0);
+        initRobotSettings();
+    }
+
+    private void initRobotSettings() {
+        String valueStr = System.getProperty("delayBetweenEvents");
+        try {
+            int value = Integer.valueOf(valueStr);
+            robot().settings().delayBetweenEvents(value);
+        } catch (NumberFormatException nfe) {
+            // ignore
+        }
+        LoggerFactory.getLogger(getClass()).info("delayBetweenEvents=" + robot().settings().delayBetweenEvents());
     }
 
     protected JFrame getFrame() {

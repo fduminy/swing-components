@@ -29,8 +29,10 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.I18nAble;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.list.MutableListModel;
+import org.fest.assertions.CollectionAssert;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
+import org.fest.swing.edt.GuiTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -46,18 +48,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.*;
+import static fr.duminy.components.swing.TestUtilities.assertThatButtonIsAbsent;
+import static fr.duminy.components.swing.TestUtilities.assertThatButtonIsPresent;
 import static fr.duminy.components.swing.listpanel.EditingFeature.*;
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTON_NAME;
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
+import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.EDITING;
+import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.MANUAL_ORDER;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -65,6 +69,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Theories.class)
 public class ListPanelTest extends AbstractSwingTest {
+    @DataPoints
+    public static final StandardListPanelFeature[] FEATURES = StandardListPanelFeature.values();
+
     @DataPoint
     public static final Locale FRENCH = Locale.FRENCH;
     @DataPoint
@@ -244,6 +251,7 @@ public class ListPanelTest extends AbstractSwingTest {
         });
 
         assertThat(panel.getListComponent()).isEqualTo(list);
+        assertThatHasNoFeatures(panel);
     }
 
     @Test
@@ -264,11 +272,12 @@ public class ListPanelTest extends AbstractSwingTest {
 
 
         assertThat(panel.getListComponent()).isEqualTo(list);
+        assertThatHasNoFeatures(panel);
     }
 
     @Theory
     public final void testI18nMessages(PanelFactory factory, Locale locale) throws Exception {
-        final ListPanel<String, JList<String>> component = buildAndShowWindow(factory, 1);
+        final ListPanel<String, JList<String>> component = buildAndShowWindow(factory, 1, EDITING, MANUAL_ORDER);
         Locale.setDefault(locale);
 
         GuiActionRunner.execute(new GuiQuery<Void>() {
@@ -294,7 +303,7 @@ public class ListPanelTest extends AbstractSwingTest {
             expectedList.add(NEW_ITEM);
         }
 
-        buildAndShowWindow(factory, data.nbItems, cancelAddItem, null);
+        buildAndShowWindow(factory, data.nbItems, cancelAddItem, null, EDITING);
         selectItem(data.selectedIndices);
         window.button(ADD_BUTTON_NAME).click();
         robot().waitForIdle();
@@ -315,7 +324,7 @@ public class ListPanelTest extends AbstractSwingTest {
             }
         });
 
-        MyListPanel<JList<String>, String> panel = (MyListPanel<JList<String>, String>) buildAndShowWindow(factory, 1, false, (ItemManager<String>) itemManager);
+        MyListPanel<JList<String>, String> panel = (MyListPanel<JList<String>, String>) buildAndShowWindow(factory, 1, false, (ItemManager<String>) itemManager, EDITING);
 
         window.list().selectItems(0);
 
@@ -332,7 +341,7 @@ public class ListPanelTest extends AbstractSwingTest {
         List<String> expectedList = createItemList(data.nbItems);
 
         if (expectedList.isEmpty() || (data.selectedIndices.length > 1) || (data.selectedIndices.length == 0)) {
-            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null);
+            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null, EDITING);
             selectItem(data.selectedIndices);
 
             window.button(UPDATE_BUTTON_NAME).requireDisabled().requireToolTip(SwingComponentMessages.UPDATE_ITEM_TOOLTIP);
@@ -343,7 +352,7 @@ public class ListPanelTest extends AbstractSwingTest {
                 expectedList.set(itemToUpdate, UPDATED_ITEM);
             }
 
-            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null);
+            buildAndShowWindow(factory, data.nbItems, cancelUpdateItem, null, EDITING);
             selectItem(data.selectedIndices);
             window.button(UPDATE_BUTTON_NAME).click();
 
@@ -371,7 +380,7 @@ public class ListPanelTest extends AbstractSwingTest {
             }
         }
 
-        buildAndShowWindow(factory, data.nbItems);
+        buildAndShowWindow(factory, data.nbItems, EDITING);
         selectItem(data.selectedIndices);
         window.button(REMOVE_BUTTON_NAME).requireToolTip(SwingComponentMessages.REMOVE_ITEM_TOOLTIP);
         if (valid) {
@@ -398,7 +407,7 @@ public class ListPanelTest extends AbstractSwingTest {
             }
         }
 
-        buildAndShowWindow(factory, data.nbItems);
+        buildAndShowWindow(factory, data.nbItems, MANUAL_ORDER);
         selectItem(data.selectedIndices);
         window.button(UP_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_UP_ITEM_TOOLTIP);
         if (valid) {
@@ -432,7 +441,7 @@ public class ListPanelTest extends AbstractSwingTest {
             }
         }
 
-        buildAndShowWindow(factory, data.nbItems);
+        buildAndShowWindow(factory, data.nbItems, MANUAL_ORDER);
         selectItem(data.selectedIndices);
         window.button(DOWN_BUTTON_NAME).requireToolTip(SwingComponentMessages.MOVE_DOWN_ITEM_TOOLTIP);
         if (valid) {
@@ -485,6 +494,59 @@ public class ListPanelTest extends AbstractSwingTest {
         inOrder.verifyNoMoreInteractions();
     }
 
+    @Theory
+    public void testAddFeature(PanelFactory factory, StandardListPanelFeature feature) throws Exception {
+        ListPanel<String, JList<String>> panel = buildAndShowWindow(factory, 2);
+
+        addFeatureInEDT(panel, feature);
+
+        switch (feature) {
+            case EDITING:
+                assertThatButtonIsAbsent(window, UP_BUTTON_NAME);
+                assertThatButtonIsAbsent(window, DOWN_BUTTON_NAME);
+                assertThatButtonIsPresent(window, ADD_BUTTON_NAME);
+                assertThatButtonIsPresent(window, REMOVE_BUTTON_NAME);
+                assertThatButtonIsPresent(window, UPDATE_BUTTON_NAME);
+                break;
+
+            case MANUAL_ORDER:
+                assertThatButtonIsPresent(window, UP_BUTTON_NAME);
+                assertThatButtonIsPresent(window, DOWN_BUTTON_NAME);
+                assertThatButtonIsAbsent(window, ADD_BUTTON_NAME);
+                assertThatButtonIsAbsent(window, REMOVE_BUTTON_NAME);
+                assertThatButtonIsAbsent(window, UPDATE_BUTTON_NAME);
+                break;
+        }
+    }
+
+    @Theory
+    public void testRemoveFeature(PanelFactory factory, StandardListPanelFeature feature) throws Exception {
+        ListPanel<String, JList<String>> panel = buildAndShowWindow(factory, 2);
+
+        addFeatureInEDT(panel, feature);
+
+        removeFeatureInEDT(panel, feature);
+
+        assertThatButtonIsAbsent(window, UP_BUTTON_NAME);
+        assertThatButtonIsAbsent(window, DOWN_BUTTON_NAME);
+        assertThatButtonIsAbsent(window, ADD_BUTTON_NAME);
+        assertThatButtonIsAbsent(window, REMOVE_BUTTON_NAME);
+        assertThatButtonIsAbsent(window, UPDATE_BUTTON_NAME);
+    }
+
+    @Theory
+    public void testHasFeature(PanelFactory factory, StandardListPanelFeature feature) throws Exception {
+        ListPanel<String, JList<String>> panel = buildAndShowWindow(factory, 2);
+
+        assertThatHasNoFeatures(panel);
+
+        addFeatureInEDT(panel, feature);
+        assertThatHasOnlyFeatures(panel, feature);
+
+        removeFeatureInEDT(panel, feature);
+        assertThatHasNoFeatures(panel);
+    }
+
     private void selectItem(int[] selection) {
         if (selection.length == 0) {
             window.list().component().clearSelection();
@@ -493,11 +555,11 @@ public class ListPanelTest extends AbstractSwingTest {
         }
     }
 
-    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems) throws Exception {
-        return buildAndShowWindow(factory, nbItems, false, null);
+    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems, StandardListPanelFeature... features) throws Exception {
+        return buildAndShowWindow(factory, nbItems, false, null, features);
     }
 
-    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager)
+    private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager, final StandardListPanelFeature... features)
             throws Exception {
         return buildAndShowWindow(new Supplier<ListPanel<String, JList<String>>>() {
             @Override
@@ -507,6 +569,9 @@ public class ListPanelTest extends AbstractSwingTest {
                     result = factory.create(nbItems, itemFactoryReturnsNull, itemManager);
                 } else {
                     result = factory.create(nbItems, itemFactoryReturnsNull);
+                }
+                for (StandardListPanelFeature feature : features) {
+                    result.addFeature(feature);
                 }
                 return result;
             }
@@ -565,5 +630,61 @@ public class ListPanelTest extends AbstractSwingTest {
 
             return buffer.toString();
         }
+    }
+
+    private void assertThatHasNoFeatures(ListPanel<?, ?> panel) {
+        assertThatHasOnlyFeatures(panel);
+    }
+
+    private void assertThatHasOnlyFeatures(ListPanel<?, ?> panel, StandardListPanelFeature... expectedFeatures) {
+        EnumSet<StandardListPanelFeature> actualFeatures = getActualFeatures(panel);
+        CollectionAssert listAssert = assertThat(actualFeatures).as("actual features");
+        if (expectedFeatures.length == 0) {
+            listAssert.isEmpty();
+        } else {
+            listAssert.isEqualTo(EnumSet.copyOf(Arrays.asList(expectedFeatures)));
+        }
+    }
+
+    public static EnumSet<StandardListPanelFeature> getActualFeatures(ListPanel<?, ?> panel) {
+        List<StandardListPanelFeature> actualFeatures = new ArrayList<>();
+        for (StandardListPanelFeature feature : StandardListPanelFeature.values()) {
+            if (panel.hasFeature(feature)) {
+                actualFeatures.add(feature);
+            }
+        }
+
+        return copyOf(StandardListPanelFeature.class, actualFeatures.toArray(new StandardListPanelFeature[actualFeatures.size()]));
+    }
+
+    public static <T extends Enum<T>> EnumSet<T> copyOf(Class<T> enumClass, T[] values) {
+        if (values == null) {
+            return null;
+        }
+        if (values.length == 0) {
+            return EnumSet.noneOf(enumClass);
+        }
+        if (values.length == 1) {
+            return EnumSet.of(values[0]);
+        }
+        return EnumSet.of(values[0], Arrays.copyOfRange(values, 1, values.length));
+    }
+
+    private void addFeatureInEDT(final ListPanel<String, JList<String>> panel, final StandardListPanelFeature feature) {
+        GuiActionRunner.execute(new GuiTask() {
+            @Override
+            protected void executeInEDT() throws Throwable {
+                panel.addFeature(feature);
+            }
+        });
+    }
+
+    private void removeFeatureInEDT(final ListPanel<String, JList<String>> panel, final StandardListPanelFeature feature) {
+        GuiActionRunner.execute(new GuiTask() {
+            @Override
+            protected void executeInEDT() throws Throwable {
+                panel.removeFeature(feature);
+            }
+        });
     }
 }
