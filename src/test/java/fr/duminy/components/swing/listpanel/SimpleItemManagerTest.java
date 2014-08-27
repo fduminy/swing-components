@@ -27,6 +27,7 @@ import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.form.DefaultFormBuilder;
 import fr.duminy.components.swing.form.FormBuilder;
 import fr.duminy.components.swing.form.JFormPane;
+import fr.duminy.components.swing.form.JFormPaneTest;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiActionRunner;
@@ -245,6 +246,8 @@ public class SimpleItemManagerTest extends AbstractFormTest {
             JPanelFixture result = formPane(robot, nameType.getName());
             JPanel formPane = result.component();
             assertThat(formPane).isInstanceOf(JFormPane.class);
+            assertThat(JFormPaneTest.getTitle((JFormPane) formPane)).isEqualTo(title);
+
             sleep();
             assertThat(formPane.getBorder()).isInstanceOf(TitledBorder.class);
             assertThat(((TitledBorder) formPane.getBorder()).getTitle()).isEqualTo(title);

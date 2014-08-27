@@ -23,6 +23,7 @@ package fr.duminy.components.swing;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.form.JFormPane;
+import fr.duminy.components.swing.form.JFormPaneTest;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
@@ -95,7 +96,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFormTest.class);
 
-    private static final String TITLE = "title";
+    protected static final String TITLE = "title";
     private static final String NAME = "Steve";
     private static final String NEW_NAME = "Georges";
 
@@ -457,6 +458,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
             JPanel formPane = formPane(robot, nameType.getName()).component();
             assertThat(formPane).isInstanceOf(JFormPane.class);
+            assertThat(JFormPaneTest.getTitle((JFormPane) formPane)).isEqualTo(title);
 
             Window parentWindow = SwingUtilities.getWindowAncestor(formPane);
 

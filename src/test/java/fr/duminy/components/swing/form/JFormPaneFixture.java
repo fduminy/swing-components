@@ -32,6 +32,7 @@ import org.fest.swing.fixture.JPanelFixture;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 import static org.junit.Assert.fail;
 
@@ -87,6 +88,17 @@ public class JFormPaneFixture extends JPanelFixture {
         JFormPane formPane = form();
         if (!JFormPane.Mode.UPDATE.equals(formPane.getMode())) {
             fail("The form '" + formPane.getName() + "' must be in UPDATE mode");
+        }
+        return this;
+    }
+
+    public JFormPaneFixture requireTitle(String expectedTitle) {
+        JFormPane formPane = form();
+        String actualTitle = formPane.getTitle();
+        if (!Objects.equals(expectedTitle, actualTitle)) {
+            fail(String.format("The form '%s' must have title %s but has title %s", formPane.getName(),
+                    (expectedTitle == null) ? "null" : "'" + expectedTitle + "'",
+                    (actualTitle == null) ? "null" : "'" + actualTitle + "'"));
         }
         return this;
     }

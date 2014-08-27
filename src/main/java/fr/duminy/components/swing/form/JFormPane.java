@@ -281,6 +281,10 @@ public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
         return mode;
     }
 
+    String getTitle() {
+        return title;
+    }
+
 /*
     //TODO manage I18N for JFormPane 
     @Override

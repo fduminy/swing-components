@@ -80,6 +80,10 @@ public class JFormPaneTest extends AbstractFormTest {
     }
 */
 
+    public static String getTitle(JFormPane formPane) {
+        return formPane.getTitle();
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testConstructor() {

@@ -73,7 +73,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         @Override
         public JFormPane<Bean> get() {
             final FormBuilder<Bean> builder = createBuilder(null, Bean.class);
-            JFormPane<Bean> form = new JFormPane<>(builder, "title", mode);
+            JFormPane<Bean> form = new JFormPane<>(builder, title, mode);
             form.setName(PANEL_NAME);
             return form;
         }
@@ -88,7 +88,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     final FormBuilder<Bean> builder = createBuilder((Container) parentComponent, Bean.class);
-                    JFormPane.showFormDialog(parentComponent, builder, null, "title", mode);
+                    JFormPane.showFormDialog(parentComponent, builder, null, title, mode);
                 }
             });
             result.setName(BUTTON_NAME);
@@ -96,10 +96,11 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }) {
         @Override
-        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode) throws Exception {
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode, String title) throws Exception {
             ((CustomSupplier) this.supplier).parentComponent = parentComponent;
-            super.openForm(parentComponent, test, mode);
+            super.openForm(parentComponent, test, mode, title);
             test.window.button(BUTTON_NAME).click();
+            test.window.robot.waitForIdle();
             return (JComponent) test.window.robot.finder().findByName(PANEL_NAME);
         }
     };
@@ -274,6 +275,28 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
         JFormPaneFixture actualFixture = fixture.requireModeUpdate();
         assertEquals("returned fixture", fixture, actualFixture);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Theory
+    public void testRequireTitle(Action<JComponent> action) throws Exception {
+        action.openForm(null, this, JFormPane.Mode.CREATE);
+        JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
+
+        JFormPaneFixture actualFixture = fixture.requireTitle(TITLE);
+        assertEquals("returned fixture", fixture, actualFixture);
+    }
+
+    @Theory
+    public void testRequireTitle_wrongTitle(Action<JComponent> action) throws Exception {
+        final String wrongTitle = "wrongTitle";
+        action.openForm(null, this, JFormPane.Mode.CREATE, wrongTitle);
+
+        thrown.expect(AssertionError.class);
+        thrown.handleAssertionErrors();
+        thrown.expectMessage(String.format("The form '%s' must have title '%s' but has title '%s'", PANEL_NAME, TITLE, wrongTitle));
+
+        new JFormPaneFixture(robot(), PANEL_NAME).requireTitle(TITLE);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -691,6 +714,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     private static abstract class BaseSupplier<C extends JComponent> implements Supplier<C> {
         protected JFormPane.Mode mode;
+        protected String title = TITLE;
     }
 
     public static class Action<C extends JComponent> {
@@ -703,8 +727,13 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
 
         @SuppressWarnings("unchecked")
-        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode) throws Exception {
+        public final JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode) throws Exception {
+            return openForm(parentComponent, test, mode, null);
+        }
+
+        public JComponent openForm(Component parentComponent, AbstractSwingTest test, JFormPane.Mode mode, String title) throws Exception {
             supplier.mode = mode;
+            supplier.title = (title == null) ? TITLE : title;
             return test.buildAndShowWindow(supplier);
         }
     }
