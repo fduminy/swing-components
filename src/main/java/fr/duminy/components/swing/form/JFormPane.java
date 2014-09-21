@@ -45,8 +45,8 @@ import static fr.duminy.components.swing.Bundle.getBundle;
 public class JFormPane<B> extends JPanel /*implements I18nAble*/ {
     private static final Logger LOG = LoggerFactory.getLogger(JFormPane.class);
 
-    public static final String OK_BUTTON_NAME = "okButton";
-    public static final String CANCEL_BUTTON_NAME = "cancelButton";
+    static final String OK_BUTTON_NAME = "okButton";
+    static final String CANCEL_BUTTON_NAME = "cancelButton";
 
     private final Form<B> form;
     private final String title;

@@ -27,7 +27,7 @@ import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.form.DefaultFormBuilder;
 import fr.duminy.components.swing.form.FormBuilder;
 import fr.duminy.components.swing.form.JFormPane;
-import fr.duminy.components.swing.form.JFormPaneTest;
+import fr.duminy.components.swing.form.JFormPaneFixture;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiActionRunner;
@@ -243,25 +243,24 @@ public class SimpleItemManagerTest extends AbstractFormTest {
 
         @Override
         public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
-            JPanelFixture result = formPane(robot, nameType.getName());
-            JPanel formPane = result.component();
-            assertThat(formPane).isInstanceOf(JFormPane.class);
-            assertThat(JFormPaneTest.getTitle((JFormPane) formPane)).isEqualTo(title);
+            JFormPaneFixture fixture = new JFormPaneFixture(robot, nameType.getName());
+            fixture.requireTitle(title);
 
             sleep();
+            JComponent formPane = fixture.component();
             assertThat(formPane.getBorder()).isInstanceOf(TitledBorder.class);
             assertThat(((TitledBorder) formPane.getBorder()).getTitle()).isEqualTo(title);
-            return result;
+            return fixture;
         }
 
         @Override
         protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode) {
-            return formPane(robot, panelName).button(JFormPane.OK_BUTTON_NAME).requireText(mode.getText());
+            return new JFormPaneFixture(robot, panelName).okButton().requireText(mode.getText());
         }
 
         @Override
         protected <T extends Container> JButtonFixture getCancelButtonFixture(Robot robot, String panelName) {
-            return formPane(robot, panelName).button(JFormPane.CANCEL_BUTTON_NAME).requireText(getBundle().cancelText());
+            return new JFormPaneFixture(robot, panelName).cancelButton().requireText(getBundle().cancelText());
         }
 
         @Override
