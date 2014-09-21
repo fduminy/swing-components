@@ -26,8 +26,6 @@ import org.apache.commons.lang3.builder.Builder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
-import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -48,29 +46,11 @@ final public class StringPathTypeMapper extends AbstractFileTypeMapper<String> {
     @Nullable
     @Override
     public final String getValue(@Nonnull JPath jPath) {
-        return toString(jPath.getPath());
+        return (jPath.getPath() == null) ? null : jPath.getPath().toString();
     }
 
     @Override
     public final void setValue(@Nonnull JPath jPath, @Nullable String value) {
         jPath.setPath((value == null) ? null : Paths.get(value));
-    }
-
-    public static String toString(Path path) {
-        if (path == null) {
-            return null;
-        }
-
-        StringBuilder elements = new StringBuilder();
-        if (path.isAbsolute()) {
-            elements.append(File.separatorChar);
-        }
-        for (int i = 0; i < path.getNameCount(); i++) {
-            if (i > 0) {
-                elements.append(File.separatorChar);
-            }
-            elements.append(path.getName(i));
-        }
-        return elements.toString();
     }
 }
