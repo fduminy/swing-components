@@ -28,7 +28,6 @@ import org.fest.swing.exception.ComponentLookupException;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
@@ -51,9 +50,6 @@ public class JPathFixtureTest extends AbstractFormTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    @DataPoints
-    public static final JPath.SelectionMode[] MODES = JPath.SelectionMode.values();
 
     @Test
     public void testConstructor_nameArg_noMatch() {
@@ -225,7 +221,6 @@ public class JPathFixtureTest extends AbstractFormTest {
         setPathInEDT(jPath, Paths.get(path));
         final JPathFixture fixture = new JPathFixture(robot(), COMPONENT_NAME);
         thrown.expect(ComparisonFailure.class);
-        thrown.handleAssertionErrors();
         if (NULL_PATH.equals(wrongPath)) {
             thrown.expectMessage("[selectedPath] expected:<[]> but was:<[" + path + "]>");
         } else {

@@ -69,18 +69,10 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Theories.class)
 public class ListPanelTest extends AbstractSwingTest {
-    @DataPoints
-    public static final StandardListPanelFeature[] FEATURES = StandardListPanelFeature.values();
-
     @DataPoint
     public static final Locale FRENCH = Locale.FRENCH;
     @DataPoint
     public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
-
-    @DataPoint
-    public static final boolean DO_OPERATION = false;
-    @DataPoint
-    public static final boolean CANCEL_OPERATION = true;
 
     private static final Logger LOG = LoggerFactory.getLogger(ListPanelTest.class);
 

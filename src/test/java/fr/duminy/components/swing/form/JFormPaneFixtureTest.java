@@ -222,7 +222,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     public void testRequireInDialog_notAsExpected(Action<JComponent> action) throws Exception {
         boolean expectedInDialog = !action.inDialog;
         thrown.expect(AssertionError.class);
-        thrown.handleAssertionErrors();
         thrown.expectMessage("The form '" + PANEL_NAME + "' must " + (expectedInDialog ? "" : "not ") + "be in a dialog");
         testRequireInDialog(action, expectedInDialog);
     }
@@ -243,7 +242,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     public void testRequireModeCreate_wrongMode(Action<JComponent> action) throws Exception {
         thrown.expect(AssertionError.class);
-        thrown.handleAssertionErrors();
         thrown.expectMessage("The form '" + PANEL_NAME + "' must be in CREATE mode");
         testRequireModeCreate(action, JFormPane.Mode.UPDATE);
     }
@@ -264,7 +262,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Theory
     public void testRequireModeUpdate_wrongMode(Action<JComponent> action) throws Exception {
         thrown.expect(AssertionError.class);
-        thrown.handleAssertionErrors();
         thrown.expectMessage("The form '" + PANEL_NAME + "' must be in UPDATE mode");
         testRequireModeUpdate(action, JFormPane.Mode.CREATE);
     }
@@ -293,7 +290,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         action.openForm(null, this, JFormPane.Mode.CREATE, wrongTitle);
 
         thrown.expect(AssertionError.class);
-        thrown.handleAssertionErrors();
         thrown.expectMessage(String.format("The form '%s' must have title '%s' but has title '%s'", PANEL_NAME, TITLE, wrongTitle));
 
         new JFormPaneFixture(robot(), PANEL_NAME).requireTitle(TITLE);
@@ -531,7 +527,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     private ExpectedException expectComponentLookupException(ComponentLookupExceptionType type) {
         thrown.expect(ComponentLookupException.class);
-        thrown.handleAssertionErrors();
         thrown.expectMessage(type.message);
         return thrown;
     }

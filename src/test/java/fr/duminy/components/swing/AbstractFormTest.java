@@ -70,11 +70,6 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
     @DataPoint
     public static final Locale ENGLISH = AbstractItemActionTest.DEFAULT_LOCALE;
 
-    @DataPoint
-    public static final NameType DEFAULT_NAME = NameType.DEFAULT;
-    @DataPoint
-    public static final NameType CUSTOM_NAME = NameType.CUSTOM;
-
     protected static final String PARENT_PANEL_NAME = "parentPanel";
 
     public static enum NameType {
