@@ -21,9 +21,9 @@
 package fr.duminy.components.swing.listpanel;
 
 import com.google.common.collect.ImmutableList;
-import org.fest.assertions.Assertions;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
+import org.assertj.core.api.Assertions;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
 import org.junit.Test;
 
 import java.util.Collection;

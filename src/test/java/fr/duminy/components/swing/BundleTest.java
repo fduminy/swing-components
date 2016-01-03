@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Locale;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test for class {@link Bundle}.

@@ -21,13 +21,13 @@
 package fr.duminy.components.swing.path;
 
 import fr.duminy.components.swing.FixtureUtilities;
-import org.fest.swing.core.Robot;
-import org.fest.swing.fixture.JPanelFixture;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.fixture.JPanelFixture;
 
 import java.nio.file.Path;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * Fixture to help testing a {@link fr.duminy.components.swing.path.JPath}.
@@ -43,14 +43,14 @@ public class JPathFixture extends JPanelFixture {
 
     public JPathFixture requireSelectionMode(JPath.SelectionMode selectionMode) {
         if (!path().getSelectionMode().equals(selectionMode)) {
-            fail("JPath component named '" + component().getName() + "' must have selection mode " + selectionMode);
+            fail("JPath component named '" + target().getName() + "' must have selection mode " + selectionMode);
         }
         return this;
     }
 
     public JPathFixture requireFileHidingEnabled(boolean fileHidingEnabled) {
         if (path().isFileHidingEnabled() != fileHidingEnabled) {
-            fail("JPath component named '" + component().getName() + "' must have fileHidingEnabled=" + fileHidingEnabled);
+            fail("JPath component named '" + target().getName() + "' must have fileHidingEnabled=" + fileHidingEnabled);
         }
         return this;
     }
@@ -66,6 +66,6 @@ public class JPathFixture extends JPanelFixture {
     }
 
     private JPath path() {
-        return (JPath) component();
+        return (JPath) target();
     }
 }

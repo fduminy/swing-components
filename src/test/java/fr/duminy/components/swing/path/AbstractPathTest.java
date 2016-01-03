@@ -22,14 +22,13 @@ package fr.duminy.components.swing.path;
 
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
-import org.fest.assertions.Condition;
-import org.fest.assertions.ThrowableAssert;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.exception.WaitTimedOutError;
-import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JFileChooserFixture;
-import org.fest.swing.fixture.JTextComponentFixture;
+import org.assertj.core.api.AbstractThrowableAssert;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.exception.WaitTimedOutError;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JFileChooserFixture;
+import org.assertj.swing.fixture.JTextComponentFixture;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +49,7 @@ import java.nio.file.Path;
 
 import static fr.duminy.components.swing.path.JPath.CHOOSE_BUTTON_NAME;
 import static fr.duminy.components.swing.path.JPath.PATH_FIELD_NAME;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Abstract class for tests related to {@link fr.duminy.components.swing.path.JPath}.
@@ -154,7 +153,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
             }
         });
 
-        JTextField tf = (JTextField) window.textBox(PATH_FIELD_NAME).component();
+        JTextField tf = (JTextField) window.textBox(PATH_FIELD_NAME).target();
         assertThat(tf.getColumns()).isEqualTo(columns);
     }
 
@@ -301,7 +300,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
         boolean expectError = !enabled;
         Exception exception = executeInEDT(new GuiQuery<Void>() {
             protected Void executeInEDT() throws Exception {
-                window.textBox().component().setText(parameters.getText());
+                window.textBox().target().setText(parameters.getText());
                 return null;
             }
         }, expectError);
@@ -321,7 +320,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
         JFileChooserFixture jfc = window.fileChooser();
 
         // check file chooser state
-        JFileChooser fileChooser = jfc.component();
+        JFileChooser fileChooser = jfc.target();
         assertThat(fileChooser.isFileHidingEnabled()).as("fileHidingEnabled").isEqualTo(expectFileHidingEnabled);
         assertThat(JPath.SelectionMode.of(fileChooser)).as("selectionMode").isEqualTo(expectSelectionMode);
         return jfc;
@@ -348,9 +347,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
         Path expectedPath = parameters.getExpectedPath();
 
-        Path actualPath = field.getPath();
-        assertThat(actualPath).isNotNull();
-        assertThat(actualPath).isEqualTo(expectedPath);
+        assertThat(field.getPath()).isEqualTo(expectedPath);
 
         textBoxFixture.requireText(expectedPath.toAbsolutePath().toString());
     }
@@ -362,18 +359,13 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
             }
         } else {
             if (expectException) {
-                ThrowableAssert ta = assertThat(exception).as("exception thrown when disabled")
+                AbstractThrowableAssert<?, ? extends Throwable> ta = assertThat(exception).as("exception thrown when disabled")
                         .isNotNull();
 
                 if (expectIllegalStateException) {
                     ta.isExactlyInstanceOf(IllegalStateException.class).as("expected exception").hasMessage("component is disabled");
                 } else {
-                    ta.isExactlyInstanceOf(WaitTimedOutError.class).as("expected exception").satisfies(new Condition<Throwable>() {
-                        @Override
-                        public boolean matches(Throwable value) {
-                            return value.getMessage().startsWith("Timed out waiting for path chooser to be found using matcher");
-                        }
-                    });
+                    ta.isExactlyInstanceOf(WaitTimedOutError.class).as("expected exception").hasMessageStartingWith("Timed out waiting for path chooser to be found using matcher");
                 }
             }
         }
@@ -384,11 +376,11 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
         //TODO add requireEnabled(boolean), requireEditable(boolean) ... etc to JTextComponentFixture, JButtonFixture...
         final JTextComponentFixture textBoxFixture = window.textBox(PATH_FIELD_NAME);
-        JTextComponent textBox = textBoxFixture.component();
+        JTextComponent textBox = textBoxFixture.target();
         assertThat(textBox.isEnabled()).as("textBox.enabled").isEqualTo(expectEnabled);
         assertThat(textBox.isEditable()).as("textBox.editable").isEqualTo(expectEnabled);
 
-        JButton button = window.button(CHOOSE_BUTTON_NAME).component();
+        JButton button = window.button(CHOOSE_BUTTON_NAME).target();
         assertThat(button.isEnabled()).as("button.enabled").isEqualTo(expectEnabled);
         return textBoxFixture;
     }

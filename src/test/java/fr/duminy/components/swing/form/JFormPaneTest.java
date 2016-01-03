@@ -22,10 +22,10 @@ package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
-import org.fest.swing.core.BasicRobot;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.FrameFixture;
+import org.assertj.swing.core.BasicRobot;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.fixture.FrameFixture;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -40,7 +40,7 @@ import java.util.Locale;
 import static fr.duminy.components.swing.form.JFormPane.Mode;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 /**
@@ -215,9 +215,9 @@ public class JFormPaneTest extends AbstractFormTest {
 
                 if (OpenInDialog.INSTANCE == containerType) {
                     if (NameType.DEFAULT == nameType) {
-                        setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode));
+                        setBean(JFormPane.showFormDialog(window.target(), builder, getBean(), title, mode));
                     } else {
-                        setBean(JFormPane.showFormDialog(window.component(), builder, getBean(), title, mode, nameType.getName()));
+                        setBean(JFormPane.showFormDialog(window.target(), builder, getBean(), title, mode, nameType.getName()));
                     }
                 } else if (SimpleItemManagerTest.OpenInPanel.INSTANCE == containerType) {
                     final JFormPane<Bean> formPane = new JFormPane<>(builder, title, mode);

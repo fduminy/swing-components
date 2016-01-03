@@ -22,9 +22,9 @@ package fr.duminy.components.swing.listpanel;
 
 import fr.duminy.components.swing.FixtureUtilities;
 import org.apache.commons.lang3.StringUtils;
-import org.fest.swing.core.Robot;
-import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JPanelFixture;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 
 import javax.swing.*;
 import java.util.EnumSet;
@@ -53,31 +53,31 @@ public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
 
     public JButtonFixture upButton() {
         requireFeature(UP_BUTTON_NAME, MANUAL_ORDER);
-        return new JButtonFixture(robot, findByName(UP_BUTTON_NAME, JButton.class));
+        return new JButtonFixture(robot(), findByName(UP_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture downButton() {
         requireFeature(DOWN_BUTTON_NAME, MANUAL_ORDER);
-        return new JButtonFixture(robot, findByName(DOWN_BUTTON_NAME, JButton.class));
+        return new JButtonFixture(robot(), findByName(DOWN_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture addButton() {
         requireFeature(ADD_BUTTON_NAME, EDITING);
-        return new JButtonFixture(robot, findByName(ADD_BUTTON_NAME, JButton.class));
+        return new JButtonFixture(robot(), findByName(ADD_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture removeButton() {
         requireFeature(REMOVE_BUTTON_NAME, EDITING);
-        return new JButtonFixture(robot, findByName(REMOVE_BUTTON_NAME, JButton.class));
+        return new JButtonFixture(robot(), findByName(REMOVE_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture updateButton() {
         requireFeature(UPDATE_BUTTON_NAME, EDITING);
-        return new JButtonFixture(robot, findByName(UPDATE_BUTTON_NAME, JButton.class));
+        return new JButtonFixture(robot(), findByName(UPDATE_BUTTON_NAME, JButton.class));
     }
 
     public JButtonFixture userButton(String buttonName) {
-        return new JButtonFixture(robot, findByName(buttonName, JButton.class));
+        return new JButtonFixture(robot(), findByName(buttonName, JButton.class));
     }
 
     public ListPanelFixture<B, C> requireOnlyFeatures(StandardListPanelFeature... expectedFeatures) {
@@ -85,7 +85,7 @@ public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
 
         if (!actualFeatures.equals(ListPanelTest.copyOf(StandardListPanelFeature.class, expectedFeatures))) {
             String message = String.format("The ListPanel '%s' must have only features {%s} but has actual features {%s}",
-                    component().getName(), StringUtils.join(expectedFeatures, ','), StringUtils.join(actualFeatures, ','));
+                    target().getName(), StringUtils.join(expectedFeatures, ','), StringUtils.join(actualFeatures, ','));
             throw new IllegalStateException(message);
         }
 
@@ -94,14 +94,14 @@ public class ListPanelFixture<B, C extends JComponent> extends JPanelFixture {
 
     private void requireFeature(String buttonName, StandardListPanelFeature requiredFeature) {
         if (!listPanel().hasFeature(requiredFeature)) {
-            String message = String.format("The button '%s' requires ListPanel '%s' to have feature %s", buttonName, component().getName(), requiredFeature);
+            String message = String.format("The button '%s' requires ListPanel '%s' to have feature %s", buttonName, target().getName(), requiredFeature);
             throw new IllegalStateException(message);
         }
     }
 
     @SuppressWarnings("unchecked")
     private ListPanel<B, C> listPanel() {
-        return (ListPanel<B, C>) component();
+        return (ListPanel<B, C>) target();
     }
 
     //TODO add a method for list fixture (JList or JTable ...)

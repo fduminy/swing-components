@@ -21,26 +21,20 @@
 package fr.duminy.components.swing;
 
 import com.google.common.base.Supplier;
-import org.fest.swing.edt.FailOnThreadViolationRepaintManager;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.FrameFixture;
-import org.fest.swing.junit.testcase.FestSwingJUnitTestCase;
-import org.junit.BeforeClass;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
 
-abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
+abstract public class AbstractSwingTest extends AssertJSwingJUnitTestCase {
 
     public FrameFixture window;
     private JFrame frame;
-
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        FailOnThreadViolationRepaintManager.install();
-    }
 
     @Override
     protected void onSetUp() {
@@ -49,6 +43,10 @@ abstract public class AbstractSwingTest extends FestSwingJUnitTestCase {
         window.show();
 
         initRobotSettings();
+    }
+
+    public Robot getRobot() {
+        return robot();
     }
 
     private void initRobotSettings() {

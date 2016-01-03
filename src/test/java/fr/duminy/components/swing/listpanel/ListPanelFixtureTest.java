@@ -26,11 +26,14 @@ import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
 import org.apache.commons.lang3.StringUtils;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.edt.GuiTask;
-import org.fest.swing.exception.ComponentLookupException;
-import org.fest.swing.fixture.JButtonFixture;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.edt.GuiTask;
+import org.assertj.swing.exception.ComponentLookupException;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,7 +48,7 @@ import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTO
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
 import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.EDITING;
 import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.MANUAL_ORDER;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.swing.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -103,9 +106,24 @@ public class ListPanelFixtureTest extends AbstractFormTest {
     @Test
     public void testConstructor_listpanelArg_null() throws Exception {
         thrown.expect(NullPointerException.class);
-        thrown.expectMessage("Target component should not be null");
+//        thrown.expectMessage("Target component should not be null");
+        thrown.expectMessage(nullString());
 
         new ListPanelFixture<String, JList<String>>(robot(), (ListPanel) null);
+    }
+
+    public static Matcher<String> nullString() {
+        return new BaseMatcher<String>() {
+            @Override
+            public boolean matches(Object item) {
+                return item == null;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("null");
+            }
+        };
     }
 
     @Test
@@ -119,7 +137,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
 
         ListPanelFixture<String, JList<String>> fixture = new ListPanelFixture<>(robot(), listPanel);
 
-        assertThat(fixture.component()).isSameAs(listPanel);
+        assertThat(fixture.target()).isSameAs(listPanel);
     }
 
     @Test
@@ -163,7 +181,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.addButton();
 
         assertThat(buttonFixture).isNotNull();
-        assertThat(buttonFixture.component().getName()).isEqualTo(ADD_BUTTON_NAME);
+        assertThat(buttonFixture.target().getName()).isEqualTo(ADD_BUTTON_NAME);
         buttonFixture.click();
         assertThat(listData.listModel.size()).isEqualTo(3);
         String newLine = listData.listModel.get(2);
@@ -183,7 +201,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.removeButton();
 
         assertThat(buttonFixture).isNotNull();
-        assertThat(buttonFixture.component().getName()).isEqualTo(REMOVE_BUTTON_NAME);
+        assertThat(buttonFixture.target().getName()).isEqualTo(REMOVE_BUTTON_NAME);
         buttonFixture.click();
         robot().waitForIdle();
         assertThat(listData.listModel.size()).as("listSize").isEqualTo(1);
@@ -203,7 +221,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.upButton();
 
         assertThat(buttonFixture).isNotNull();
-        assertThat(buttonFixture.component().getName()).isEqualTo(UP_BUTTON_NAME);
+        assertThat(buttonFixture.target().getName()).isEqualTo(UP_BUTTON_NAME);
         buttonFixture.click();
         assertThat(listData.listModel.get(0)).isSameAs(LINE2);
         assertThat(listData.listModel.get(1)).isSameAs(LINE1);
@@ -228,7 +246,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.downButton();
 
         assertThat(buttonFixture).isNotNull();
-        assertThat(buttonFixture.component().getName()).isEqualTo(DOWN_BUTTON_NAME);
+        assertThat(buttonFixture.target().getName()).isEqualTo(DOWN_BUTTON_NAME);
         buttonFixture.click();
         robot().waitForIdle();
         assertThat(listData.listModel.get(0)).isSameAs(LINE2);
@@ -248,7 +266,7 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.updateButton();
 
         assertThat(buttonFixture).isNotNull();
-        assertThat(buttonFixture.component().getName()).isEqualTo(UPDATE_BUTTON_NAME);
+        assertThat(buttonFixture.target().getName()).isEqualTo(UPDATE_BUTTON_NAME);
         buttonFixture.click();
         verify(listData.itemManager, times(1)).updateItem(eq(LINE2));
     }
@@ -266,8 +284,8 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         JButtonFixture buttonFixture = listData.fixture.userButton(buttonName);
 
         assertThat(buttonFixture).as("buttonFixture").isNotNull();
-        assertThat(buttonFixture.component().getName()).as("buttonName").isEqualTo(buttonName);
-        assertThat(buttonFixture.component().getAction()).as("buttonAction").isSameAs(targetButtonAction);
+        assertThat(buttonFixture.target().getName()).as("buttonName").isEqualTo(buttonName);
+        assertThat(buttonFixture.target().getAction()).as("buttonAction").isSameAs(targetButtonAction);
         buttonFixture.click();
         verify(noiseButtonAction, never()).executeAction(any(String.class));
         verify(targetButtonAction, times(1)).executeAction(eq(LINE2));
@@ -282,8 +300,8 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         GuiActionRunner.execute(new GuiTask() {
             protected void executeInEDT() {
                 listPanel.addUserButton(buttonName, buttonAction);
-                window.component().pack();
-                window.component().invalidate();
+                window.target().pack();
+                window.target().invalidate();
             }
         });
         return buttonAction;

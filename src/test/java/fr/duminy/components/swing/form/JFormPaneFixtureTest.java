@@ -29,11 +29,11 @@ import fr.duminy.components.swing.listpanel.ListPanelFixture;
 import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
-import org.fest.swing.core.GenericTypeMatcher;
-import org.fest.swing.core.NameMatcher;
-import org.fest.swing.exception.ComponentLookupException;
-import org.fest.swing.fixture.ContainerFixture;
-import org.fest.swing.fixture.JButtonFixture;
+import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.core.NameMatcher;
+import org.assertj.swing.exception.ComponentLookupException;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 import org.formbuilder.TypeMapper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,7 +55,7 @@ import java.io.File;
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.MULTIPLE_MATCHES;
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.NO_MATCH;
 import static fr.duminy.components.swing.listpanel.SimpleItemManager.ContainerType.DIALOG;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -100,8 +100,8 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
             ((CustomSupplier) this.supplier).parentComponent = parentComponent;
             super.openForm(parentComponent, test, mode, title);
             test.window.button(BUTTON_NAME).click();
-            test.window.robot.waitForIdle();
-            return (JComponent) test.window.robot.finder().findByName(PANEL_NAME);
+            test.getRobot().waitForIdle();
+            return (JComponent) test.getRobot().finder().findByName(PANEL_NAME);
         }
     };
 
@@ -173,7 +173,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         JComponent expectedForm = action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = useBeanClass ? new JFormPaneFixture(robot(), Bean.class) : new JFormPaneFixture(robot(), PANEL_NAME);
 
-        JPanel form = fixture.component();
+        JPanel form = fixture.target();
 
         assertThat(form).isInstanceOf(JFormPane.class);
         assertThat(form).isEqualTo(expectedForm);
@@ -184,7 +184,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     public void testOkButton(Action<JComponent> action) throws Exception {
         action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
-        JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
+        JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.target();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
         formPane.addFormListener(listener);
 
@@ -201,7 +201,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     public void testCancelButton(Action<JComponent> action) throws Exception {
         action.openForm(null, this, JFormPane.Mode.CREATE);
         JFormPaneFixture fixture = new JFormPaneFixture(robot(), PANEL_NAME);
-        JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.component();
+        JFormPane<Bean> formPane = (JFormPane<Bean>) fixture.target();
         FormListener<Bean> listener = Mockito.mock(FormListener.class);
         formPane.addFormListener(listener);
 
@@ -419,35 +419,35 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     /////////// Generic methods for testing custom field (JPath, ListPanel ...) fixtures //////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_noMatch_noCustomField(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_noArgs_noMatch_noCustomField(
             FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<? super C> componentClass) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         testField_noArgs(factory, BeanWithoutCustomField.class);
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_onlyOneMatch(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_noArgs_onlyOneMatch(
             FixtureFactory<BeanWithOneCustomField, C, CF> factory, String fieldName) throws Exception {
         FormsSupplier<BeanWithOneCustomField, CF> supplier = testField_noArgs(factory, BeanWithOneCustomField.class);
 
         assertThat(supplier.fieldFixture).isNotNull();
-        Component component = supplier.fieldFixture.component();
+        Component component = supplier.fieldFixture.target();
         assertThat(component.getName()).isEqualTo(fieldName);
         assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, component)).isEqualTo(supplier.targetForm);
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_noArgs_multipleMatches(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_noArgs_multipleMatches(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<? super C> componentClass, String fieldName, String field2Name) throws Exception {
         expectComponentLookupException(componentClass, MULTIPLE_MATCHES, fieldName, field2Name);
         testField_noArgs(factory, BeanWithTwoCustomFields.class);
     }
 
-    private <B, C extends JPanel, CF extends ContainerFixture<JPanel>> FormsSupplier<B, CF> testField_noArgs(FixtureFactory<B, C, CF> factory, Class<B> beanClass) throws Exception {
+    private <B, C extends JPanel, CF extends JPanelFixture> FormsSupplier<B, CF> testField_noArgs(FixtureFactory<B, C, CF> factory, Class<B> beanClass) throws Exception {
         FormsSupplier<B, CF> supplier = buildAndShowWindowWithCustomField(beanClass);
         supplier.fieldFixture = factory.fixture(supplier);
         return supplier;
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_noMatch_noCustomField(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_matcherArg_noMatch_noCustomField(
             FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<C> componentClass, String fieldName) throws Exception {
         expectComponentLookupException(NO_MATCH);
         FormsSupplier<BeanWithoutCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithoutCustomField.class);
@@ -455,7 +455,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         factory.fixture(supplier, new FieldNameMatcher<>(componentClass, fieldName));
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_noMatch_wrongCustomFieldName(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_matcherArg_noMatch_wrongCustomFieldName(
             FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<C> componentClass) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         FormsSupplier<BeanWithOneCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithOneCustomField.class);
@@ -463,7 +463,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         factory.fixture(supplier, new FieldNameMatcher<>(componentClass, "wrongName"));
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg_onlyOneMatch(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_matcherArg_onlyOneMatch(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, Class<C> componentClass, String fieldName, String field2Name) throws Exception {
         FormsSupplier<BeanWithTwoCustomFields, CF> supplier = buildAndShowWindowWithCustomField(BeanWithTwoCustomFields.class);
 
@@ -471,18 +471,18 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         testField_matcherArg(factory, supplier, componentClass, field2Name);
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_matcherArg(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_matcherArg(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, FormsSupplier<BeanWithTwoCustomFields, CF> supplier,
             Class<C> componentClass, String fieldName) {
         CF fixture = factory.fixture(supplier, new FieldNameMatcher<C>(componentClass, fieldName));
 
         assertThat(fixture).isNotNull();
-        Component component = fixture.component();
+        Component component = fixture.target();
         assertThat(component.getName()).isEqualTo(fieldName);
         assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, component)).isEqualTo(supplier.targetForm);
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_noMatch_noCustomField(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_nameArg_noMatch_noCustomField(
             FixtureFactory<BeanWithoutCustomField, C, CF> factory, Class<? super C> componentClass, String fieldName) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         FormsSupplier<BeanWithoutCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithoutCustomField.class);
@@ -490,7 +490,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         factory.fixture(supplier, fieldName);
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_noMatch_wrongCustomFieldName(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_nameArg_noMatch_wrongCustomFieldName(
             FixtureFactory<BeanWithOneCustomField, C, CF> factory, Class<? super C> componentClass) throws Exception {
         expectComponentLookupException(componentClass, NO_MATCH);
         FormsSupplier<BeanWithOneCustomField, CF> supplier = buildAndShowWindowWithCustomField(BeanWithOneCustomField.class);
@@ -498,7 +498,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         factory.fixture(supplier, "wrongName");
     }
 
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg_onlyOneMatch(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_nameArg_onlyOneMatch(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, String fieldName, String field2Name) throws Exception {
         FormsSupplier<BeanWithTwoCustomFields, CF> supplier = buildAndShowWindowWithCustomField(BeanWithTwoCustomFields.class);
 
@@ -507,12 +507,12 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <C extends JPanel, CF extends ContainerFixture<JPanel>> void testField_nameArg(
+    private <C extends JPanel, CF extends JPanelFixture> void testField_nameArg(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, FormsSupplier<BeanWithTwoCustomFields, CF> supplier, String fieldName) {
         CF fieldFixture = factory.fixture(supplier, fieldName);
 
         assertThat(fieldFixture).isNotNull();
-        C field = (C) fieldFixture.component();
+        C field = (C) fieldFixture.target();
         assertThat(field.getName()).isEqualTo(fieldName);
         assertThat(SwingUtilities.getAncestorOfClass(JFormPane.class, field)).isEqualTo(supplier.targetForm);
     }
@@ -542,7 +542,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    private static interface FixtureFactory<B, C extends JPanel, CF extends ContainerFixture<JPanel>> {
+    private static interface FixtureFactory<B, C extends JPanel, CF extends JPanelFixture> {
         CF fixture(FormsSupplier<B, CF> supplier);
 
         CF fixture(FormsSupplier<B, CF> supplier, GenericTypeMatcher<C> matcher);
@@ -598,7 +598,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         }
     }
 
-    private <B, C extends JPanel, CF extends ContainerFixture<JPanel>> FormsSupplier<B, CF> buildAndShowWindowWithCustomField(final Class<B> beanClass) throws Exception {
+    private <B, C extends JPanel, CF extends JPanelFixture> FormsSupplier<B, CF> buildAndShowWindowWithCustomField(final Class<B> beanClass) throws Exception {
         final String formName = JFormPane.getDefaultPanelName(beanClass);
         Supplier<JFormPane<B>> formSupplier = new Supplier<JFormPane<B>>() {
             @Override
@@ -613,12 +613,12 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         buildAndShowWindow(allFormsSupplier);
         allFormsSupplier.noiseForm.setName("noiseForm"); // avoid name clash for the 2 JFormPanes
         allFormsSupplier.formFixture = new JFormPaneFixture(robot(), formName);
-        assertThat(allFormsSupplier.targetForm).isSameAs(allFormsSupplier.formFixture.component());
+        assertThat(allFormsSupplier.targetForm).isSameAs(allFormsSupplier.formFixture.target());
 
         return allFormsSupplier;
     }
 
-    private static class FormsSupplier<B, CF extends ContainerFixture<JPanel>> implements Supplier<JPanel> {
+    private static class FormsSupplier<B, CF extends JPanelFixture> implements Supplier<JPanel> {
         private final Supplier<JFormPane<B>> formSupplier;
         private JFormPane<B> targetForm;
         private JFormPane<B> noiseForm;

@@ -29,11 +29,11 @@ import fr.duminy.components.swing.form.FormBuilder;
 import fr.duminy.components.swing.form.JFormPane;
 import fr.duminy.components.swing.form.JFormPaneFixture;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.fest.swing.core.Robot;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JPanelFixture;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -51,7 +51,7 @@ import java.util.concurrent.CancellationException;
 import static fr.duminy.components.swing.Bundle.getBundle;
 import static fr.duminy.components.swing.form.JFormPane.Mode.CREATE;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.swing.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -218,7 +218,7 @@ public class SimpleItemManagerTest extends AbstractFormTest {
         final SimpleItemManager.ContainerType parentType = type.getType();
 
         if (OpenInDialog.class.equals(type.getClass())) {
-            parent = window.component();
+            parent = window.target();
         } else if (OpenInPanel.class.equals(type.getClass())) {
             parent = formContainer;
         } else {
@@ -247,7 +247,7 @@ public class SimpleItemManagerTest extends AbstractFormTest {
             fixture.requireTitle(title);
 
             sleep();
-            JComponent formPane = fixture.component();
+            JComponent formPane = fixture.target();
             assertThat(formPane.getBorder()).isInstanceOf(TitledBorder.class);
             assertThat(((TitledBorder) formPane.getBorder()).getTitle()).isEqualTo(title);
             return fixture;

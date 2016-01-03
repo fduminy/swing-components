@@ -27,14 +27,15 @@ import fr.duminy.components.swing.form.JFormPaneTest;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
 import fr.duminy.components.swing.listpanel.SimpleItemManager;
 import fr.duminy.components.swing.listpanel.SimpleItemManagerTest;
-import org.fest.swing.core.Robot;
-import org.fest.swing.core.TypeMatcher;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.ContainerFixture;
-import org.fest.swing.fixture.DialogFixture;
-import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JPanelFixture;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.core.TypeMatcher;
+import org.assertj.swing.driver.JComponentDriver;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.fixture.AbstractContainerFixture;
+import org.assertj.swing.fixture.DialogFixture;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 import org.junit.Assert;
 import org.junit.experimental.theories.DataPoint;
 import org.slf4j.Logger;
@@ -53,8 +54,8 @@ import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExp
 import static fr.duminy.components.swing.TestUtilities.dumpComponents;
 import static fr.duminy.components.swing.form.JFormPane.Mode.UPDATE;
 import static javax.swing.SwingUtilities.getAncestorOfClass;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.swing.core.matcher.JButtonMatcher.withText;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.swing.core.matcher.JButtonMatcher.withText;
 
 /**
  * And abstract test for class related to a form.
@@ -178,7 +179,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         protected final NameType nameType;
-        protected ContainerFixture f;
+        protected AbstractContainerFixture f;
 
         protected FormTest(NameType nameType) {
             this.nameType = nameType;
@@ -411,7 +412,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
             this.checkTooltip = checkTooltip;
         }
 
-        abstract public ContainerFixture checkStaticProperties(Robot robot, NameType nameType, String title);
+        abstract public AbstractContainerFixture<JPanelFixture, JPanel, JComponentDriver> checkStaticProperties(Robot robot, NameType nameType, String title);
 
         public final String getButtonName() {
             return buttonName;
@@ -423,7 +424,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
                 f.requireToolTip(mode.getTooltip());
             }
             f.click();
-            log.info("OK button clicked : {}", f.component());
+            log.info("OK button clicked : {}", f.target());
         }
 
         abstract protected <T extends Container> JButtonFixture getOkButtonFixture(Robot robot, String panelName, JFormPane.Mode mode);
@@ -451,7 +452,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
         @Override
         public JPanelFixture checkStaticProperties(Robot robot, NameType nameType, String title) {
-            JPanel formPane = formPane(robot, nameType.getName()).component();
+            JPanel formPane = formPane(robot, nameType.getName()).target();
             assertThat(formPane).isInstanceOf(JFormPane.class);
             assertThat(JFormPaneTest.getTitle((JFormPane) formPane)).isEqualTo(title);
 
@@ -474,7 +475,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
 
         private DialogFixture getOptionPaneFixture(Robot robot, String panelName) {
-            JDialog p = (JDialog) getAncestorOfClass(JDialog.class, formPane(robot, panelName).component());
+            JDialog p = (JDialog) getAncestorOfClass(JDialog.class, formPane(robot, panelName).target());
             return new DialogFixture(robot, p);
         }
 
@@ -531,7 +532,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         }
     }
 
-    protected static JPanelFixture formPane(org.fest.swing.core.Robot robot, String panelName) {
+    protected static JPanelFixture formPane(org.assertj.swing.core.Robot robot, String panelName) {
         java.util.List<JFormPane> panels = new ArrayList<>();
         for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
             for (Component formPane : robot.finder().findAll((Window) window, new TypeMatcher(JFormPane.class))) {
@@ -554,7 +555,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         return new JPanelFixture(robot, panels.get(0));
     }
 
-    private static void fail(org.fest.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
+    private static void fail(org.assertj.swing.core.Robot robot, String panelName, String beginMessage, String middleMessage) {
         Assert.fail(beginMessage + " JFormPane with name '" + panelName + "'\n" + middleMessage + dumpComponents(robot));
     }
 

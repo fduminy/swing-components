@@ -25,10 +25,10 @@ import fr.duminy.components.swing.listpanel.ListPanel;
 import fr.duminy.components.swing.listpanel.ListPanelFixture;
 import fr.duminy.components.swing.path.JPath;
 import fr.duminy.components.swing.path.JPathFixture;
-import org.fest.swing.core.GenericTypeMatcher;
-import org.fest.swing.core.Robot;
-import org.fest.swing.fixture.JButtonFixture;
-import org.fest.swing.fixture.JPanelFixture;
+import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.core.Robot;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,9 +68,9 @@ public class JFormPaneFixture extends JPanelFixture {
         }
 
         if (actuallyInDialog && !expectInADialog) {
-            fail("The form '" + component().getName() + "' must not be in a dialog");
+            fail("The form '" + target().getName() + "' must not be in a dialog");
         } else if (!actuallyInDialog && expectInADialog) {
-            fail("The form '" + component().getName() + "' must be in a dialog");
+            fail("The form '" + target().getName() + "' must be in a dialog");
         }
 
         return this;
@@ -107,21 +107,21 @@ public class JFormPaneFixture extends JPanelFixture {
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a single {@link fr.duminy.components.swing.path.JPath}.
      */
     public JPathFixture path() {
-        return new JPathFixture(robot, findByType(JPath.class));
+        return new JPathFixture(robot(), findByType(JPath.class));
     }
 
     /**
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} from a {@link fr.duminy.components.swing.path.JPath} matcher.
      */
     public JPathFixture path(GenericTypeMatcher<? extends JPath> matcher) {
-        return new JPathFixture(robot, find(matcher));
+        return new JPathFixture(robot(), find(matcher));
     }
 
     /**
      * Creates a {@link fr.duminy.components.swing.path.JPathFixture} for a {@link fr.duminy.components.swing.path.JPath} named by <code>name</code>.
      */
     public JPathFixture path(String name) {
-        return new JPathFixture(robot, findByName(name, JPath.class));
+        return new JPathFixture(robot(), findByName(name, JPath.class));
     }
 
 
@@ -130,14 +130,14 @@ public class JFormPaneFixture extends JPanelFixture {
      */
     @SuppressWarnings("unchecked")
     public <B, C extends JComponent> ListPanelFixture<B, C> listPanel() {
-        return new ListPanelFixture<B, C>(robot, findByType(ListPanel.class));
+        return new ListPanelFixture<B, C>(robot(), findByType(ListPanel.class));
     }
 
     /**
      * Creates a {@link fr.duminy.components.swing.listpanel.ListPanelFixture} from a {@link fr.duminy.components.swing.listpanel.ListPanel} matcher.
      */
     public <B, C extends JComponent> ListPanelFixture<B, C> listPanel(GenericTypeMatcher<? extends ListPanel<B, C>> matcher) {
-        return new ListPanelFixture<>(robot, find(matcher));
+        return new ListPanelFixture<>(robot(), find(matcher));
     }
 
     /**
@@ -145,14 +145,14 @@ public class JFormPaneFixture extends JPanelFixture {
      */
     @SuppressWarnings("unchecked")
     public <B, C extends JComponent> ListPanelFixture<B, C> listPanel(String name) {
-        return new ListPanelFixture<B, C>(robot, findByName(name, ListPanel.class));
+        return new ListPanelFixture<B, C>(robot(), findByName(name, ListPanel.class));
     }
 
     private JFormPane form() {
-        return (JFormPane) component();
+        return (JFormPane) target();
     }
 
-    private static JFormPane find(org.fest.swing.core.Robot robot, Class<?> beanClass) {
+    private static JFormPane find(org.assertj.swing.core.Robot robot, Class<?> beanClass) {
         String name = JFormPane.getDefaultPanelName(beanClass);
         return FixtureUtilities.find(robot, JFormPane.class, name);
     }

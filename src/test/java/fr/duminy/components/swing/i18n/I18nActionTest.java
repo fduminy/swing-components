@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test for classe {@link fr.duminy.components.swing.i18n.AbstractI18nAction}.

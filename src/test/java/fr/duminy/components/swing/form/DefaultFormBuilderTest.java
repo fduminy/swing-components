@@ -21,8 +21,8 @@
 package fr.duminy.components.swing.form;
 
 import fr.duminy.components.swing.AbstractSwingTest;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -30,7 +30,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import static fr.duminy.components.swing.AbstractFormTest.Bean;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test for {@link DefaultFormBuilder}.

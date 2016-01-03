@@ -22,9 +22,10 @@ package fr.duminy.components.swing.path;
 
 import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.exception.ComponentLookupException;
+import fr.duminy.components.swing.listpanel.ListPanelFixtureTest;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.exception.ComponentLookupException;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test the {@link fr.duminy.components.swing.path.JPathFixture} class.
@@ -92,7 +93,8 @@ public class JPathFixtureTest extends AbstractFormTest {
     @Test
     public void testConstructor_jpathArg_null() throws Exception {
         thrown.expect(NullPointerException.class);
-        thrown.expectMessage("Target component should not be null");
+//        thrown.expectMessage("Target component should not be null");
+        thrown.expectMessage(ListPanelFixtureTest.nullString());
 
         new JPathFixture(robot(), (JPath) null);
     }
@@ -107,7 +109,7 @@ public class JPathFixtureTest extends AbstractFormTest {
 
         JPathFixture fixture = new JPathFixture(robot(), jpath);
 
-        assertThat(fixture.component()).isSameAs(jpath);
+        assertThat(fixture.target()).isSameAs(jpath);
     }
 
     @Test

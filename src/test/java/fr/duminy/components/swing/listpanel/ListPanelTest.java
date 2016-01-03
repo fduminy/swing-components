@@ -29,10 +29,10 @@ import fr.duminy.components.swing.SwingComponentMessages;
 import fr.duminy.components.swing.i18n.I18nAble;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.list.MutableListModel;
-import org.fest.assertions.CollectionAssert;
-import org.fest.swing.edt.GuiActionRunner;
-import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.edt.GuiTask;
+import org.assertj.core.api.AbstractIterableAssert;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
+import org.assertj.swing.edt.GuiTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -62,7 +62,7 @@ import static fr.duminy.components.swing.listpanel.ManualOrderFeature.DOWN_BUTTO
 import static fr.duminy.components.swing.listpanel.ManualOrderFeature.UP_BUTTON_NAME;
 import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.EDITING;
 import static fr.duminy.components.swing.listpanel.StandardListPanelFeature.MANUAL_ORDER;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.swing.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -302,7 +302,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
         window.button(ADD_BUTTON_NAME).requireEnabled().requireToolTip(SwingComponentMessages.ADD_ITEM_TOOLTIP);
         window.list().requireItemCount(expectedList.size());
-        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+        assertThat(window.list().contents()).containsOnly(toStringArray(expectedList));
     }
 
     @SuppressWarnings("unchecked")
@@ -358,7 +358,11 @@ public class ListPanelTest extends AbstractSwingTest {
         }
 
         window.list().requireItemCount(expectedList.size());
-        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+        assertThat(window.list().contents()).containsOnly(toStringArray(expectedList));
+    }
+
+    public static String[] toStringArray(List<String> expectedList) {
+        return expectedList.toArray(new String[expectedList.size()]);
     }
 
     @Theory
@@ -383,7 +387,7 @@ public class ListPanelTest extends AbstractSwingTest {
         }
 
         window.list().requireItemCount(expectedList.size());
-        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+        assertThat(window.list().contents()).containsOnly(toStringArray(expectedList));
     }
 
     @Theory
@@ -416,7 +420,7 @@ public class ListPanelTest extends AbstractSwingTest {
         }
 
         window.list().requireItemCount(expectedList.size());
-        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+        assertThat(window.list().contents()).containsOnly(toStringArray(expectedList));
     }
 
     @Theory
@@ -450,7 +454,7 @@ public class ListPanelTest extends AbstractSwingTest {
         }
 
         window.list().requireItemCount(expectedList.size());
-        assertThat(window.list().contents()).containsOnly(expectedList.toArray());
+        assertThat(window.list().contents()).containsOnly(toStringArray(expectedList));
     }
 
     @SuppressWarnings("unchecked")
@@ -470,8 +474,8 @@ public class ListPanelTest extends AbstractSwingTest {
             @Override
             protected Void executeInEDT() throws Throwable {
                 component.addUserButton(buttonName, action);
-                window.component().pack();
-                window.component().invalidate();
+                window.target().pack();
+                window.target().invalidate();
                 return null;
             }
         });
@@ -541,7 +545,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
     private void selectItem(int[] selection) {
         if (selection.length == 0) {
-            window.list().component().clearSelection();
+            window.list().target().clearSelection();
         } else {
             window.list().selectItems(selection);
         }
@@ -630,7 +634,7 @@ public class ListPanelTest extends AbstractSwingTest {
 
     private void assertThatHasOnlyFeatures(ListPanel<?, ?> panel, StandardListPanelFeature... expectedFeatures) {
         EnumSet<StandardListPanelFeature> actualFeatures = getActualFeatures(panel);
-        CollectionAssert listAssert = assertThat(actualFeatures).as("actual features");
+        AbstractIterableAssert listAssert = assertThat(actualFeatures).as("actual features");
         if (expectedFeatures.length == 0) {
             listAssert.isEmpty();
         } else {

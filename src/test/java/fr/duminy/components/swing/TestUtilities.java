@@ -20,8 +20,9 @@
  */
 package fr.duminy.components.swing;
 
-import org.fest.swing.exception.ComponentLookupException;
-import org.fest.swing.fixture.ContainerFixture;
+import org.assertj.swing.driver.ComponentDriver;
+import org.assertj.swing.exception.ComponentLookupException;
+import org.assertj.swing.fixture.AbstractContainerFixture;
 import org.junit.Assert;
 
 import java.awt.*;
@@ -29,25 +30,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 public class TestUtilities {
-    public static String dumpComponents(org.fest.swing.core.Robot robot) {
+    public static String dumpComponents(org.assertj.swing.core.Robot robot) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         robot.printer().printComponents(new PrintStream(os));
         return "\nComponent hierarchy:\n" + os.toString();
     }
 
-    public static <T extends Container> void assertThatButtonIsPresent(ContainerFixture<T> container, String buttonName) {
+    public static <S, C extends Container, D extends ComponentDriver> void assertThatButtonIsPresent(AbstractContainerFixture<S, C, D> container, String buttonName) {
         if (!buttonIsPresent(container, buttonName)) {
-            Assert.fail("The button '" + buttonName + "' was expected in container " + container.target);
+            Assert.fail("The button '" + buttonName + "' was expected in container " + container.target());
         }
     }
 
-    public static <T extends Container> void assertThatButtonIsAbsent(ContainerFixture<T> container, String buttonName) {
+    public static <S, C extends Container, D extends ComponentDriver> void assertThatButtonIsAbsent(AbstractContainerFixture<S, C, D> container, String buttonName) {
         if (buttonIsPresent(container, buttonName)) {
-            Assert.fail("The button '" + buttonName + "' was not expected in container " + container.target);
+            Assert.fail("The button '" + buttonName + "' was not expected in container " + container.target());
         }
     }
 
-    private static <T extends Container> boolean buttonIsPresent(ContainerFixture<T> container, String buttonName) {
+    private static <S, C extends Container, D extends ComponentDriver> boolean buttonIsPresent(AbstractContainerFixture<S, C, D> container, String buttonName) {
         boolean present;
 
         try {

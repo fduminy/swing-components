@@ -20,8 +20,8 @@
  */
 package fr.duminy.components.swing;
 
-import org.fest.swing.core.TypeMatcher;
-import org.fest.swing.exception.ComponentLookupException;
+import org.assertj.swing.core.TypeMatcher;
+import org.assertj.swing.exception.ComponentLookupException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +33,7 @@ import static fr.duminy.components.swing.TestUtilities.dumpComponents;
  * Utility methods for fixtures.
  */
 public class FixtureUtilities {
-    public static <T extends JComponent> T find(org.fest.swing.core.Robot robot, Class<T> componentClass, String componentName) {
+    public static <T extends JComponent> T find(org.assertj.swing.core.Robot robot, Class<T> componentClass, String componentName) {
         java.util.List<T> components = new ArrayList<>();
         for (Component window : robot.finder().findAll(new TypeMatcher(Window.class))) {
             for (Component component : robot.finder().findAll((Window) window, new TypeMatcher(componentClass))) {
@@ -56,7 +56,7 @@ public class FixtureUtilities {
         return components.get(0);
     }
 
-    private static <T extends JComponent> void fail(org.fest.swing.core.Robot robot, Class<T> componentClass,
+    private static <T extends JComponent> void fail(org.assertj.swing.core.Robot robot, Class<T> componentClass,
                                                     String componentName, String beginMessage, String middleMessage,
                                                     java.util.List<T> panels) {
         throw new ComponentLookupException(beginMessage + " " + componentClass.getSimpleName() + " with name '" + componentName + "'\n" + middleMessage +
