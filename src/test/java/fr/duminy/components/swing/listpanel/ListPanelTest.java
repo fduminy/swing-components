@@ -92,7 +92,7 @@ public class ListPanelTest extends AbstractSwingTest {
     public static final TestData[] DATA;
 
     static {
-        List<TestData> result = new ArrayList<TestData>();
+        List<TestData> result = new ArrayList<>();
         for (int nbItems : NB_ITEMS) {
             for (int[] selectedIndices : SELECTED_INDICES) {
                 boolean isValid = true;
@@ -232,7 +232,7 @@ public class ListPanelTest extends AbstractSwingTest {
         final JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
             @Override
             protected JList<String> executeInEDT() throws Throwable {
-                return new JList<>(new DefaultMutableListModel<String>());
+                return new JList<>(new DefaultMutableListModel<>());
             }
         });
         ListPanel<String, JList<String>> panel = GuiActionRunner.execute(new GuiQuery<ListPanel<String, JList<String>>>() {
@@ -251,7 +251,7 @@ public class ListPanelTest extends AbstractSwingTest {
         JList<String> list = GuiActionRunner.execute(new GuiQuery<JList<String>>() {
             @Override
             protected JList<String> executeInEDT() throws Throwable {
-                return new JList<>(new DefaultMutableListModel<String>());
+                return new JList<>(new DefaultMutableListModel<>());
             }
         });
         final JListComponentWrapper<String> wrapper = new JListComponentWrapper<>(list, null);

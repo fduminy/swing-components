@@ -602,7 +602,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
 
     @SuppressWarnings("unchecked")
     protected <C extends JPanel> SupplierWithNoise<C> buildAndShowComponentWithNoise(Supplier<C> componentSupplier) throws Exception {
-        SupplierWithNoise<C> supplierWithNoise = new SupplierWithNoise<C>(componentSupplier);
+        SupplierWithNoise<C> supplierWithNoise = new SupplierWithNoise<>(componentSupplier);
         buildAndShowWindow(supplierWithNoise);
         return supplierWithNoise;
     }

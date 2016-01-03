@@ -53,7 +53,7 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements I18nAb
      */
     @SuppressWarnings("unchecked")
     public ListPanel(JList<B> list, ItemManager<B> itemManager) {
-        this((ListComponent<B, C>) new JListComponentWrapper<B>(list, itemManager));
+        this((ListComponent<B, C>) new JListComponentWrapper<>(list, itemManager));
     }
 
     /**

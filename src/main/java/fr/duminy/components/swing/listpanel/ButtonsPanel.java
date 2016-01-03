@@ -53,7 +53,7 @@ class ButtonsPanel<B> extends JPanel {
             return;
         }
 
-        FeatureHandle<B> handle = new FeatureHandle<B>(this);
+        FeatureHandle<B> handle = new FeatureHandle<>(this);
         feature.install(handle);
         features.put(feature, handle);
         revalidate();
@@ -78,7 +78,7 @@ class ButtonsPanel<B> extends JPanel {
 
     void addButton(String buttonName, ListAction action) {
         if (userFeatureHandle == null) {
-            userFeatureHandle = new FeatureHandle<B>(this);
+            userFeatureHandle = new FeatureHandle<>(this);
         }
 
         userFeatureHandle.addButton(buttonName, action);

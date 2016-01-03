@@ -38,7 +38,7 @@ public class ButtonsPanelTest {
         ButtonsPanel<Bean> buttonsPanel = GuiActionRunner.execute(new GuiQuery<ButtonsPanel<Bean>>() {
             @Override
             protected ButtonsPanel<Bean> executeInEDT() throws Throwable {
-                return new ButtonsPanel<Bean>(mock(ListActions.class));
+                return new ButtonsPanel<>(mock(ListActions.class));
             }
         });
 

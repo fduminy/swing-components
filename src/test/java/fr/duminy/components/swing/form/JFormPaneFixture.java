@@ -130,7 +130,7 @@ public class JFormPaneFixture extends JPanelFixture {
      */
     @SuppressWarnings("unchecked")
     public <B, C extends JComponent> ListPanelFixture<B, C> listPanel() {
-        return new ListPanelFixture<B, C>(robot(), findByType(ListPanel.class));
+        return new ListPanelFixture<>(robot(), findByType(ListPanel.class));
     }
 
     /**
@@ -145,7 +145,7 @@ public class JFormPaneFixture extends JPanelFixture {
      */
     @SuppressWarnings("unchecked")
     public <B, C extends JComponent> ListPanelFixture<B, C> listPanel(String name) {
-        return new ListPanelFixture<B, C>(robot(), findByName(name, ListPanel.class));
+        return new ListPanelFixture<>(robot(), findByName(name, ListPanel.class));
     }
 
     private JFormPane form() {

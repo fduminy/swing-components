@@ -79,7 +79,7 @@ public class SimpleItemManager<B> implements ItemManager<B> {
             public <T> ListenableFuture<T> displayForm(final SimpleItemManager<T> manager, T item, Mode mode) {
                 final SettableFuture<T> futureItem = SettableFuture.create();
 
-                final JFormPane<T> formPane = new JFormPane<T>(manager.formBuilder, manager.title, mode);
+                final JFormPane<T> formPane = new JFormPane<>(manager.formBuilder, manager.title, mode);
                 formPane.setValue(item);
                 formPane.setName(JFormPane.getActualPanelName(manager.formBuilder, manager.panelName));
 

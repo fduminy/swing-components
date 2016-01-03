@@ -301,17 +301,17 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testPath_nameArg_noMatch_noCustomField() throws Exception {
-        testField_nameArg_noMatch_noCustomField(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class, "path");
+        testField_nameArg_noMatch_noCustomField(new JPathFixtureFactory<>(), JPath.class, "path");
     }
 
     @Test
     public void testPath_nameArg_noMatch_wrongCustomFieldName() throws Exception {
-        testField_nameArg_noMatch_wrongCustomFieldName(new JPathFixtureFactory<BeanWithOneCustomField>(), JPath.class);
+        testField_nameArg_noMatch_wrongCustomFieldName(new JPathFixtureFactory<>(), JPath.class);
     }
 
     @Test
     public void testPath_nameArg_onlyOneMatch() throws Exception {
-        testField_nameArg_onlyOneMatch(new JPathFixtureFactory<BeanWithTwoCustomFields>(), "path", "path2");
+        testField_nameArg_onlyOneMatch(new JPathFixtureFactory<>(), "path", "path2");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -320,17 +320,17 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testPath_noArgs_noMatch_noCustomField() throws Exception {
-        testField_noArgs_noMatch_noCustomField(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class);
+        testField_noArgs_noMatch_noCustomField(new JPathFixtureFactory<>(), JPath.class);
     }
 
     @Test
     public void testPath_noArgs_multipleMatches() throws Exception {
-        testField_noArgs_multipleMatches(new JPathFixtureFactory<BeanWithTwoCustomFields>(), JPath.class, "path", "path2");
+        testField_noArgs_multipleMatches(new JPathFixtureFactory<>(), JPath.class, "path", "path2");
     }
 
     @Test
     public void testPath_noArgs_onlyOneMatch() throws Exception {
-        testField_noArgs_onlyOneMatch(new JPathFixtureFactory<BeanWithOneCustomField>(), "path");
+        testField_noArgs_onlyOneMatch(new JPathFixtureFactory<>(), "path");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,17 +339,17 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testPath_matcherArg_noMatch_noCustomField() throws Exception {
-        testField_matcherArg_noMatch_noCustomField(new JPathFixtureFactory<BeanWithoutCustomField>(), JPath.class, "path");
+        testField_matcherArg_noMatch_noCustomField(new JPathFixtureFactory<>(), JPath.class, "path");
     }
 
     @Test
     public void testPath_matcherArg_noMatch_wrongCustomFieldName() throws Exception {
-        testField_matcherArg_noMatch_wrongCustomFieldName(new JPathFixtureFactory<BeanWithOneCustomField>(), JPath.class);
+        testField_matcherArg_noMatch_wrongCustomFieldName(new JPathFixtureFactory<>(), JPath.class);
     }
 
     @Test
     public void testPath_matcherArg_onlyOneMatch() throws Exception {
-        testField_matcherArg_onlyOneMatch(new JPathFixtureFactory<BeanWithTwoCustomFields>(), JPath.class, "path", "path2");
+        testField_matcherArg_onlyOneMatch(new JPathFixtureFactory<>(), JPath.class, "path", "path2");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -358,17 +358,17 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testListPanel_nameArg_noMatch_noCustomField() throws Exception {
-        testField_nameArg_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel>(), ListPanel.class, "list");
+        testField_nameArg_noMatch_noCustomField(new ListPanelFixtureFactory<>(), ListPanel.class, "list");
     }
 
     @Test
     public void testListPanel_nameArg_noMatch_wrongCustomFieldName() throws Exception {
-        testField_nameArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), ListPanel.class);
+        testField_nameArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<>(), ListPanel.class);
     }
 
     @Test
     public void testListPanel_nameArg_onlyOneMatch() throws Exception {
-        testField_nameArg_onlyOneMatch(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), "list", "list2");
+        testField_nameArg_onlyOneMatch(new ListPanelFixtureFactory<>(), "list", "list2");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -377,17 +377,17 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testListPanel_noArgs_noMatch_noCustomField() throws Exception {
-        testField_noArgs_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel>(), ListPanel.class);
+        testField_noArgs_noMatch_noCustomField(new ListPanelFixtureFactory<>(), ListPanel.class);
     }
 
     @Test
     public void testListPanel_noArgs_multipleMatches() throws Exception {
-        testField_noArgs_multipleMatches(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), ListPanel.class, "list", "list2");
+        testField_noArgs_multipleMatches(new ListPanelFixtureFactory<>(), ListPanel.class, "list", "list2");
     }
 
     @Test
     public void testListPanel_noArgs_onlyOneMatch() throws Exception {
-        testField_noArgs_onlyOneMatch(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), "list");
+        testField_noArgs_onlyOneMatch(new ListPanelFixtureFactory<>(), "list");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -398,21 +398,21 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     @Test
     public void testListPanel_matcherArg_noMatch_noCustomField() throws Exception {
         Class<?> componentClass = ListPanel.class;
-        testField_matcherArg_noMatch_noCustomField(new ListPanelFixtureFactory<BeanWithoutCustomField, ListPanel<BeanWithoutCustomField, JList>>(), (Class<ListPanel<BeanWithoutCustomField, ListPanel<BeanWithoutCustomField, JList>>>) componentClass, "list");
+        testField_matcherArg_noMatch_noCustomField(new ListPanelFixtureFactory<>(), (Class<ListPanel<BeanWithoutCustomField, ListPanel<BeanWithoutCustomField, JList>>>) componentClass, "list");
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testListPanel_matcherArg_noMatch_wrongCustomFieldName() throws Exception {
         Class<?> componentClass = ListPanel.class;
-        testField_matcherArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<BeanWithOneCustomField, ListPanel>(), (Class<ListPanel<BeanWithOneCustomField, ListPanel>>) componentClass);
+        testField_matcherArg_noMatch_wrongCustomFieldName(new ListPanelFixtureFactory<>(), (Class<ListPanel<BeanWithOneCustomField, ListPanel>>) componentClass);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testListPanel_matcherArg_onlyOneMatch() throws Exception {
         Class<?> componentClass = ListPanel.class;
-        testField_matcherArg_onlyOneMatch(new ListPanelFixtureFactory<BeanWithTwoCustomFields, ListPanel>(), (Class<ListPanel<BeanWithTwoCustomFields, ListPanel>>) componentClass, "list", "list2");
+        testField_matcherArg_onlyOneMatch(new ListPanelFixtureFactory<>(), (Class<ListPanel<BeanWithTwoCustomFields, ListPanel>>) componentClass, "list", "list2");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -474,7 +474,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     private <C extends JPanel, CF extends JPanelFixture> void testField_matcherArg(
             FixtureFactory<BeanWithTwoCustomFields, C, CF> factory, FormsSupplier<BeanWithTwoCustomFields, CF> supplier,
             Class<C> componentClass, String fieldName) {
-        CF fixture = factory.fixture(supplier, new FieldNameMatcher<C>(componentClass, fieldName));
+        CF fixture = factory.fixture(supplier, new FieldNameMatcher<>(componentClass, fieldName));
 
         assertThat(fixture).isNotNull();
         Component component = fixture.target();
@@ -752,7 +752,7 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
             when(mapper.createEditorComponent()).thenAnswer(new Answer<ListPanel<String, JList<String>>>() {
                 @Override
                 public ListPanel<String, JList<String>> answer(InvocationOnMock invocation) throws Throwable {
-                    JList<String> list = new JList<>(new DefaultMutableListModel<String>());
+                    JList<String> list = new JList<>(new DefaultMutableListModel<>());
                     list.setName("strings");
 
                     SimpleItemManager<String> sourceProvider = new SimpleItemManager<>(String.class, parentComponent, "Strings", DIALOG);
@@ -766,6 +766,6 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
     }
 
     private static <B> FormBuilder<B> createBuilder(Container parentComponent, Class<B> beanClass) {
-        return new MockFormBuilder<B>(parentComponent, beanClass);
+        return new MockFormBuilder<>(parentComponent, beanClass);
     }
 }
