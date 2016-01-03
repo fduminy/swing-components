@@ -41,15 +41,12 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -309,12 +306,7 @@ public class ListPanelTest extends AbstractSwingTest {
     @Theory
     public void testUpdateItem_wrongItemManager(final PanelFactory factory) throws Exception {
         ItemManager itemManager = Mockito.mock(ItemManager.class);
-        when(itemManager.updateItem(any(String.class))).thenAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                return Futures.immediateFuture(invocation.getArguments()[0]);
-            }
-        });
+        when(itemManager.updateItem(any(String.class))).thenAnswer(invocation -> Futures.immediateFuture(invocation.getArguments()[0]));
 
         MyListPanel<JList<String>, String> panel = (MyListPanel<JList<String>, String>) buildAndShowWindow(factory, 1, false, (ItemManager<String>) itemManager, EDITING);
 
@@ -557,20 +549,17 @@ public class ListPanelTest extends AbstractSwingTest {
 
     private ListPanel<String, JList<String>> buildAndShowWindow(final PanelFactory factory, final int nbItems, final boolean itemFactoryReturnsNull, final ItemManager<String> itemManager, final StandardListPanelFeature... features)
             throws Exception {
-        return buildAndShowWindow(new Supplier<ListPanel<String, JList<String>>>() {
-            @Override
-            public ListPanel<String, JList<String>> get() {
-                ListPanel<String, JList<String>> result;
-                if (itemManager != null) {
-                    result = factory.create(nbItems, itemFactoryReturnsNull, itemManager);
-                } else {
-                    result = factory.create(nbItems, itemFactoryReturnsNull);
-                }
-                for (StandardListPanelFeature feature : features) {
-                    result.addFeature(feature);
-                }
-                return result;
+        return buildAndShowWindow(() -> {
+            ListPanel<String, JList<String>> result;
+            if (itemManager != null) {
+                result = factory.create(nbItems, itemFactoryReturnsNull, itemManager);
+            } else {
+                result = factory.create(nbItems, itemFactoryReturnsNull);
             }
+            for (StandardListPanelFeature feature : features) {
+                result.addFeature(feature);
+            }
+            return result;
         });
     }
 

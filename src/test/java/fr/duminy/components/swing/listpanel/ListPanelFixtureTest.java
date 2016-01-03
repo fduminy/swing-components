@@ -81,19 +81,16 @@ public class ListPanelFixtureTest extends AbstractFormTest {
 
     @Test
     public void testConstructor_nameArg_multipleMatches() throws Exception {
-        Supplier<JPanel> supplier = new Supplier<JPanel>() {
-            @Override
-            public JPanel get() {
-                final JPath jPath1 = new JPath();
-                jPath1.setName(COMPONENT_NAME);
-                final JPath jPath2 = new JPath();
-                jPath2.setName(COMPONENT_NAME);
+        Supplier<JPanel> supplier = () -> {
+            final JPath jPath1 = new JPath();
+            jPath1.setName(COMPONENT_NAME);
+            final JPath jPath2 = new JPath();
+            jPath2.setName(COMPONENT_NAME);
 
-                JPanel jPanel = new JPanel(new GridLayout(2, 1));
-                jPanel.add(jPath1);
-                jPanel.add(jPath2);
-                return jPanel;
-            }
+            JPanel jPanel = new JPanel(new GridLayout(2, 1));
+            jPanel.add(jPath1);
+            jPanel.add(jPath2);
+            return jPanel;
         };
         buildAndShowWindow(supplier);
         thrown.expect(ComponentLookupException.class);
@@ -316,23 +313,20 @@ public class ListPanelFixtureTest extends AbstractFormTest {
         final DefaultMutableListModel[] listModel = new DefaultMutableListModel[1];
         final JList[] list = new JList[1];
         final MockItemManager[] itemManager = new MockItemManager[1];
-        Supplier<ListPanel<String, JList<String>>> supplier = new Supplier<ListPanel<String, JList<String>>>() {
-            @Override
-            public ListPanel<String, JList<String>> get() {
-                listModel[0] = new DefaultMutableListModel<String>();
-                listModel[0].add(LINE1);
-                listModel[0].add(LINE2);
-                list[0] = new JList<>(listModel[0]);
-                list[0].setSelectedIndex(SELECTED_INDEX);
-                itemManager[0] = Mockito.spy(new MockItemManager(false));
+        Supplier<ListPanel<String, JList<String>>> supplier = () -> {
+            listModel[0] = new DefaultMutableListModel<String>();
+            listModel[0].add(LINE1);
+            listModel[0].add(LINE2);
+            list[0] = new JList<>(listModel[0]);
+            list[0].setSelectedIndex(SELECTED_INDEX);
+            itemManager[0] = Mockito.spy(new MockItemManager(false));
 
-                final ListPanel<String, JList<String>> listPanel = new ListPanel<>(list[0], itemManager[0]);
-                listPanel.setName(COMPONENT_NAME);
-                for (StandardListPanelFeature feature : features) {
-                    listPanel.addFeature(feature);
-                }
-                return listPanel;
+            final ListPanel<String, JList<String>> listPanel = new ListPanel<>(list[0], itemManager[0]);
+            listPanel.setName(COMPONENT_NAME);
+            for (StandardListPanelFeature feature : features) {
+                listPanel.addFeature(feature);
             }
+            return listPanel;
         };
 
         if (withNoise) {

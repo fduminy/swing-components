@@ -87,7 +87,7 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
     }
 
     @Test
-    public final void testBuild__defaultTypeMapper_nullPath() throws Exception {
+    public final void testBuild_defaultTypeMapper_nullPath() throws Exception {
         testBuild(defaultTypeMapper, null);
     }
 

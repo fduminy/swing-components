@@ -42,13 +42,9 @@ import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.function.Supplier;
 
@@ -84,12 +80,9 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         @Override
         public JButton get() {
             JButton result = new JButton("Open Dialog");
-            result.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    final FormBuilder<Bean> builder = createBuilder((Container) parentComponent, Bean.class);
-                    JFormPane.showFormDialog(parentComponent, builder, null, title, mode);
-                }
+            result.addActionListener(e -> {
+                final FormBuilder<Bean> builder = createBuilder((Container) parentComponent, Bean.class);
+                JFormPane.showFormDialog(parentComponent, builder, null, title, mode);
             });
             result.setName(BUTTON_NAME);
             return result;
@@ -128,14 +121,11 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testConstructor_panelName_componentNotFound() throws Exception {
-        Supplier<JFormPane<Bean>> wrongName = new Supplier<JFormPane<Bean>>() {
-            @Override
-            public JFormPane<Bean> get() {
-                OPEN_IN_PANEL.supplier.mode = JFormPane.Mode.CREATE;
-                JFormPane<Bean> form = OPEN_IN_PANEL.supplier.get();
-                form.setName("WrongName");
-                return form;
-            }
+        Supplier<JFormPane<Bean>> wrongName = () -> {
+            OPEN_IN_PANEL.supplier.mode = JFormPane.Mode.CREATE;
+            JFormPane<Bean> form = OPEN_IN_PANEL.supplier.get();
+            form.setName("WrongName");
+            return form;
         };
         buildAndShowWindow(wrongName);
         thrown.expect(ComponentLookupException.class);
@@ -145,13 +135,10 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     @Test
     public void testConstructor_beanClass_componentNotFound() throws Exception {
-        Supplier<JLabel> wrongComponentClass = new Supplier<JLabel>() {
-            @Override
-            public JLabel get() {
-                JLabel l = new JLabel("");
-                l.setName(PANEL_NAME);
-                return l;
-            }
+        Supplier<JLabel> wrongComponentClass = () -> {
+            JLabel l = new JLabel("");
+            l.setName(PANEL_NAME);
+            return l;
         };
         buildAndShowWindow(wrongComponentClass);
         thrown.expect(ComponentLookupException.class);
@@ -600,14 +587,11 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
 
     private <B, C extends JPanel, CF extends JPanelFixture> FormsSupplier<B, CF> buildAndShowWindowWithCustomField(final Class<B> beanClass) throws Exception {
         final String formName = JFormPane.getDefaultPanelName(beanClass);
-        Supplier<JFormPane<B>> formSupplier = new Supplier<JFormPane<B>>() {
-            @Override
-            public JFormPane<B> get() {
-                final FormBuilder<B> builder = createBuilder(null, beanClass);
-                final JFormPane<B> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
-                formPane.setName(formName);
-                return formPane;
-            }
+        Supplier<JFormPane<B>> formSupplier = () -> {
+            final FormBuilder<B> builder = createBuilder(null, beanClass);
+            final JFormPane<B> formPane = new JFormPane<>(builder, "title", JFormPane.Mode.CREATE);
+            formPane.setName(formName);
+            return formPane;
         };
         FormsSupplier<B, CF> allFormsSupplier = new FormsSupplier<>(formSupplier);
         buildAndShowWindow(allFormsSupplier);
@@ -749,15 +733,12 @@ public class JFormPaneFixtureTest extends AbstractFormTest {
         protected void configureBuilder(org.formbuilder.FormBuilder<B> builder) {
             super.configureBuilder(builder);
             TypeMapper mapper = Mockito.mock(TypeMapper.class);
-            when(mapper.createEditorComponent()).thenAnswer(new Answer<ListPanel<String, JList<String>>>() {
-                @Override
-                public ListPanel<String, JList<String>> answer(InvocationOnMock invocation) throws Throwable {
-                    JList<String> list = new JList<>(new DefaultMutableListModel<>());
-                    list.setName("strings");
+            when(mapper.createEditorComponent()).thenAnswer(invocation -> {
+                JList<String> list = new JList<>(new DefaultMutableListModel<>());
+                list.setName("strings");
 
-                    SimpleItemManager<String> sourceProvider = new SimpleItemManager<>(String.class, parentComponent, "Strings", DIALOG);
-                    return new ListPanel<>(list, sourceProvider);
-                }
+                SimpleItemManager<String> sourceProvider = new SimpleItemManager<>(String.class, parentComponent, "Strings", DIALOG);
+                return new ListPanel<>(list, sourceProvider);
             });
             when(mapper.getValueClass()).thenReturn(java.util.List.class);
             builder.useForProperty("list", mapper);

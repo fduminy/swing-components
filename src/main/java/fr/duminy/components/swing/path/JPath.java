@@ -30,8 +30,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,12 +72,7 @@ public class JPath extends JPanel {
             }
         });
 
-        chooseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                displayFileChooser();
-            }
-        });
+        chooseButton.addActionListener(e -> displayFileChooser());
 
         setColumns(20);
     }
@@ -142,13 +135,11 @@ public class JPath extends JPanel {
             jfc.setSelectedFile(null);
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                int jfcResult = jfc.showOpenDialog(parent);
-                if (jfcResult == JFileChooser.APPROVE_OPTION) {
-                    Path selectedPath = jfc.getSelectedFile().toPath().toAbsolutePath();
-                    parent.setPath(selectedPath, true);
-                }
+        SwingUtilities.invokeLater(() -> {
+            int jfcResult = jfc.showOpenDialog(parent);
+            if (jfcResult == JFileChooser.APPROVE_OPTION) {
+                Path selectedPath = jfc.getSelectedFile().toPath().toAbsolutePath();
+                parent.setPath(selectedPath, true);
             }
         });
     }

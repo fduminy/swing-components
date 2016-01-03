@@ -23,8 +23,6 @@ package fr.duminy.components.swing.listpanel;
 import fr.duminy.components.swing.i18n.I18nAble;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.Arrays;
 
@@ -68,12 +66,9 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements I18nAb
         buttons = new ButtonsPanel<>(listActions);
         add(buttons, BorderLayout.EAST);
 
-        list.addSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateButtons();
-                }
+        list.addSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateButtons();
             }
         });
 

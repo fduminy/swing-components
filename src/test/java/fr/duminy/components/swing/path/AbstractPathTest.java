@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 import static fr.duminy.components.swing.path.JPath.CHOOSE_BUTTON_NAME;
 import static fr.duminy.components.swing.path.JPath.PATH_FIELD_NAME;
@@ -112,12 +111,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
     @Test
     public void testConstructor() throws Exception {
-        JPath jpath = buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath();
-            }
-        });
+        JPath jpath = buildAndShowWindow(this::createJPath);
 
         checkFileChooserState(true, false, JPath.SelectionMode.FILES_AND_DIRECTORIES);
         checkEnabledState(jpath, true);
@@ -134,24 +128,14 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
     }
 
     private void testSetSelectionMode(final JPath.SelectionMode selectionMode, JPath.SelectionMode expectedSelectionMode) throws Exception {
-        buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath(selectionMode);
-            }
-        });
+        buildAndShowWindow(() -> createJPath(selectionMode));
 
         checkFileChooserState(true, false, expectedSelectionMode);
     }
 
     @Theory
     public void testSetColumns(final int columns) throws Exception {
-        buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath(columns);
-            }
-        });
+        buildAndShowWindow(() -> createJPath(columns));
 
         JTextField tf = (JTextField) window.textBox(PATH_FIELD_NAME).target();
         assertThat(tf.getColumns()).isEqualTo(columns);
@@ -168,12 +152,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
     }
 
     public void testSetEnabled(final boolean enabled) throws Exception {
-        JPath field = buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPathAndSetEnabled(enabled);
-            }
-        });
+        JPath field = buildAndShowWindow(() -> createJPathAndSetEnabled(enabled));
 
         checkEnabledState(field, enabled);
     }
@@ -189,12 +168,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
     }
 
     public void testEnableFileHiding(final boolean enableFileHiding) throws Exception {
-        buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPathAndSetFileHidingEnabled(enableFileHiding);
-            }
-        });
+        buildAndShowWindow(() -> createJPathAndSetFileHidingEnabled(enableFileHiding));
 
         checkFileChooserState(enableFileHiding, false, JPath.SelectionMode.FILES_AND_DIRECTORIES);
     }
@@ -211,13 +185,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
     private void testSetPath(final JPath.SelectionMode selectionMode, final boolean enabled) throws Exception {
         final Parameters parameters = new Parameters(enabled, selectionMode);
-        final JPath field = buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
-            }
-
-        });
+        final JPath field = buildAndShowWindow(() -> createJPath(selectionMode, parameters.getInitialPath(), enabled));
 
         Exception exception = GuiActionRunner.execute(new GuiQuery<Exception>() {
             protected Exception executeInEDT() {
@@ -247,12 +215,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
     private void testSelectPath(final JPath.SelectionMode selectionMode, final boolean enabled) throws Exception {
         final Parameters parameters = new Parameters(enabled, selectionMode);
-        JPath field = buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
-            }
-        });
+        JPath field = buildAndShowWindow(() -> createJPath(selectionMode, parameters.getInitialPath(), enabled));
 
         window.textBox().requireText(parameters.getInitialText());
 
@@ -287,13 +250,7 @@ abstract public class AbstractPathTest extends AbstractSwingTest {
 
     private void testEnterPath(final JPath.SelectionMode selectionMode, final boolean enabled) throws Exception {
         final Parameters parameters = new Parameters(enabled, selectionMode);
-        JPath field = buildAndShowWindow(new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                return createJPath(selectionMode, parameters.getInitialPath(), enabled);
-            }
-
-        });
+        JPath field = buildAndShowWindow(() -> createJPath(selectionMode, parameters.getInitialPath(), enabled));
 
         window.textBox().requireText(parameters.getInitialText());
 

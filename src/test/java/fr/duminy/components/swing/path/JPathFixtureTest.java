@@ -69,19 +69,16 @@ public class JPathFixtureTest extends AbstractFormTest {
 
     @Test
     public void testConstructor_nameArg_multipleMatches() throws Exception {
-        Supplier<JPanel> supplier = new Supplier<JPanel>() {
-            @Override
-            public JPanel get() {
-                final JPath jPath1 = new JPath();
-                jPath1.setName(COMPONENT_NAME);
-                final JPath jPath2 = new JPath();
-                jPath2.setName(COMPONENT_NAME);
+        Supplier<JPanel> supplier = () -> {
+            final JPath jPath1 = new JPath();
+            jPath1.setName(COMPONENT_NAME);
+            final JPath jPath2 = new JPath();
+            jPath2.setName(COMPONENT_NAME);
 
-                JPanel jPanel = new JPanel(new GridLayout(2, 1));
-                jPanel.add(jPath1);
-                jPanel.add(jPath2);
-                return jPanel;
-            }
+            JPanel jPanel = new JPanel(new GridLayout(2, 1));
+            jPanel.add(jPath1);
+            jPanel.add(jPath2);
+            return jPanel;
         };
         buildAndShowWindow(supplier);
         thrown.expect(ComponentLookupException.class);
@@ -237,15 +234,12 @@ public class JPathFixtureTest extends AbstractFormTest {
     }
 
     private JPath buildAndShow(final JPath.SelectionMode mode, final boolean fileHidingEnabled) throws Exception {
-        Supplier<JPath> supplier = new Supplier<JPath>() {
-            @Override
-            public JPath get() {
-                final JPath jPath = new JPath();
-                jPath.setSelectionMode(mode);
-                jPath.setName(COMPONENT_NAME);
-                jPath.setFileHidingEnabled(fileHidingEnabled);
-                return jPath;
-            }
+        Supplier<JPath> supplier = () -> {
+            final JPath jPath = new JPath();
+            jPath.setSelectionMode(mode);
+            jPath.setName(COMPONENT_NAME);
+            jPath.setFileHidingEnabled(fileHidingEnabled);
+            return jPath;
         };
         return buildAndShowWindow(supplier);
     }
