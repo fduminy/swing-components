@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.path;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractSwingTest;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -46,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 import static fr.duminy.components.swing.path.JPath.CHOOSE_BUTTON_NAME;
 import static fr.duminy.components.swing.path.JPath.PATH_FIELD_NAME;

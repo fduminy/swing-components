@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import fr.duminy.components.swing.AbstractSwingTest;
@@ -50,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

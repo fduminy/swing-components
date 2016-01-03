@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.path;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.listpanel.ListPanelFixtureTest;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -38,6 +37,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -20,8 +20,6 @@
  */
 package fr.duminy.components.swing;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.form.JFormPane;
 import fr.duminy.components.swing.form.JFormPaneTest;
 import fr.duminy.components.swing.listpanel.AbstractItemActionTest;
@@ -48,6 +46,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.CANCEL_TEXT_KEY;
 import static fr.duminy.components.swing.DesktopSwingComponentMessages_fr.getExpectedMessage;
@@ -131,7 +130,7 @@ public abstract class AbstractFormTest extends AbstractSwingTest {
         initContentPane();
 
         try {
-            buildAndShowWindow(Suppliers.ofInstance(panel));
+            buildAndShowWindow(() -> panel);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

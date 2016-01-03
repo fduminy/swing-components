@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.form;
 
-import com.google.common.base.Suppliers;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.path.JPathBuilder;
 import fr.duminy.components.swing.path.JPathFixture;
@@ -71,7 +70,7 @@ abstract public class AbstractFileTypeMapperTest<B, TM extends AbstractFileTypeM
         });
 
         try {
-            buildAndShowWindow(Suppliers.ofInstance(content));
+            buildAndShowWindow(() -> content);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing;
 
-import com.google.common.base.Supplier;
 import org.assertj.swing.core.Robot;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.edt.GuiQuery;
@@ -29,6 +28,7 @@ import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.util.function.Supplier;
 
 
 abstract public class AbstractSwingTest extends AssertJSwingJUnitTestCase {

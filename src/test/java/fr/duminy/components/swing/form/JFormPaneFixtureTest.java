@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.form;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.AbstractSwingTest;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
@@ -51,6 +50,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.function.Supplier;
 
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.MULTIPLE_MATCHES;
 import static fr.duminy.components.swing.form.JFormPaneFixtureTest.ComponentLookupExceptionType.NO_MATCH;

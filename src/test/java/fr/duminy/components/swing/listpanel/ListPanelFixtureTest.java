@@ -20,7 +20,6 @@
  */
 package fr.duminy.components.swing.listpanel;
 
-import com.google.common.base.Supplier;
 import fr.duminy.components.swing.AbstractFormTest;
 import fr.duminy.components.swing.list.DefaultMutableListModel;
 import fr.duminy.components.swing.path.JPath;
@@ -41,6 +40,7 @@ import org.mockito.Mockito;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 import static fr.duminy.components.swing.listpanel.EditingFeature.*;
 import static fr.duminy.components.swing.listpanel.ListPanelTest.MockItemManager;
