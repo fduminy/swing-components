@@ -184,7 +184,7 @@
                     </mapping>
                     <properties>
                         <inceptionYear>${project.inceptionYear}</inceptionYear>
-                        <year>2014</year>
+                        <year>2016</year>
                         <project.email>${project.email}</project.email>
                     </properties>
                 </configuration>
