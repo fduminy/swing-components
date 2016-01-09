@@ -118,9 +118,7 @@ public class ListPanel<B, C extends JComponent> extends JPanel implements I18nAb
 
     @Override
     public void updateMessages() {
-        for (I18nAble action : buttons.getActions()) {
-            action.updateMessages();
-        }
+        buttons.getActions().forEach(I18nAble::updateMessages);
     }
 
     ///////////////////////////////////

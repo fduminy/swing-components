@@ -57,8 +57,6 @@ public class I18nManager implements I18nAble {
      */
     @Override
     public final void updateMessages() {
-        for (I18nAble object : objects) {
-            object.updateMessages();
-        }
+        objects.forEach(I18nAble::updateMessages);
     }
 }
